@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ "$1" = "run" ]; then
+  echo "Running..."
+  export DEV=1 && go run cmd/yams/yams.go
+elif [ "$1" = "build" ]; then
+  echo "Building..."
+  mkdir -p build
+  go build -o build/ cmd/yams/yams.go
+else
+  echo "Invalid argument: $1"
+  exit 1
+fi
