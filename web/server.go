@@ -62,7 +62,7 @@ func Start(port int) {
 	ready, done, s := new(port, mux)
 	<-ready
 
-	log.Println("Server listening on: ")
+	log.Println("Server listening on - ")
 	for _, ip := range getIps() {
 		log.Printf("http://%v:%v\n", ip, port)
 	}

@@ -2,7 +2,8 @@
 
 if [ "$1" = "run" ]; then
   echo "Running..."
-  export DEV=1 && go run cmd/yams/yams.go
+  export $(grep -v '^#' .env | xargs -d '\n')
+  go run cmd/yams/yams.go
 elif [ "$1" = "build" ]; then
   echo "Building..."
   mkdir -p build
