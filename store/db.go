@@ -12,6 +12,7 @@ import (
 type database interface {
 	Init() error
 	Conn() *sql.DB
+	GetMusicSources() ([]string, error)
 }
 
 var Db database

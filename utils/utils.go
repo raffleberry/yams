@@ -6,12 +6,16 @@ import (
 	"path/filepath"
 )
 
+const ConfigFile = "config.json"
+
+var ConfigDir string
 var AppDir string
 
 var DEV bool
 
 func init() {
 	DEV = len(os.Getenv("DEV")) > 0
+
 	var err error
 	AppDir, err = os.Executable()
 	Panic(err)

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MediaInfo
+    xmlns="https://mediaarea.net/mediainfo"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://mediaarea.net/mediainfo https://mediaarea.net/mediainfo/mediainfo_2_0.xsd"
+    version="2.0">
+    <creatingLibrary version="24.05" url="https://mediaarea.net/MediaInfo">MediaInfoLib</creatingLibrary>
+    <media ref="Kasbo, Noomi - Talk Slow.m4a">
+        <track type="General">
+            <AudioCount>1</AudioCount>
+            <FileExtension>m4a</FileExtension>
+            <Format>MPEG-4</Format>
+            <Format_Profile>Base Media</Format_Profile>
+            <CodecID>isom</CodecID>
+            <CodecID_Compatible>isom/iso2/mp41</CodecID_Compatible>
+            <FileSize>8330351</FileSize>
+            <Duration>256.823</Duration>
+            <OverallBitRate_Mode>CBR</OverallBitRate_Mode>
+            <OverallBitRate>259489</OverallBitRate>
+            <StreamSize>110635</StreamSize>
+            <HeaderSize>110627</HeaderSize>
+            <DataSize>8219724</DataSize>
+            <FooterSize>0</FooterSize>
+            <IsStreamable>Yes</IsStreamable>
+            <Title>Talk Slow</Title>
+            <Album>The Making of a Paracosm</Album>
+            <Album_Performer>Kasbo</Album_Performer>
+            <Part_Position>1</Part_Position>
+            <Part_Position_Total>1</Part_Position_Total>
+            <Track>Talk Slow</Track>
+            <Track_Position>6</Track_Position>
+            <Track_Position_Total>14</Track_Position_Total>
+            <Performer>Kasbo / Noomi</Performer>
+            <Genre>Future Bass</Genre>
+            <Recorded_Date>2020-10-23</Recorded_Date>
+            <Encoded_Application>Counter Records</Encoded_Application>
+            <Copyright>2020 Foreign Family Collective/Counter Records</Copyright>
+            <Cover>Yes</Cover>
+            <Lyrics>[Verse 1] / Take me down, both feet on the ground / Take me down, it feels better when I&apos;m with you / When I&apos;m with you / Call me out, I&apos;m not making sense / Call me out, I get too intense / I sure do, ooh yeah /  / [Chorus] / Talk slow &apos;cause my head&apos;s on fire / I think I need something to cool me down / Talk slow &apos;cause my mind is wired / And any minute now, I&apos;m burning out / Hold me steady, steady / Hold me steady, steady / Talk slow &apos;cause my head&apos;s on fire / I think I need something to cool me down /  / [Verse 2] / Take me down, both feet on the ground / Touch me where it hurts, I think you&apos;re the first that knows how / That knows how / Pull my threads, you can tear &apos;em up / Meters unend, can you make it stop? / Say you could, ooh /  / [Bridge] / &apos;Cause I don&apos;t know what to do / To do /  / [Chorus] / Talk slow &apos;cause my head&apos;s on fire / I think I need something to cool me down / Talk slow &apos;cause my mind is wired / And any minute now, I&apos;m burning out / Hold me steady, steady (Hold me steady) / Hold me steady, steady (Hold me steady) / Talk slow &apos;cause my head&apos;s on fire / I think I need something to cool me down /  / [Outro] / I know that you&apos;re around me / And I know that it&apos;s burning up</Lyrics>
+            <Comment>https://music.youtube.com/watch?v=Z0yjan2y62w</Comment>
+            <Rating>Clean</Rating>
+            <extra>
+                <WOAS>https://open.spotify.com/track/5z6GTjPU2K4H5Xybcf56q1</WOAS>
+            </extra>
+        </track>
+        <track type="Audio">
+            <StreamOrder>0</StreamOrder>
+            <ID>1</ID>
+            <Format>AAC</Format>
+            <Format_AdditionalFeatures>LC</Format_AdditionalFeatures>
+            <CodecID>2 / 40 / mp4a-40-2</CodecID>
+            <Duration>256.823</Duration>
+            <BitRate_Mode>CBR</BitRate_Mode>
+            <BitRate>256043</BitRate>
+            <Channels>2</Channels>
+            <ChannelPositions>Front: L R</ChannelPositions>
+            <ChannelLayout>L R</ChannelLayout>
+            <SamplesPerFrame>1024</SamplesPerFrame>
+            <SamplingRate>44100</SamplingRate>
+            <SamplingCount>11325894</SamplingCount>
+            <FrameRate>43.066</FrameRate>
+            <FrameCount>11062</FrameCount>
+            <Compression_Mode>Lossy</Compression_Mode>
+            <StreamSize>8219716</StreamSize>
+            <Title>ISO Media file produced by Google Inc.</Title>
+            <Default>Yes</Default>
+            <AlternateGroup>1</AlternateGroup>
+        </track>
+    </media>
+</MediaInfo>

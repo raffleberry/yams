@@ -1,13 +1,23 @@
 #!/bin/bash
 
-if [ "$1" = "run" ]; then
-  echo "Running..."
+cd "$(dirname "$0")"
+
+if [ -f ".env" ]; then
   export $(grep -v '^#' .env | xargs -d '\n')
-  go run cmd/yams/yams.go
+fi
+
+if [ "$1" = "run" ]; then
+  cmd="go run cmd/yams/yams.go"
+  echo $cmd
+  $cmd
 elif [ "$1" = "build" ]; then
   echo "Building..."
   mkdir -p build
   go build -o build/ cmd/yams/yams.go
+elif [ "$1" = "test" ]; then
+  cmd="go test -v ${@:2}"
+  echo $cmd
+  $cmd
 else
   echo "Invalid argument: $1"
   exit 1
