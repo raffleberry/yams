@@ -7,32 +7,34 @@ import (
 )
 
 // doesn't support symlinks
-func ScanSongs(path string) []error {
-	var errs []error
+func ScanSongs(path string) {
+	var infos []MediaInfo
+
+	log.Printf("Scanning for songs on : %s\n", path)
+
 	err := filepath.Walk(path,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
-				errs = append(errs, err)
+				log.Println("ERROR: ", path, err)
 				return nil
 			}
 			if !info.IsDir() {
-				info, err := GetInfo(path)
+				info, err := GetMediaInfo(path)
 				if err != nil {
-					errs = append(errs, err)
+					log.Println("ERROR: ", path, err)
 					return nil
 				}
 
-				log.Println(info)
-
-				if err != nil {
-					errs = append(errs, err)
-					return nil
-				}
+				log.Println("SCANNED: ", info.Media.Ref)
+				infos = append(infos, info)
 			}
 			return nil
 		})
+
 	if err != nil {
-		errs = append(errs, err)
+		log.Println("ERROR: ", path, err)
 	}
-	return errs
+
+	log.Printf("Updating Database with `%d` songs\n", len(infos))
+
 }

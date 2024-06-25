@@ -10,6 +10,10 @@ if [ "$1" = "run" ]; then
   cmd="go run cmd/yams/yams.go"
   echo $cmd
   $cmd
+elif [ "$1" = "play" ]; then
+  cmd="go run cmd/pg/pg.go"
+  echo $cmd
+  $cmd
 elif [ "$1" = "build" ]; then
   echo "Building..."
   mkdir -p build
