@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const ConfigFile = "config.json"
@@ -32,4 +33,12 @@ func Panic(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func SplitStrip(s string, delim string) []string {
+	ss := strings.Split(s, delim)
+	for i, _ := range ss {
+		ss[i] = strings.TrimSpace(ss[i])
+	}
+	return ss
 }

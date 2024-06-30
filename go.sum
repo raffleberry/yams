@@ -2,3 +2,7 @@ filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
 github.com/go-sql-driver/mysql v1.8.1 h1:LedoTUt/eveggdHS9qUFC1EFSa8bU2+1pZjSRpvNJ1Y=
 github.com/go-sql-driver/mysql v1.8.1/go.mod h1:wEBSXgmK//2ZFJyE+qWnIsVGmvmEKlqwuVSjsCm7DZg=
+github.com/raffleberry/tags v0.0.0-20240629172446-53ddfac7fcac h1:r+0m9oUHPeMnAGRnWQ98vSOr1aoJQT/THmhG/hyv/0Y=
+github.com/raffleberry/tags v0.0.0-20240629172446-53ddfac7fcac/go.mod h1:fBYD9LCy4mlcpCoAMDfzqH/VAB5xpqIaqDp1ExfVrYU=
+github.com/raffleberry/tags v0.0.0-20240629190413-e43da841df81 h1:RPRKR9wHwZP6yW0IzR0P8g1JeDiPGcFeCJlEuNIqu5I=
+github.com/raffleberry/tags v0.0.0-20240629190413-e43da841df81/go.mod h1:fBYD9LCy4mlcpCoAMDfzqH/VAB5xpqIaqDp1ExfVrYU=

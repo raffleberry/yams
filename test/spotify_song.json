@@ -1,0 +1,87 @@
+{
+    "album": {
+        "album_type": "single",
+        "artists": [
+            {
+                "external_urls": {
+                    "spotify": "https://open.spotify.com/artist/0GG2cWaonE4JPrjcCCQ1EG"
+                },
+                "href": "https://api.spotify.com/v1/artists/0GG2cWaonE4JPrjcCCQ1EG",
+                "id": "0GG2cWaonE4JPrjcCCQ1EG",
+                "name": "SG Lewis",
+                "type": "artist",
+                "uri": "spotify:artist:0GG2cWaonE4JPrjcCCQ1EG"
+            }
+        ],
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/57TxOlFzG9yvAKEdjjm2yB"
+        },
+        "href": "https://api.spotify.com/v1/albums/57TxOlFzG9yvAKEdjjm2yB",
+        "id": "57TxOlFzG9yvAKEdjjm2yB",
+        "images": [
+            {
+                "url": "https://i.scdn.co/image/ab67616d0000b273113ef593aa679b556f0659b2",
+                "width": 640,
+                "height": 640
+            },
+            {
+                "url": "https://i.scdn.co/image/ab67616d00001e02113ef593aa679b556f0659b2",
+                "width": 300,
+                "height": 300
+            },
+            {
+                "url": "https://i.scdn.co/image/ab67616d00004851113ef593aa679b556f0659b2",
+                "width": 64,
+                "height": 64
+            }
+        ],
+        "is_playable": true,
+        "name": "Dawn",
+        "release_date": "2019-06-21",
+        "release_date_precision": "day",
+        "total_tracks": 6,
+        "type": "album",
+        "uri": "spotify:album:57TxOlFzG9yvAKEdjjm2yB"
+    },
+    "artists": [
+        {
+            "external_urls": {
+                "spotify": "https://open.spotify.com/artist/0GG2cWaonE4JPrjcCCQ1EG"
+            },
+            "href": "https://api.spotify.com/v1/artists/0GG2cWaonE4JPrjcCCQ1EG",
+            "id": "0GG2cWaonE4JPrjcCCQ1EG",
+            "name": "SG Lewis",
+            "type": "artist",
+            "uri": "spotify:artist:0GG2cWaonE4JPrjcCCQ1EG"
+        },
+        {
+            "external_urls": {
+                "spotify": "https://open.spotify.com/artist/3l0CmX0FuQjFxr8SK7Vqag"
+            },
+            "href": "https://api.spotify.com/v1/artists/3l0CmX0FuQjFxr8SK7Vqag",
+            "id": "3l0CmX0FuQjFxr8SK7Vqag",
+            "name": "Clairo",
+            "type": "artist",
+            "uri": "spotify:artist:3l0CmX0FuQjFxr8SK7Vqag"
+        }
+    ],
+    "disc_number": 1,
+    "duration_ms": 180000,
+    "explicit": false,
+    "external_ids": {
+        "isrc": "GBUM71900898"
+    },
+    "external_urls": {
+        "spotify": "https://open.spotify.com/track/2MnEG4htbbdfoUsyzxZ4BM"
+    },
+    "href": "https://api.spotify.com/v1/tracks/2MnEG4htbbdfoUsyzxZ4BM",
+    "id": "2MnEG4htbbdfoUsyzxZ4BM",
+    "is_local": false,
+    "is_playable": true,
+    "name": "Throwaway (with Clairo)",
+    "popularity": 53,
+    "preview_url": "https://p.scdn.co/mp3-preview/ba46cabad82434595170a7499b480d99c67b1629?cid=cfe923b2d660439caf2b557b21f31221",
+    "track_number": 2,
+    "type": "track",
+    "uri": "spotify:track:2MnEG4htbbdfoUsyzxZ4BM"
+}
