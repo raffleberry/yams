@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"slices"
 
+	"github.com/raffleberry/yams/music"
 	"github.com/raffleberry/yams/server"
-	"github.com/raffleberry/yams/yams"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 	ip := ""
 	port := 5550
 
-	app := yams.App()
+	app := music.Api()
 	s := server.New(ip, port, app)
 
 	err := s.Start()

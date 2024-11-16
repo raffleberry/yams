@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/vue@3.2.0/dist/vue.global.js"></script>
+  <script src="https://unpkg.com/vue-router@4.4.5/dist/vue-router.global.js"></script>
+  <style>
+    /* Firefox */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(13, 110, 253, 1) whitesmoke;
+    }
+
+    /*Chrome, Edge, and Safari */
+    *::-webkit-scrollbar {
+      width: 12px;
+    }
+
+    *::-webkit-scrollbar-track {
+      background: whitesmoke;
+    }
+
+    *::-webkit-scrollbar-thumb {
+      background-color: rgba(13, 110, 253, 1);
+      border-radius: 20px;
+      border: 3px solid whitesmoke;
+    }
+
+    .preformat {
+      text-wrap: pretty;
+      white-space: pre-line;
+    }
+
+    .now-playing-artwork-container {
+      height: 60vh;
+      align-self: self-start;
+      padding-top: 32px;
+      position: sticky;
+      top: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .now-playing-artwork-container {
+        position: static;
+        margin-bottom: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app" class="container-fluid">
+
+    <!-- buttons -->
+    <!-- <div style="position: fixed; top: 0; right: 10px; z-index: 1021;">
+    </div> -->
+
+    <!-- Tabs for navigation -->
+    <div class="nav nav-tabs sticky-top d-flex justify-content-between" style="background-color: white;">
+      <div class="d-flex flex-row flex-wrap">
+        <li class="nav-item"><router-link class="nav-link" active-class="active" to="/">Songs</router-link></li>
+        <li class="nav-item"><router-link class="nav-link" active-class="active" to="/albums">Albums</router-link></li>
+        <li class="nav-item"><router-link class="nav-link" active-class="active" to="/artists">Artists</router-link>
+        </li>
+        <li class="nav-item"><router-link class="nav-link" active-class="active" to="/playlists">Playlist</router-link>
+        <li class="nav-item"><router-link class="nav-link" active-class="active" to="/folders">Folders</router-link>
+        <li class="nav-item"><router-link class="nav-link" active-class="active" to="/history">History</router-link>
+      </div>
+
+      <div class="d-flex flex-row">
+        <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#modalSettings" aria-label="Settings">
+          <i class="bi bi-gear-fill" style="font-size: 1.25rem;"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <div class="mt-3" style="margin-bottom: 200px;">
+      <router-view></router-view>
+    </div>
+    <player style="height: 180px;"></player>
+
+    <!-- Artwork Modal -->
+    <div id="modalArtwork" class="modal fade" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Artwork</h5>
+            <button type="button" class="btn-close" data-bs-toggle="modal" data-bs-target="#modalArtwork"></button>
+          </div>
+          <div class="modal-body text-center">
+            <img :src="modalArtworkUrl" alt="Artwork" class="img-fluid">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <settings></settings>
+
+    <!-- Props Modal -->
+    <props-modal></props-modal>
+
+    <button type="button" class="btn btn-primary position-fixed bottom-0 end-0 m-3" id="scrollTopButton"
+      style="display: none;">
+      <i class="bi bi-arrow-up-circle-fill"></i>
+    </button>
+
+  </div>
+  <script src="./main.js" type="module"></script>
+
+</body>
+
+</html>
