@@ -1,9 +1,12 @@
 package music
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"log"
+	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,7 +19,8 @@ import (
 	"github.com/raffleberry/yams/db"
 )
 
-// var uiEmbed embed.FS
+//go:embed ui
+var uiEmbed embed.FS
 
 func Api() http.Handler {
 
@@ -45,19 +49,12 @@ func Api() http.Handler {
 	}))
 	e.Use(middleware.Recover())
 
-	var uiHandler = func(c echo.Context) error {
-		filePath := c.Request().RequestURI[1:]
-		if strings.HasPrefix(filePath, "api") {
-			return fmt.Errorf("api path not found")
-		}
-		_, err := os.Stat(filepath.Join("ui", filePath))
-		if err != nil {
-			return c.File("ui/index.html")
-		}
-		return c.File(filepath.Join("ui", filePath))
+	fs := os.DirFS("./music")
+	if os.Getenv("DEV") == "" {
+		fs = uiEmbed
 	}
 
-	e.GET("/*", uiHandler)
+	e.GET("/*", uiHandler(fs))
 
 	e.GET("/api/all*", all)
 	e.GET("/api/props*", props)
@@ -73,6 +70,31 @@ func Api() http.Handler {
 	e.GET("/api/artists/:artists", getArtist)
 
 	return e
+}
+
+func uiHandler(fsys fs.FS) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		p := c.Request().RequestURI[1:]
+		if strings.HasPrefix(p, "api") {
+			return fmt.Errorf("api path not found")
+		}
+
+		pPath := filepath.Join("ui", p)
+		fi, err := fs.Stat(uiEmbed, pPath)
+		if err != nil || fi.IsDir() {
+			b, err := fs.ReadFile(fsys, "ui/index.html")
+			if err != nil {
+				return err
+			}
+			return c.HTML(http.StatusOK, string(b))
+		}
+
+		f, err := fsys.Open(pPath)
+		if err != nil {
+			return err
+		}
+		return c.Stream(http.StatusOK, mime.TypeByExtension(filepath.Ext(p)), f)
+	}
 }
 
 func props(c echo.Context) error {
