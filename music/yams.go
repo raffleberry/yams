@@ -6,17 +6,16 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
-	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/gorilla/mux"
 	"github.com/raffleberry/yams/app"
 	"github.com/raffleberry/yams/db"
+	"github.com/raffleberry/yams/server"
 )
 
 //go:embed ui
@@ -39,66 +38,52 @@ func Api() http.Handler {
 		go scan()
 	}
 
-	e := echo.New()
-	e.HideBanner = true
-	e.HidePort = true
-
-	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format:           "${time_custom} ${method} ${status} ${uri} ${error}\n",
-		CustomTimeFormat: "2006-01-02 15:04:05",
-	}))
-	e.Use(middleware.Recover())
+	m := mux.NewRouter()
 
 	fs := os.DirFS("./music")
 	if os.Getenv("DEV") == "" {
+		log.Println("Using embedded UI")
 		fs = uiEmbed
 	}
 
-	e.GET("/*", uiHandler(fs))
-
-	e.GET("/api/all*", all)
-	e.GET("/api/props*", props)
-	e.GET("/api/files*", files)
-	e.GET("/api/artwork*", artwork)
-	e.GET("/api/search*", search)
-	e.GET("/api/triggerScan*", triggerScan)
-	e.GET("/api/isScanning*", func(c echo.Context) error {
+	m.HandleFunc("/api/all", server.WithCtx(all))
+	m.HandleFunc("/api/props", server.WithCtx(props))
+	m.HandleFunc("/api/files", server.WithCtx(files))
+	m.HandleFunc("/api/artwork", server.WithCtx(artwork))
+	m.HandleFunc("/api/search", server.WithCtx(search))
+	m.HandleFunc("/api/triggerScan", server.WithCtx(triggerScan))
+	m.HandleFunc("/api/history", server.WithCtx(history))
+	m.HandleFunc("/api/artists", server.WithCtx(allArtists))
+	m.HandleFunc("/api/artists/{artists}", server.WithCtx(getArtist))
+	m.HandleFunc("/api/isScanning", server.WithCtx(func(c *server.Context) error {
 		return c.JSON(http.StatusOK, isScanning)
-	})
-	e.Any("/api/history", history)
-	e.GET("/api/artists/", allArtists)
-	e.GET("/api/artists/:artists", getArtist)
+	}))
 
-	return e
+	m.HandleFunc("/{path:.*}", server.WithCtx(uiHandler(fs)))
+	return m
 }
 
-func uiHandler(fsys fs.FS) func(c echo.Context) error {
-	return func(c echo.Context) error {
-		p := c.Request().RequestURI[1:]
+func uiHandler(fsys fs.FS) func(c *server.Context) error {
+	return func(c *server.Context) error {
+		p := mux.Vars(c.R)["path"]
+
 		if strings.HasPrefix(p, "api") {
 			return fmt.Errorf("api path not found")
 		}
 
-		pPath := filepath.Join("ui", p)
-		fi, err := fs.Stat(uiEmbed, pPath)
+		rFilePath := filepath.Join("ui", p)
+		fi, err := fs.Stat(fsys, rFilePath)
+
 		if err != nil || fi.IsDir() {
-			b, err := fs.ReadFile(fsys, "ui/index.html")
-			if err != nil {
-				return err
-			}
-			return c.HTML(http.StatusOK, string(b))
+			return c.FileFromFS(filepath.Join("./ui", "index.html"), fsys)
 		}
 
-		f, err := fsys.Open(pPath)
-		if err != nil {
-			return err
-		}
-		return c.Stream(http.StatusOK, mime.TypeByExtension(filepath.Ext(p)), f)
+		return c.FileFromFS(rFilePath, fsys)
 	}
 }
 
-func props(c echo.Context) error {
-	p := c.QueryParam("path")
+func props(c *server.Context) error {
+	p := c.R.URL.Query().Get("path")
 	rows, err := db.L.Query("SELECT Props FROM files WHERE Path=?", p)
 	if err != nil {
 		return err
@@ -115,18 +100,18 @@ func props(c echo.Context) error {
 	return c.JSON(http.StatusOK, v)
 }
 
-func getArtist(c echo.Context) error {
+func getArtist(c *server.Context) error {
 	const limit = 30
-
-	param := c.Param("artists")
-	log.Println(param)
-	offsetStr := c.QueryParam("offset")
+	vars := mux.Vars(c.R)
+	artists := vars["artists"]
+	log.Println(artists)
+	offsetStr := c.R.URL.Query().Get("offset")
 	offset, err := strconv.Atoi(offsetStr)
 	if err != nil {
 		offset = 0
 	}
 	args := []interface{}{}
-	for _, artist := range strings.Split(param, ",") {
+	for _, artist := range strings.Split(artists, ",") {
 		args = append(args, "%"+strings.TrimSpace(artist)+"%")
 	}
 
@@ -181,7 +166,7 @@ func getArtist(c echo.Context) error {
 	})
 }
 
-func allArtists(c echo.Context) error {
+func allArtists(c *server.Context) error {
 	artists := []string{}
 	rows, err := db.L.Query(`SELECT DISTINCT Artists FROM files WHERE Path GLOB '` + app.RootDir + `*'`)
 	if err != nil {
@@ -198,12 +183,15 @@ func allArtists(c echo.Context) error {
 	return c.JSON(http.StatusOK, artists)
 }
 
-func history(c echo.Context) error {
-	if c.Request().Method == http.MethodPost {
+func history(c *server.Context) error {
+	if c.R.Method == http.MethodPost {
 		m := Music{}
-		c.Bind(&m)
+		err := json.NewDecoder(c.R.Body).Decode(&m)
+		if err != nil {
+			return c.Error(http.StatusBadRequest, err.Error())
+		}
 
-		_, err := db.L.Exec(`INSERT INTO history (
+		_, err = db.L.Exec(`INSERT INTO history (
 			Path, Size, Title,
 			Artists, Album, Genre,
 			Year, Track, Length) VALUES
@@ -229,8 +217,9 @@ func history(c echo.Context) error {
 			Artists: m.Artists,
 		})
 
-	} else if c.Request().Method == http.MethodGet {
-		offsetParam := c.QueryParam("offset")
+	} else if c.R.Method == http.MethodGet {
+
+		offsetParam := c.R.URL.Query().Get("offset")
 		offset, err := strconv.Atoi(offsetParam)
 		const limit = 10
 		if err != nil {
@@ -302,7 +291,7 @@ func updateHistoryPaths(m *[]History) {
 	}
 }
 
-func triggerScan(c echo.Context) error {
+func triggerScan(c *server.Context) error {
 	if isScanning {
 		return c.JSON(http.StatusServiceUnavailable, "Scan already in progress")
 	}
@@ -310,10 +299,12 @@ func triggerScan(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Scan started")
 }
 
-func search(c echo.Context) error {
+func search(c *server.Context) error {
 	const limit = 10
-	query := c.QueryParam("query")
-	offsetParam := c.QueryParam("offset")
+	params := c.R.URL.Query()
+	query := params.Get("query")
+	offsetParam := params.Get("offset")
+
 	offset, err := strconv.Atoi(offsetParam)
 	if err != nil {
 		log.Println("WARN: Bad offset, setting offset to 0")
@@ -402,7 +393,7 @@ func ls(path string) ([]File, error) {
 	return files, nil
 }
 
-func all(c echo.Context) error {
+func all(c *server.Context) error {
 	const limit = 10
 	musicFiles := []Music{}
 	q := fmt.Sprintf(`SELECT
@@ -447,8 +438,8 @@ func all(c echo.Context) error {
 	return c.JSON(http.StatusOK, r)
 }
 
-func artwork(c echo.Context) error {
-	p := c.QueryParam("path")
+func artwork(c *server.Context) error {
+	p := c.R.URL.Query().Get("path")
 	rows, err := db.L.Query("SELECT Artwork from files where Path=?", p)
 	if err != nil {
 		return err
@@ -463,16 +454,19 @@ func artwork(c echo.Context) error {
 	if err := rows.Err(); err != nil {
 		return err
 	}
-	c.Response().Header().Set("Cache-Control", "public, max-age=15768000")
-	return c.Blob(http.StatusOK, "image/*", artwork)
+	c.W.Header().Set("Content-Type", "image/jpeg")
+	c.W.Header().Set("Cache-Control", "public, max-age=15768000")
+	c.W.Header().Set("Content-Length", strconv.Itoa(len(artwork)))
+	_, err = c.W.Write(artwork)
+	return err
 }
 
-func files(c echo.Context) error {
-	p := c.QueryParam("path")
+func files(c *server.Context) error {
+	p := c.R.URL.Query().Get("path")
 	if p == "" {
 		p = app.RootDir
 	}
-	// any filepath on system can be accessed, not safe for hosting
+	p = filepath.Clean(p)
 	stat, err := os.Stat(p)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, struct{ message string }{
