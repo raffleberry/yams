@@ -16,4 +16,10 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	err = initRemote()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }

@@ -191,14 +191,14 @@ func history(c *server.Context) error {
 			return c.Error(http.StatusBadRequest, err.Error())
 		}
 
-		_, err = db.L.Exec(`INSERT INTO history (
-			Path, Size, Title,
+		_, err = db.R.Exec(`INSERT INTO history (
+			Title,
 			Artists, Album, Genre,
 			Year, Track, Length) VALUES
-			(?,?,?,
+			(?,
 			?,?,?,
 			?,?,?);`,
-			m.Path, m.Size, m.Title,
+			m.Title,
 			m.Artists, m.Album, m.Genre,
 			m.Year, m.Track, m.Length,
 		)
@@ -226,8 +226,8 @@ func history(c *server.Context) error {
 			log.Println("WARN: Bad offset, setting offset to 0")
 			offset = 0
 		}
-		rows, err := db.L.Query(`SELECT
-			Time, Title, Size,
+		rows, err := db.R.Query(`SELECT
+			Time, Title, 
 			Artists, Album, Genre,
 			Year, Track, Length
 		FROM
@@ -242,7 +242,7 @@ func history(c *server.Context) error {
 		musics := []History{}
 		for rows.Next() {
 			m := History{}
-			if err := rows.Scan(&m.Time, &m.Title, &m.Size,
+			if err := rows.Scan(&m.Time, &m.Title,
 				&m.Artists, &m.Album, &m.Genre,
 				&m.Year, &m.Track, &m.Length); err != nil {
 				return err
@@ -253,7 +253,7 @@ func history(c *server.Context) error {
 			return err
 		}
 
-		updateHistoryPaths(&musics)
+		updateHistoryMeta(&musics)
 
 		next := offset + limit
 		if len(musics) < limit {
@@ -271,7 +271,7 @@ func history(c *server.Context) error {
 	}
 }
 
-func updateHistoryPaths(m *[]History) {
+func updateHistoryMeta(m *[]History) {
 	for i := range len(*m) {
 		row, err := db.L.Query("SELECT Path FROM files WHERE Title=? and Artists=? and Album=? limit 1;", (*m)[i].Title, (*m)[i].Artists, (*m)[i].Album)
 		if err != nil {

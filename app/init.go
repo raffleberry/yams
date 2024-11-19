@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"log"
 	"os"
 	"path/filepath"
@@ -8,6 +9,7 @@ import (
 
 var (
 	ConfigDir   string
+	ConfigFile  string
 	LocalDbPath string
 	C           Config
 	RootDir     string
@@ -33,6 +35,8 @@ func setup() error {
 
 	ConfigDir = filepath.Join(h, ".yams")
 
+	ConfigFile = filepath.Join(ConfigDir, "config.json")
+
 	LocalDbPath = filepath.Join(ConfigDir, "yams.sqlite")
 
 	RootDir = filepath.Join(h, "Music")
@@ -41,6 +45,19 @@ func setup() error {
 	if err != nil {
 		return err
 	}
+
+	_, err = os.Stat(ConfigFile)
+	if err != nil {
+		log.Println("ConfigFile not found, generating a sample on: ", ConfigFile)
+
+		var c Config
+		cByte, err := json.MarshalIndent(c, "", "    ")
+		if err != nil {
+			return err
+		}
+		return os.WriteFile(ConfigFile, cByte, 0644)
+	}
+
 	return nil
 }
 
