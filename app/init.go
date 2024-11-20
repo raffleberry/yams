@@ -16,6 +16,8 @@ var (
 )
 
 type Config struct {
+	Ip       string
+	Port     int
 	RemoteDb struct {
 		CaCert     string
 		ClientCert string
@@ -47,18 +49,49 @@ func setup() error {
 	}
 
 	_, err = os.Stat(ConfigFile)
-	if err != nil {
-		log.Println("ConfigFile not found, generating a sample on: ", ConfigFile)
 
-		var c Config
-		cByte, err := json.MarshalIndent(c, "", "    ")
+	if err != nil {
+		var emptyConfig Config
+		err = writeConfig(emptyConfig)
 		if err != nil {
 			return err
 		}
-		return os.WriteFile(ConfigFile, cByte, 0644)
+	} else {
+		C, err = readConfig()
+		if err != nil {
+			return err
+		}
+
+		err = writeConfig(C) // update existing config with new fields(if any)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
+}
+
+func readConfig() (Config, error) {
+	var c Config
+	cByte, err := os.ReadFile(ConfigFile)
+	if err != nil {
+		return c, err
+	}
+
+	err = json.Unmarshal(cByte, &C)
+	if err != nil {
+		return c, err
+	}
+
+	return c, nil
+}
+
+func writeConfig(c Config) error {
+	cByte, err := json.MarshalIndent(c, "", "    ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(ConfigFile, cByte, 0644)
 }
 
 func init() {

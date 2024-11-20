@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -71,11 +72,11 @@ func uiHandler(fsys fs.FS) func(c *server.Context) error {
 			return fmt.Errorf("api path not found")
 		}
 
-		rFilePath := filepath.Join("ui", p)
+		rFilePath := path.Join("ui", p)
 		fi, err := fs.Stat(fsys, rFilePath)
 
 		if err != nil || fi.IsDir() {
-			return c.FileFromFS(filepath.Join("./ui", "index.html"), fsys)
+			return c.FileFromFS(path.Join("ui", "index.html"), fsys)
 		}
 
 		return c.FileFromFS(rFilePath, fsys)

@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"slices"
 
+	"github.com/raffleberry/yams/app"
 	"github.com/raffleberry/yams/music"
 	"github.com/raffleberry/yams/server"
 )
@@ -17,8 +18,16 @@ func main() {
 
 	log.Println("Started YAMS")
 
-	ip := ""
+	ip := "127.0.0.1"
 	port := 5550
+
+	if app.C.Ip != "" {
+		ip = app.C.Ip
+	}
+
+	if app.C.Port != 0 {
+		port = app.C.Port
+	}
 
 	app := music.Api()
 	s := server.New(ip, port, app)
