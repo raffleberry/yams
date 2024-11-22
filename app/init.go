@@ -16,6 +16,7 @@ var (
 )
 
 type Config struct {
+	MusicDir string
 	Ip       string
 	Port     int
 	RemoteDb struct {
@@ -41,16 +42,12 @@ func setup() error {
 
 	LocalDbPath = filepath.Join(ConfigDir, "yams.sqlite")
 
-	RootDir = filepath.Join(h, "Music")
-
 	err = os.MkdirAll(ConfigDir, 0755)
 	if err != nil {
 		return err
 	}
 
-	_, err = os.Stat(ConfigFile)
-
-	if err != nil {
+	if _, err = os.Stat(ConfigFile); err != nil {
 		var emptyConfig Config
 		err = writeConfig(emptyConfig)
 		if err != nil {
@@ -66,6 +63,16 @@ func setup() error {
 		if err != nil {
 			return err
 		}
+	}
+
+	RootDir = filepath.Join(h, "Music")
+
+	if C.MusicDir != "" {
+		RootDir = C.MusicDir
+	}
+
+	if _, err = os.Stat(RootDir); err != nil {
+		panic(err)
 	}
 
 	return nil
