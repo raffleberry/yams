@@ -27,3 +27,6 @@ func isMusic(fname string) bool {
 	}
 	return false
 }
+func sanitizeArtists(artists string) string {
+	return strings.ReplaceAll(artists, "/", ", ")
+}

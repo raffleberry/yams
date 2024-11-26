@@ -122,7 +122,7 @@ func insertFileInfo(file File) error {
 				?,?,?,?,
 				?,?,?,?,
 				?,?)`,
-		file.Path, meta.Tag.Title, file.Size, meta.Tag.Artist,
+		file.Path, meta.Tag.Title, file.Size, sanitizeArtists(meta.Tag.Artist),
 		meta.Tag.Album, meta.Tag.Genre, meta.Tag.Year, meta.Tag.Track,
 		meta.Audio.Length, meta.Audio.Bitrate, meta.Audio.Samplerate, meta.Audio.Channels,
 		pic, props)
@@ -183,7 +183,7 @@ func actuallyScan(lastScan *LastScan) {
 	lastScan.InDisk = len(inDir)
 
 	notInDir := []string{}
-	for k, _ := range inDb {
+	for k := range inDb {
 		if _, exists := inDir[k]; !exists {
 			notInDir = append(notInDir, k)
 		}
