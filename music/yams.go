@@ -56,6 +56,7 @@ func Api() http.Handler {
 	m.HandleFunc("/api/history", server.WithCtx(history))
 	m.HandleFunc("/api/artists", server.WithCtx(allArtists))
 	m.HandleFunc("/api/artists/{artists}", server.WithCtx(getArtist))
+	m.HandleFunc("/api/albums/{album}", server.WithCtx(getAlbum))
 	m.HandleFunc("/api/isScanning", server.WithCtx(func(c *server.Context) error {
 		return c.JSON(http.StatusOK, isScanning)
 	}))
@@ -105,7 +106,7 @@ func getArtist(c *server.Context) error {
 	const limit = 30
 	vars := mux.Vars(c.R)
 	artists := vars["artists"]
-	log.Println(artists)
+
 	offsetStr := c.R.URL.Query().Get("offset")
 	offset, err := strconv.Atoi(offsetStr)
 	if err != nil {
@@ -164,6 +165,44 @@ func getArtist(c *server.Context) error {
 	}{
 		Musics: musics,
 		Next:   next,
+	})
+}
+
+func getAlbum(c *server.Context) error {
+	vars := mux.Vars(c.R)
+	album := vars["album"]
+
+	var q = `SELECT
+		Path, Title, Size,
+		Artists, Album, Genre,
+		Year, Track, Length,
+		Bitrate, Samplerate, Channels
+	FROM files WHERE Path GLOB '` + app.RootDir + `*'` +
+		` AND Album = ?;`
+
+	rows, err := db.L.Query(q, album)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	musics := []Music{}
+
+	for rows.Next() {
+		m := Music{}
+		if err := rows.Scan(&m.Path, &m.Title, &m.Size,
+			&m.Artists, &m.Album, &m.Genre,
+			&m.Year, &m.Track, &m.Length,
+			&m.Bitrate, &m.Samplerate, &m.Channels); err != nil {
+			return err
+		}
+		musics = append(musics, m)
+	}
+
+	return c.JSON(http.StatusOK, struct {
+		Musics []Music
+	}{
+		Musics: musics,
 	})
 }
 

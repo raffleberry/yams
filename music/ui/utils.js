@@ -1,3 +1,4 @@
+import { Years } from "./tabs/Years.js";
 import { ref } from "./vue.js";
 
 export const setupMediaSession = (playTrack, pauseTrack, nextTrack, previousTrack) => {
@@ -19,15 +20,28 @@ export const setupMediaSession = (playTrack, pauseTrack, nextTrack, previousTrac
 
 export const PAGE = {
     SONGS: 'Songs',
+
+    PLAYLIST: 'Playlist',
     PLAYLISTS: 'Playlists',
+
+    ALBUM: 'Album',
     ALBUMS: 'Albums',
+
+    ARTIST: 'Artist',
     ARTISTS: 'Artists',
+
+    FOLDER: 'Folder',
     FOLDERS: 'Folders',
+
+    YEAR: 'Year',
+    YEARS: 'Years',
+
     HISTORY: 'History',
+
     NOW_PLAYING: 'NowPlaying'
 }
 
-export const scrollPositions = ref({ Songs: 0, Playlists: 0, Albums: 0, Artists: 0, Folders: 0 });
+export const scrollPositions = ref({ Songs: 0, Playlists: 0, Albums: 0, Artists: 0, Folders: 0, Years: 0, History: 0, NowPlaying: 0 });
 
 export const getArtwork = (path) => {
     return `/api/artwork?path=${encodeURIComponent(path)}`

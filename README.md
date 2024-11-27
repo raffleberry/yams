@@ -6,3 +6,6 @@ Yet Another Music Server
 ![](docs/1.png)
 ![](docs/2.png)
 ![](docs/3.png)
+
+## Development
+`export DEV=1`

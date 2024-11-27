@@ -66,11 +66,15 @@ const postPlaybackHistory = async (track) => {
 
 const currentTime = ref(0);
 
-const isPlaying = ref(false);
+const playing = ref(false);
 
 const currentVolume = ref(0.5);
 
 audio.volume = currentVolume.value
+
+export const isPlaying = () => {
+  return playing.value
+}
 
 export const currentTrack = ref({
   Path: "",
@@ -125,7 +129,7 @@ audio.onloadeddata = () => {
 audio.ontimeupdate = () => {
   const c = audio.currentTime;
   currentTime.value = Math.floor(c);
-  if (isPlaying.value) {
+  if (playing.value) {
     let diff = c - lastTime
     if (diff >= 0 && diff < 2) {
       playbackTime += diff;
@@ -138,13 +142,13 @@ audio.ontimeupdate = () => {
 }
 
 audio.onplay = () => {
-  isPlaying.value = true;
+  playing.value = true;
   lastTime = audio.currentTime;
 }
 
 audio.onpause = () => {
   playbackTime += audio.currentTime - lastTime;
-  isPlaying.value = false;
+  playing.value = false;
 }
 
 audio.onended = () => {
@@ -202,7 +206,7 @@ const Player = {
       getArtwork,
       currentTrack,
       currentTime,
-      isPlaying,
+      playing,
       playbackMode,
       currentVolume,
       progress,
@@ -253,7 +257,7 @@ const Player = {
               <i class="bi bi-rewind"></i>
             </button>
             <button class="btn btn-dark btn-lg" @click="playPause">
-              <i class="bi" :class="{ 'bi-play': !isPlaying, 'bi-pause': isPlaying }"></i>
+              <i class="bi" :class="{ 'bi-play': !playing, 'bi-pause': playing }"></i>
             </button>
             <button class="btn btn-dark btn-lg" @click="nextTrack">
               <i class="bi bi-fast-forward"></i>

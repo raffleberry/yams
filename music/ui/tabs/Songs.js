@@ -94,6 +94,8 @@ const Songs = {
             fetchAndSetShuffle,
             searchTerm,
 
+            PAGE,
+
             play,
             formatDuration,
             highlight,
@@ -117,8 +119,10 @@ const Songs = {
                         data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(track.Path)">
                     <div>
                         <div v-html="highlight(track.Title, searchTerm)"></div>
-                        <div v-html="highlight(track.Artists, searchTerm)"></div>
-                        <small v-html="highlight(track.Album, searchTerm)"></small> - <small v-html="highlight(track.Year, searchTerm)"></small>
+                        <router-link :to="{ name: PAGE.ARTIST, params: { names: track.Artists } }">
+                            <div v-html="highlight(track.Artists, searchTerm)"></div>
+                        </router-link>
+                        <router-link :to="{ name: PAGE.ALBUM, params: { names: track.Album } }"><small v-html="highlight(track.Album, searchTerm)"></small></router-link> - <router-link :to="{ name: PAGE.YEAR, params: { year: track.Year } }"><small v-html="highlight(track.Year, searchTerm)"></small></router-link>
                         <br><small>{{ formatDuration(track.Length) }}</small>
                     </div>
                 </div>

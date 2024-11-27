@@ -1,6 +1,6 @@
 import { currentPage } from "../main.js";
-import { scrollPositions } from "../utils.js";
-import { onMounted, onBeforeUnmount } from "../vue.js";
+import { PAGE, scrollPositions } from "../utils.js";
+import { onMounted, onBeforeUnmount, useRoute } from "../vue.js";
 
 
 const Albums = {
@@ -9,19 +9,35 @@ const Albums = {
     },
 
     setup: () => {
+        const r = useRoute()
+        const names = r.params.names
+
+
+
         onBeforeUnmount(() => {
-            scrollPositions.value["Albums"] = window.scrollY;
+            scrollPositions.value[PAGE.ALBUMS] = window.scrollY;
         });
 
         onMounted(() => {
-            currentPage.value = 'Albums';
-            window.scrollTo({ left: 0, top: scrollPositions.value["Albums"] || 0, behavior: "auto" })
+            currentPage.value = PAGE.ALBUMS;
+            window.scrollTo({ left: 0, top: scrollPositions.value[PAGE.ALBUMS] || 0, behavior: "auto" })
+            if (names) {
+                currentPage.value = `${PAGE.ALBUM} - ${names}`;
+            } else {
+                currentPage.value = PAGE.ALBUMS;
+            }
+
         });
+
+        return {
+            names
+        }
     },
 
 
     template: `
-    <div>albums</div>
+    <div v-if="names"> albums: {{ names }} </div>
+    <div v-else>albums</div>
     `
 }
 export { Albums };
