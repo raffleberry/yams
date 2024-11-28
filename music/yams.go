@@ -154,17 +154,11 @@ func getArtist(c *server.Context) error {
 		}
 		musics = append(musics, m)
 	}
-	next := offset + limit
-	if len(musics) < limit {
-		next = -1
-	}
 
 	return c.JSON(http.StatusOK, struct {
-		Musics []Music
-		Next   int
+		Data []Music
 	}{
-		Musics: musics,
-		Next:   next,
+		Data: musics,
 	})
 }
 

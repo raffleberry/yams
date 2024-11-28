@@ -1,5 +1,6 @@
 import { modalArtworkUrl } from "./modals.js";
 import { fetchProps } from "./Props.js";
+import { artistsPlaylist } from "./tabs/Artists.js";
 import { historyPlaylist } from "./tabs/History.js";
 import { songsPlaylist } from "./tabs/Songs.js";
 import { formatDuration, getArtwork, getSrc, PAGE, setMediaSessionMetadata } from "./utils.js";
@@ -11,6 +12,8 @@ const playlist = () => {
     return songsPlaylist
   } else if (currentPlaylist.value === PAGE.HISTORY) {
     return historyPlaylist
+  } else if (currentPlaylist.value === PAGE.ARTIST) {
+    return artistsPlaylist
   }
 }
 
