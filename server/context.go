@@ -2,8 +2,10 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"io/fs"
 	"net/http"
+	"syscall"
 )
 
 type Context struct {
@@ -14,7 +16,8 @@ type Context struct {
 func WithCtx(handler func(*Context) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := &Context{W: w, R: r}
-		if err := handler(ctx); err != nil {
+		err := handler(ctx)
+		if err != nil && !errors.Is(err, syscall.EPIPE) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}

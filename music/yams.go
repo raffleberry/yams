@@ -10,10 +10,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
-	"github.com/gorilla/mux"
 	"github.com/raffleberry/yams/app"
 	"github.com/raffleberry/yams/db"
 	"github.com/raffleberry/yams/server"
@@ -39,7 +39,7 @@ func Api() http.Handler {
 		go scan()
 	}
 
-	m := mux.NewRouter()
+	mux := http.NewServeMux()
 
 	fs := os.DirFS("./music")
 	if os.Getenv("DEV") == "" {
@@ -47,27 +47,30 @@ func Api() http.Handler {
 		fs = uiEmbed
 	}
 
-	m.HandleFunc("/api/all", server.WithCtx(all))
-	m.HandleFunc("/api/props", server.WithCtx(props))
-	m.HandleFunc("/api/files", server.WithCtx(files))
-	m.HandleFunc("/api/artwork", server.WithCtx(artwork))
-	m.HandleFunc("/api/search", server.WithCtx(search))
-	m.HandleFunc("/api/triggerScan", server.WithCtx(triggerScan))
-	m.HandleFunc("/api/history", server.WithCtx(history))
-	m.HandleFunc("/api/artists", server.WithCtx(allArtists))
-	m.HandleFunc("/api/artists/{artists}", server.WithCtx(getArtist))
-	m.HandleFunc("/api/albums/{album}", server.WithCtx(getAlbum))
-	m.HandleFunc("/api/isScanning", server.WithCtx(func(c *server.Context) error {
+	api := http.NewServeMux()
+	api.HandleFunc("GET /all", server.WithCtx(all))
+	api.HandleFunc("GET /props", server.WithCtx(props))
+	api.HandleFunc("GET /files", server.WithCtx(files))
+	api.HandleFunc("GET /artwork", server.WithCtx(artwork))
+	api.HandleFunc("GET /search", server.WithCtx(search))
+	api.HandleFunc("GET /triggerScan", server.WithCtx(triggerScan))
+	api.HandleFunc("GET /history", server.WithCtx(getHistory))
+	api.HandleFunc("POST /history", server.WithCtx(postHistory))
+	api.HandleFunc("GET /artists", server.WithCtx(allArtists))
+	api.HandleFunc("GET /artists/{artists}", server.WithCtx(getArtist))
+	api.HandleFunc("GET /albums/{album}", server.WithCtx(getAlbum))
+	api.HandleFunc("GET /isScanning", server.WithCtx(func(c *server.Context) error {
 		return c.JSON(http.StatusOK, isScanning)
 	}))
 
-	m.HandleFunc("/{path:.*}", server.WithCtx(uiHandler(fs)))
-	return m
+	mux.Handle("/api/", http.StripPrefix("/api", api))
+	mux.HandleFunc("/", server.WithCtx(uiHandler(fs)))
+	return mux
 }
 
 func uiHandler(fsys fs.FS) func(c *server.Context) error {
 	return func(c *server.Context) error {
-		p := mux.Vars(c.R)["path"]
+		p := c.R.URL.Path
 
 		if strings.HasPrefix(p, "api") {
 			return fmt.Errorf("api path not found")
@@ -103,17 +106,13 @@ func props(c *server.Context) error {
 }
 
 func getArtist(c *server.Context) error {
-	const limit = 30
-	vars := mux.Vars(c.R)
-	artists := vars["artists"]
-
-	offsetStr := c.R.URL.Query().Get("offset")
-	offset, err := strconv.Atoi(offsetStr)
-	if err != nil {
-		offset = 0
+	rArtists := []string{}
+	for _, artist := range strings.Split(c.R.PathValue("artists"), ",") {
+		rArtists = append(rArtists, strings.TrimSpace(artist))
 	}
+
 	args := []interface{}{}
-	for _, artist := range strings.Split(artists, ",") {
+	for _, artist := range rArtists {
 		args = append(args, "%"+strings.TrimSpace(artist)+"%")
 	}
 
@@ -133,9 +132,7 @@ func getArtist(c *server.Context) error {
 			q += ` AND Artists LIKE ? `
 		}
 	}
-	q += " LIMIT ? OFFSET ?;"
-	args = append(args, limit)
-	args = append(args, offset)
+
 	rows, err := db.L.Query(q, args...)
 	if err != nil {
 		return err
@@ -152,7 +149,13 @@ func getArtist(c *server.Context) error {
 			&m.Bitrate, &m.Samplerate, &m.Channels); err != nil {
 			return err
 		}
-		musics = append(musics, m)
+		ok := false
+		for _, artist := range strings.Split(m.Artists, ",") {
+			ok = ok || slices.Contains(rArtists, strings.TrimSpace(artist))
+		}
+		if ok {
+			musics = append(musics, m)
+		}
 	}
 
 	return c.JSON(http.StatusOK, struct {
@@ -163,8 +166,7 @@ func getArtist(c *server.Context) error {
 }
 
 func getAlbum(c *server.Context) error {
-	vars := mux.Vars(c.R)
-	album := vars["album"]
+	album := c.R.PathValue("album")
 
 	var q = `SELECT
 		Path, Title, Size,
@@ -217,50 +219,16 @@ func allArtists(c *server.Context) error {
 	return c.JSON(http.StatusOK, artists)
 }
 
-func history(c *server.Context) error {
-	if c.R.Method == http.MethodPost {
-		m := Music{}
-		err := json.NewDecoder(c.R.Body).Decode(&m)
-		if err != nil {
-			return c.Error(http.StatusBadRequest, err.Error())
-		}
+func getHistory(c *server.Context) error {
 
-		_, err = db.R.Exec(`INSERT INTO history (
-			Title,
-			Artists, Album, Genre,
-			Year, Track, Length) VALUES
-			(?,
-			?,?,?,
-			?,?,?);`,
-			m.Title,
-			m.Artists, m.Album, m.Genre,
-			m.Year, m.Track, m.Length,
-		)
-
-		if err != nil {
-			return err
-		}
-
-		return c.JSON(http.StatusOK, struct {
-			Message string
-			Title   string
-			Artists string
-		}{
-			Message: "Playback history updated",
-			Title:   m.Title,
-			Artists: m.Artists,
-		})
-
-	} else if c.R.Method == http.MethodGet {
-
-		offsetParam := c.R.URL.Query().Get("offset")
-		offset, err := strconv.Atoi(offsetParam)
-		const limit = 10
-		if err != nil {
-			log.Println("WARN: Bad offset, setting offset to 0")
-			offset = 0
-		}
-		rows, err := db.R.Query(`SELECT
+	offsetParam := c.R.URL.Query().Get("offset")
+	offset, err := strconv.Atoi(offsetParam)
+	const limit = 10
+	if err != nil {
+		log.Println("WARN: Bad offset, setting offset to 0")
+		offset = 0
+	}
+	rows, err := db.R.Query(`SELECT
 			Time, Title, 
 			Artists, Album, Genre,
 			Year, Track, Length
@@ -268,41 +236,72 @@ func history(c *server.Context) error {
 			history
 		ORDER BY
 			Time DESC LIMIT ? OFFSET ?;`, limit, offset)
-		if err != nil {
-			return err
-		}
-		defer rows.Close()
-
-		musics := []History{}
-		for rows.Next() {
-			m := History{}
-			if err := rows.Scan(&m.Time, &m.Title,
-				&m.Artists, &m.Album, &m.Genre,
-				&m.Year, &m.Track, &m.Length); err != nil {
-				return err
-			}
-			musics = append(musics, m)
-		}
-		if err := rows.Err(); err != nil {
-			return err
-		}
-
-		updateHistoryMeta(&musics)
-
-		next := offset + limit
-		if len(musics) < limit {
-			next = -1
-		}
-		return c.JSON(http.StatusOK, struct {
-			Data []History
-			Next int
-		}{
-			Data: musics,
-			Next: next,
-		})
-	} else {
-		return c.JSON(http.StatusMethodNotAllowed, "Method not allowed")
+	if err != nil {
+		return err
 	}
+	defer rows.Close()
+
+	musics := []History{}
+	for rows.Next() {
+		m := History{}
+		if err := rows.Scan(&m.Time, &m.Title,
+			&m.Artists, &m.Album, &m.Genre,
+			&m.Year, &m.Track, &m.Length); err != nil {
+			return err
+		}
+		musics = append(musics, m)
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	updateHistoryMeta(&musics)
+
+	next := offset + limit
+	if len(musics) < limit {
+		next = -1
+	}
+	return c.JSON(http.StatusOK, struct {
+		Data []History
+		Next int
+	}{
+		Data: musics,
+		Next: next,
+	})
+}
+
+func postHistory(c *server.Context) error {
+	m := Music{}
+	err := json.NewDecoder(c.R.Body).Decode(&m)
+	if err != nil {
+		return c.Error(http.StatusBadRequest, err.Error())
+	}
+
+	_, err = db.R.Exec(`INSERT INTO history (
+		Title,
+		Artists, Album, Genre,
+		Year, Track, Length) VALUES
+		(?,
+		?,?,?,
+		?,?,?);`,
+		m.Title,
+		m.Artists, m.Album, m.Genre,
+		m.Year, m.Track, m.Length,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, struct {
+		Message string
+		Title   string
+		Artists string
+	}{
+		Message: "Playback history updated",
+		Title:   m.Title,
+		Artists: m.Artists,
+	})
 }
 
 func updateHistoryMeta(m *[]History) {
