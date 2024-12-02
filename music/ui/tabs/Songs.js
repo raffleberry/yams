@@ -3,6 +3,8 @@ import { highlight, getArtwork, formatDuration, scrollPositions, PAGE } from "..
 import { currentPlaylist, playTrack } from "../Player.js";
 import { modalArtworkUrl } from "../modals.js";
 import { currentPage } from "../main.js";
+import { linkArtists } from "./Artists.js";
+import { SongsTile } from "../components/SongTile.js";
 
 export const songsPlaylist = ref([]);
 var shuffleList = []
@@ -52,7 +54,7 @@ const searchMusic = async (offset = 0) => {
 
 const Songs = {
     components: {
-
+        SongsTile
     },
     setup: () => {
 
@@ -81,8 +83,10 @@ const Songs = {
             if (searchTerm.value.length > 1) {
                 searchMusic();
             }
+            console.log(ov, nv)
             // restore shuffle
             if (ov.length > 1 && nv.length <= 1) {
+                console.log("triggered")
                 songsPlaylist.value = shuffleList
             }
         })
@@ -96,6 +100,7 @@ const Songs = {
 
             PAGE,
 
+            linkArtists,
             play,
             formatDuration,
             highlight,
@@ -112,22 +117,8 @@ const Songs = {
             <input type="text" class="form-control" v-model="searchTerm">
         </div>
         <ul class="list-group">
-            <li v-for="(track, index) in songsPlaylist" :key="index"
-                class="list-group-item d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center">
-                    <img :src="getArtwork(track.Path)" alt="Artwork" class="rounded me-3" style="width: 100px; height: 100px;"
-                        data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(track.Path)">
-                    <div>
-                        <div v-html="highlight(track.Title, searchTerm)"></div>
-                        <router-link :to="{ name: PAGE.ARTIST, params: { names: track.Artists } }">
-                            <div v-html="highlight(track.Artists, searchTerm)"></div>
-                        </router-link>
-                        <router-link :to="{ name: PAGE.ALBUM, params: { names: track.Album } }"><small v-html="highlight(track.Album, searchTerm)"></small></router-link> - <router-link :to="{ name: PAGE.YEAR, params: { year: track.Year } }"><small v-html="highlight(track.Year, searchTerm)"></small></router-link>
-                        <br><small>{{ formatDuration(track.Length) }}</small>
-                    </div>
-                </div>
-                <button class="btn btn-primary btn-sm" @click="play(track)">Play</button>
-            </li>
+            <SongsTile v-for="(track, index) in songsPlaylist" :key="index+track.Path" :track="track" :play="play" :searchTerm="searchTerm">
+            </SongsTile>
         </ul>
         <button v-if="searchTerm.length > 1 && nextSearchOffset !== -1" @click="(e) => searchMusic(nextSearchOffset)"
         class="btn btn-primary mt-3">Load More</button>

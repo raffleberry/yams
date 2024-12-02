@@ -40,10 +40,7 @@ const History = {
         onMounted(() => {
             currentPage.value = PAGE.HISTORY;
             window.scrollTo({ left: 0, top: scrollPositions.value[PAGE.HISTORY] || 0, behavior: "auto" })
-            // if (!calledOnce) {
-            //     calledOnce = true
             fetchMusic()
-            // }
         });
 
         const play = (track) => {

@@ -1,4 +1,3 @@
-import { Years } from "./tabs/Years.js";
 import { ref } from "./vue.js";
 
 export const setupMediaSession = (playTrack, pauseTrack, nextTrack, previousTrack) => {
