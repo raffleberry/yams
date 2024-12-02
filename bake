@@ -8,6 +8,8 @@ if [ -f ".env" ]; then
   export $(grep -v '^#' .env | xargs -d '\n')
 fi
 
+INSTALL_DIR=`eval echo $INSTALL_DIR`
+
 set -x
 
 if [ "$1" = "run" ]; then
@@ -19,7 +21,7 @@ elif [ "$1" = "install" ]; then
   mkdir -p $INSTALL_DIR
   go build -o $INSTALL_DIR/ cmd/yams/yams.go
 elif [ "$1" = "uninstall" ]; then
-  rm ~/Apps/bin/yams
+  rm $INSTALL_DIR/yams
 elif [ "$1" = "build" ]; then
   mkdir -p build
   go build -o build/ cmd/yams/yams.go
