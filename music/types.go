@@ -42,3 +42,9 @@ type LastScan struct {
 	MissingFiles int
 	NewFiles     int
 }
+
+type Album struct {
+}
+
+type Artist struct {
+}

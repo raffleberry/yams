@@ -1,5 +1,6 @@
 import { modalArtworkUrl } from "./modals.js";
 import { fetchProps } from "./Props.js";
+import { albumsPlaylist } from "./tabs/Albums.js";
 import { artistsPlaylist } from "./tabs/Artists.js";
 import { historyPlaylist } from "./tabs/History.js";
 import { songsPlaylist } from "./tabs/Songs.js";
@@ -7,15 +8,18 @@ import { formatDuration, getArtwork, getSrc, PAGE, setMediaSessionMetadata } fro
 import { ref, computed } from "./vue.js";
 
 export const currentPlaylist = ref(PAGE.SONGS);
-const playlist = () => {
-  if (currentPlaylist.value === PAGE.SONGS) {
-    return songsPlaylist
-  } else if (currentPlaylist.value === PAGE.HISTORY) {
-    return historyPlaylist
-  } else if (currentPlaylist.value === PAGE.ARTIST) {
-    return artistsPlaylist
-  }
+
+const playlistMap = {
+  [PAGE.SONGS]: songsPlaylist,
+  [PAGE.HISTORY]: historyPlaylist,
+  [PAGE.ARTIST]: artistsPlaylist,
+  [PAGE.ALBUM]: albumsPlaylist,
 }
+
+const playlist = () => {
+  return playlistMap[currentPlaylist.value]
+}
+
 
 const audio = new Audio()
 

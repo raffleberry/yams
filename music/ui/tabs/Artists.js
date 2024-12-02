@@ -1,3 +1,4 @@
+import { ArtistListItem } from "../components/ArtistListItem.js";
 import { SongsTile } from "../components/SongTile.js";
 import { currentPage } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
@@ -7,22 +8,31 @@ import { onMounted, onBeforeUnmount, useRoute, ref, onUpdated, watch } from "../
 
 export const artistsPlaylist = ref([]);
 
-export const linkArtists = (artists) => {
-    let res = ""
-    artists.split(',').forEach((artist) => {
-        artist = artist.trim()
-        res += `<router-link to="{ name: PAGE.ARTIST, params: { names: '${artist}' } }">${artist}</router-link>, `
-    })
-    console.log(res)
+const allArtists = ref([]);
 
-    return res
+const fetchAllArtists = async () => {
+
+    if (allArtists.value.length > 0) return;
+
+    let url = `/api/artists`;
+    try {
+        const response = await fetch(url);
+        const result = await response.json();
+        if (result) {
+            allArtists.value = result.Data
+        } else {
+            console.error('Error server sent bad result:', result);
+        }
+    } catch (error) {
+        console.error('Error fetching music data:', error);
+    }
 }
 
 const fetchSongs = async (artists) => {
 
     currentPage.value = `${PAGE.ARTIST} - ${artists}`;
 
-    let url = `/api/artists/${artists}`;
+    let url = `/api/artists/${encodeURIComponent(artists)}`;
     try {
         const response = await fetch(url);
         const result = await response.json();
@@ -38,7 +48,8 @@ const fetchSongs = async (artists) => {
 
 const Artists = {
     components: {
-        SongsTile
+        SongsTile,
+        ArtistListItem
     },
     setup: () => {
         const r = useRoute()
@@ -47,7 +58,11 @@ const Artists = {
 
         watch(() => r.params.names, (n) => {
             names.value = n
-            fetchSongs(n)
+            if (n) {
+                fetchSongs(n)
+            } else {
+                fetchAllArtists()
+            }
         }, { immediate: true })
 
         const play = (track) => {
@@ -72,6 +87,7 @@ const Artists = {
             artistsPlaylist,
 
             PAGE,
+            allArtists,
 
             play,
             formatDuration,
@@ -83,12 +99,18 @@ const Artists = {
     <div v-if="names">
         <div class="my-3 d-flex flex-column">
             <ul class="list-group">
-                <SongsTile v-for="(track, index) in artistsPlaylist" :key="index+track.Path+names" :track="track" :play="play" :dontLinkArtists="names.split(',').flatMap((x) => x.trim())">
+                <SongsTile v-for="(track, index) in artistsPlaylist" :key="index+track.Artists" :track="track" :play="play">
                 </SongsTile>
             </ul>
         </div>
     </div>
-    <div v-else>artists</div>
+    <div v-else>
+        <div class="my-3 d-flex flex-column">
+            <ul class="list-group">
+                <ArtistListItem v-for="(item, index) in allArtists" :key="index+item.Artists" :item="item" />
+            </ul>
+        </div>
+    </div>
     `
 }
 export { Artists };

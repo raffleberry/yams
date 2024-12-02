@@ -18,6 +18,14 @@ const SongsTile = {
         dontLinkArtists: {
             type: Object,
             default: () => []
+        },
+        dontLinkAlbum: {
+            type: Boolean,
+            default: false
+        },
+        dontLinkYear: {
+            type: Boolean,
+            default: false
         }
     },
     components: {
@@ -49,15 +57,22 @@ const SongsTile = {
             <div>
                 <div v-html="highlight(track.Title, searchTerm)"></div>
                 <div>
-                    <span v-for="(artist, index) in track.Artists.split(',')" :key="artist">
+                    <component
+                    v-for="(artist, index) in track.Artists.split(',')"
+                    :is="dontLinkArtists.includes(artist.trim()) ? 'span' : 'router-link'"
+                    :key="artist"
+                    :to="{ name: PAGE.ARTIST, params: { names: artist.trim() } }">
                         {{index !== 0 ?", ":""}}
-                        <small v-if="dontLinkArtists.includes(artist.trim())" v-html="highlight(artist, searchTerm)"></small>
-                        <router-link v-else :to="{ name: PAGE.ARTIST, params: { names: artist.trim() } }">
-                            <small v-html="highlight(artist, searchTerm)"></small>
-                        </router-link>
-                    </span>
+                        <small v-html="highlight(artist, searchTerm)"></small>
+                    </component>
                 </div>
-                <router-link :to="{ name: PAGE.ALBUM, params: { names: track.Album } }"><small v-html="highlight(track.Album, searchTerm)"></small></router-link> - <router-link :to="{ name: PAGE.YEAR, params: { year: track.Year } }"><small v-html="highlight(track.Year, searchTerm)"></small></router-link>
+                <router-link :to="{ name: PAGE.ALBUM, params: { names: track.Album } }">
+                    <small v-html="highlight(track.Album, searchTerm)"></small>
+                </router-link>
+                 - 
+                 <router-link :to="{ name: PAGE.YEAR, params: { year: track.Year } }">
+                    <small v-html="highlight(track.Year, searchTerm)"></small>
+                </router-link>
                 <br><small>{{ formatDuration(track.Length) }}</small>
             </div>
         </div>

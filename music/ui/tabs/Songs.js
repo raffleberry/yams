@@ -3,7 +3,6 @@ import { highlight, getArtwork, formatDuration, scrollPositions, PAGE } from "..
 import { currentPlaylist, playTrack } from "../Player.js";
 import { modalArtworkUrl } from "../modals.js";
 import { currentPage } from "../main.js";
-import { linkArtists } from "./Artists.js";
 import { SongsTile } from "../components/SongTile.js";
 
 export const songsPlaylist = ref([]);
@@ -100,7 +99,6 @@ const Songs = {
 
             PAGE,
 
-            linkArtists,
             play,
             formatDuration,
             highlight,

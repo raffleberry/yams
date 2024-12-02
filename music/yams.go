@@ -16,6 +16,7 @@ import (
 
 	"github.com/raffleberry/yams/app"
 	"github.com/raffleberry/yams/db"
+	"github.com/raffleberry/yams/music/cache"
 	"github.com/raffleberry/yams/server"
 )
 
@@ -58,6 +59,7 @@ func Api() http.Handler {
 	api.HandleFunc("POST /history", server.WithCtx(postHistory))
 	api.HandleFunc("GET /artists", server.WithCtx(allArtists))
 	api.HandleFunc("GET /artists/{artists}", server.WithCtx(getArtist))
+	api.HandleFunc("GET /albums", server.WithCtx(allAlbums))
 	api.HandleFunc("GET /albums/{album}", server.WithCtx(getAlbum))
 	api.HandleFunc("GET /isScanning", server.WithCtx(func(c *server.Context) error {
 		return c.JSON(http.StatusOK, isScanning)
@@ -165,6 +167,41 @@ func getArtist(c *server.Context) error {
 	})
 }
 
+func allAlbums(c *server.Context) error {
+	albums := []Music{}
+
+	if cache.Exists("allAlbums") {
+		json.Unmarshal(cache.Get("allAlbums"), &albums)
+
+	} else {
+
+		rows, err := db.L.Query(`SELECT Album, MIN(Artists) as Artists, Year FROM files WHERE Path GLOB '` + app.RootDir + `*' group by Album, Year;`)
+		if err != nil {
+			return err
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var m Music
+			if err := rows.Scan(&m.Album, &m.Artists, &m.Year); err != nil {
+				return err
+			}
+			albums = append(albums, m)
+		}
+		b, err := json.Marshal(albums)
+		if err != nil {
+			log.Println("Error: failed to set cache", err)
+		} else {
+			cache.Set("allAlbums", b)
+		}
+	}
+
+	return c.JSON(http.StatusOK, struct {
+		Data []Music
+	}{
+		Data: albums,
+	})
+}
+
 func getAlbum(c *server.Context) error {
 	album := c.R.PathValue("album")
 
@@ -196,27 +233,47 @@ func getAlbum(c *server.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, struct {
-		Musics []Music
+		Data []Music
 	}{
-		Musics: musics,
+		Data: musics,
 	})
 }
 
 func allArtists(c *server.Context) error {
-	artists := []string{}
-	rows, err := db.L.Query(`SELECT DISTINCT Artists FROM files WHERE Path GLOB '` + app.RootDir + `*'`)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var artist string
-		if err := rows.Scan(&artist); err != nil {
+
+	artists := []Music{}
+
+	if cache.Exists("allArtists") {
+		json.Unmarshal(cache.Get("allArtists"), &artists)
+
+	} else {
+
+		rows, err := db.L.Query(`SELECT Artists FROM files WHERE Path GLOB '` + app.RootDir + `*' group by Artists;`)
+		if err != nil {
 			return err
 		}
-		artists = append(artists, artist)
+		defer rows.Close()
+		for rows.Next() {
+			var m Music
+			if err := rows.Scan(&m.Artists); err != nil {
+				return err
+			}
+			artists = append(artists, m)
+		}
+		b, err := json.Marshal(artists)
+		if err != nil {
+			log.Println("Error: failed to set cache", err)
+		} else {
+			cache.Set("allArtists", b)
+		}
 	}
-	return c.JSON(http.StatusOK, artists)
+
+	return c.JSON(http.StatusOK, struct {
+		Data []Music
+	}{
+		Data: artists,
+	})
+
 }
 
 func getHistory(c *server.Context) error {
