@@ -100,7 +100,7 @@ const Albums = {
     <div v-if="names">
         <div class="my-3 d-flex flex-column">
             <ul class="list-group">
-                <SongsTile v-for="(track, index) in albumsPlaylist" :key="index+track.Path+names" :track="track" :play="play" :dontLink="names.split(',').flatMap((x) => x.trim())">
+                <SongsTile v-for="(track, index) in albumsPlaylist" :key="index+names+track.Path" :track="track" :play="play" :dontLinkAlbum="true">
                 </SongsTile>
             </ul>
         </div>

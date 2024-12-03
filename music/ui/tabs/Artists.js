@@ -99,7 +99,7 @@ const Artists = {
     <div v-if="names">
         <div class="my-3 d-flex flex-column">
             <ul class="list-group">
-                <SongsTile v-for="(track, index) in artistsPlaylist" :key="index+track.Artists" :track="track" :play="play">
+                <SongsTile v-for="(track, index) in artistsPlaylist" :key="index+names+track.Artists" :track="track" :play="play" :dontLinkArtists="names.split(',').flatMap((x) => x.trim())">
                 </SongsTile>
             </ul>
         </div>
