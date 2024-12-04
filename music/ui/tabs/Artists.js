@@ -1,6 +1,6 @@
 import { ArtistListItem } from "../components/ArtistListItem.js";
 import { SongsTile } from "../components/SongTile.js";
-import { currentPage } from "../main.js";
+import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
 import { currentPlaylist, playTrack } from "../Player.js";
 import { formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
@@ -30,8 +30,6 @@ const fetchAllArtists = async () => {
 
 const fetchSongs = async (artists) => {
 
-    currentPage.value = `${PAGE.ARTIST} - ${artists}`;
-
     let url = `/api/artists/${encodeURIComponent(artists)}`;
     try {
         const response = await fetch(url);
@@ -59,8 +57,10 @@ const Artists = {
         watch(() => r.params.names, (n) => {
             names.value = n
             if (n) {
+                updatePageTitle(`${PAGE.ARTIST} - ${n}`)
                 fetchSongs(n)
             } else {
+                updatePageTitle(PAGE.ARTISTS)
                 fetchAllArtists()
             }
         }, { immediate: true })
@@ -77,7 +77,6 @@ const Artists = {
         });
 
         onMounted(() => {
-            currentPage.value = PAGE.ARTISTS;
             window.scrollTo({ left: 0, top: scrollPositions.value[PAGE.ARTISTS] || 0, behavior: "auto" })
         });
 

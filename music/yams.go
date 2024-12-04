@@ -135,6 +135,8 @@ func getArtist(c *server.Context) error {
 		}
 	}
 
+	q += "GROUP BY Title, Artists, Album ORDER BY YEAR DESC;"
+
 	rows, err := db.L.Query(q, args...)
 	if err != nil {
 		return err
@@ -211,7 +213,7 @@ func getAlbum(c *server.Context) error {
 		Year, Track, Length,
 		Bitrate, Samplerate, Channels
 	FROM files WHERE Path GLOB '` + app.RootDir + `*'` +
-		` AND Album = ?;`
+		`AND Album = ? GROUP BY Title, Artists, Album ORDER BY Track ASC;`
 
 	rows, err := db.L.Query(q, album)
 	if err != nil {
@@ -417,6 +419,7 @@ func search(c *server.Context) error {
             OR Title LIKE '%` + query + `%'
             OR Year LIKE '%` + query + `%'
         )
+	GROUP BY Title, Artists, Album
     LIMIT ? OFFSET ?;`
 	rows, err := db.L.Query(q, limit, offset)
 
@@ -495,7 +498,7 @@ func all(c *server.Context) error {
 			files
 		WHERE
 			Path
-		GLOB '%s*' ORDER BY RANDOM() LIMIT ?;`, app.RootDir)
+		GLOB '%s*' GROUP BY Title, Artists, Album ORDER BY RANDOM() LIMIT ?;`, app.RootDir)
 	rows, err := db.L.Query(q, limit)
 
 	if err != nil {

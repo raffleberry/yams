@@ -1,4 +1,4 @@
-import { currentPage } from "../main.js";
+import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
 import { currentPlaylist, playTrack } from "../Player.js";
 import { formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
@@ -38,7 +38,7 @@ const History = {
         });
 
         onMounted(() => {
-            currentPage.value = PAGE.HISTORY;
+            updatePageTitle(PAGE.HISTORY);
             window.scrollTo({ left: 0, top: scrollPositions.value[PAGE.HISTORY] || 0, behavior: "auto" })
             fetchMusic()
         });

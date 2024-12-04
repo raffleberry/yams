@@ -1,6 +1,6 @@
 import { AlbumListItem } from "../components/AlbumListItem.js";
 import { SongsTile } from "../components/SongTile.js";
-import { currentPage } from "../main.js";
+import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
 import { currentPlaylist, playTrack } from "../Player.js";
 import { formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
@@ -12,10 +12,8 @@ const allAlbums = ref([]);
 
 const fetchSongs = async (albums) => {
 
-    currentPage.value = `${PAGE.ALBUM} - ${albums}`;
-
     let url = `/api/albums/${encodeURIComponent(albums)}`;
-    console.log(url)
+
     try {
         const response = await fetch(url);
         const result = await response.json();
@@ -31,7 +29,7 @@ const fetchSongs = async (albums) => {
 
 const fetchAllAlbums = async () => {
     if (allAlbums.value.length > 0) return;
-    console.log("FETCHED")
+
     let url = `/api/albums`;
     try {
         const response = await fetch(url);
@@ -59,8 +57,10 @@ const Albums = {
         watch(() => r.params.names, (n) => {
             names.value = n
             if (n) {
+                updatePageTitle(`${PAGE.ALBUM} - ${n}`)
                 fetchSongs(n)
             } else {
+                updatePageTitle(PAGE.ALBUMS)
                 fetchAllAlbums()
             }
         }, { immediate: true })
@@ -77,8 +77,6 @@ const Albums = {
         });
 
         onMounted(() => {
-
-            currentPage.value = PAGE.ALBUMS;
             window.scrollTo({ left: 0, top: scrollPositions.value[PAGE.ALBUMS] || 0, behavior: "auto" })
         });
 

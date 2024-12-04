@@ -2,7 +2,7 @@ import { ref, onMounted, watch, onBeforeUnmount } from "../vue.js";
 import { highlight, getArtwork, formatDuration, scrollPositions, PAGE } from "../utils.js";
 import { currentPlaylist, playTrack } from "../Player.js";
 import { modalArtworkUrl } from "../modals.js";
-import { currentPage } from "../main.js";
+import { updatePageTitle } from "../main.js";
 import { SongsTile } from "../components/SongTile.js";
 
 export const songsPlaylist = ref([]);
@@ -69,7 +69,7 @@ const Songs = {
         });
 
         onMounted(() => {
-            currentPage.value = PAGE.SONGS;
+            updatePageTitle(PAGE.SONGS);
             window.scrollTo({ left: 0, top: scrollPositions.value[PAGE.SONGS] || 0, behavior: "auto" })
 
             if (!calledOnce) {

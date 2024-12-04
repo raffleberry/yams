@@ -13,7 +13,7 @@ import { PropsModal } from "./Props.js";
 import { NowPlaying } from "./tabs/NowPlaying.js";
 import { Years } from "./tabs/Years.js";
 
-export const currentPage = ref(PAGE.SONGS);
+const currentPage = ref(PAGE.SONGS);
 
 const routes = [
     { path: '/', component: Songs, name: PAGE.SONGS },
@@ -43,6 +43,11 @@ const router = createRouter({
     history: createWebHistory(),
     routes
 });
+
+export const updatePageTitle = (title) => {
+    console.log("updated title : ", title)
+    currentPage.value = title;
+}
 
 const pageTitle = computed(() => {
     if (isPlaying() && currentTrack.value.Title) {

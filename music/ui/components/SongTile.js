@@ -55,7 +55,10 @@ const SongsTile = {
             <img :src="getArtwork(track.Path)" alt="Artwork" class="rounded me-3" style="width: 100px; height: 100px;"
                 data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(track.Path)">
             <div>
-                <div v-html="highlight(track.Title, searchTerm)"></div>
+                <div>
+                    <span v-if="dontLinkAlbum">{{ track.Track }}. </span>
+                    <span v-html="highlight(track.Title, searchTerm)"></span>
+                </div>
                 <div>
                     <component
                         v-for="(artist, index) in track.Artists.split(',')"
