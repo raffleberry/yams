@@ -60,14 +60,15 @@ const SongsTile = {
                     <span v-html="highlight(track.Title, searchTerm)"></span>
                 </div>
                 <div>
-                    <component
-                        v-for="(artist, index) in track.Artists.split(',')"
-                        :is="dontLinkArtists.includes(artist.trim()) ? 'span' : 'router-link'"
-                        :key="artist"
-                        :to="{ name: PAGE.ARTIST, params: { names: artist.trim() } }">
-                        {{index !== 0 ?", ":""}}
-                        <small v-html="highlight(artist, searchTerm)"></small>
-                    </component>
+                    <span v-for="(artist, index) in track.Artists.split(',')">
+                        <component
+                            :is="dontLinkArtists.includes(artist.trim()) ? 'span' : 'router-link'"
+                            :key="artist"
+                            :to="{ name: PAGE.ARTIST, params: { names: artist.trim() } }">
+                            <small v-html="highlight(artist, searchTerm)"></small>
+                        </component>
+                        <span v-if="index !== track.Artists.split(',').length - 1">,</span>
+                    </span>
                 </div>
                 <component
                     :is="dontLinkAlbum ? 'span' : 'router-link'"
