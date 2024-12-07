@@ -47,7 +47,8 @@ func setup() error {
 		return err
 	}
 
-	if _, err = os.Stat(ConfigFile); err != nil {
+	_, err = os.Stat(ConfigFile)
+	if err != nil {
 		var emptyConfig Config
 		err = writeConfig(emptyConfig)
 		if err != nil {
@@ -58,8 +59,7 @@ func setup() error {
 		if err != nil {
 			return err
 		}
-
-		err = writeConfig(C) // update existing config with new fields(if any)
+		err = writeConfig(C) // update with new fields(if any)
 		if err != nil {
 			return err
 		}
@@ -85,7 +85,7 @@ func readConfig() (Config, error) {
 		return c, err
 	}
 
-	err = json.Unmarshal(cByte, &C)
+	err = json.Unmarshal(cByte, &c)
 	if err != nil {
 		return c, err
 	}
