@@ -213,7 +213,7 @@ func getAlbum(c *server.Context) error {
 		Year, Track, Length,
 		Bitrate, Samplerate, Channels
 	FROM files WHERE Path GLOB '` + app.RootDir + `*'` +
-		`AND Album = ? GROUP BY Title, Artists, Album ORDER BY Track ASC;`
+		`AND Album = ? GROUP BY Title, Artists ORDER BY Track ASC;`
 
 	rows, err := db.L.Query(q, album)
 	if err != nil {
