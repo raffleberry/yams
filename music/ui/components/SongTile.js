@@ -79,7 +79,8 @@ const SongsTile = {
                  <router-link :to="{ name: PAGE.YEAR, params: { year: track.Year } }">
                     <small v-html="highlight(track.Year, searchTerm)"></small>
                 </router-link>
-                <br><small>{{ formatDuration(track.Length) }}</small>
+                <br><small>{{ formatDuration(track.Length) }} </small>
+                <br><small> {{ track.Bitrate }}KBps | {{ track.Samplerate }}KHz | {{ track.Channels }} Channels | {{ (track.Size/1048576).toFixed(2) }}MB </small>
             </div>
         </div>
         <button class="btn btn-primary btn-sm" @click="play(track)">Play</button>
