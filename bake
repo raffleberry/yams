@@ -23,14 +23,13 @@ elif [ "$1" = "dev" ]; then
   go run cmd/yams/yams.go
 elif [ "$1" = "install" ]; then
   mkdir -p $INSTALL_DIR
-
+  go build -o $INSTALL_DIR/ cmd/yams/yams.go
   if [ "$HOST" = "windows" ]; then
     dllmod=$(echo "$(grep 'github.*tags' go.mod)" | sed -E 's/^[^a-zA-Z]*//; s/[[:space:]]+/@/')
     modcache=$(go env GOMODCACHE)
     cp "$(go env GOMODCACHE)/$dllmod/lib/$HOST/$ARCH/bin/"* $INSTALL_DIR/
   fi
 
-  go build -o $INSTALL_DIR/ cmd/yams/yams.go
 elif [ "$1" = "uninstall" ]; then
   rm $INSTALL_DIR/yams
 elif [ "$1" = "build" ]; then
