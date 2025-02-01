@@ -25,7 +25,7 @@ const routes = [
     { path: '/albums', component: Albums, name: PAGE.ALBUMS },
 
 
-    { path: '/playlists/:playlist', component: Playlists, name: PAGE.PLAYLIST },
+    { path: '/playlists/:name', component: Playlists, name: PAGE.PLAYLIST },
     { path: '/playlists', component: Playlists, name: PAGE.PLAYLISTS },
 
     { path: '/folders/:folder', component: Folders, name: PAGE.FOLDER },

@@ -14,51 +14,117 @@ import (
 	"github.com/raffleberry/yams/db"
 )
 
+const (
+	PlaylistTypeList  = "LIST"
+	PlaylistTypeQuery = "QUERY"
+)
+
 var isScanning = false
 
-// TODO: add tbl for fts5
-var dbTables = []string{
-	`CREATE TABLE IF NOT EXISTS files (
-		Path TEXT PRIMARY KEY,
-		Size INTEGER,
-		Title TEXT,
-		Artists TEXT,
-		Album TEXT,
-		Comment TEXT,
-		Genre TEXT,
-		Year TEXT,
-		Track INTEGER,
-		Length INTEGER,
-		Bitrate INTEGER,
-		Samplerate INTEGER,
-		Channels INTEGER,
-		Artwork BLOB,
-		Props TEXT
-	);`,
-	`CREATE TABLE IF NOT EXISTS scanned (
-		Path TEXT PRIMARY KEY
-	);`,
-	`CREATE TABLE IF NOT EXISTS last_scan (
-		Time DATETIME,
-		Path TEXT PRIMARY KEY,
-		InDisk INTEGER,
-		InDb INTEGER,
-		MissingFiles INTEGER,
-		NewFiles INTEGER,
-		Err TEXT
-	);`,
-	`CREATE TABLE IF NOT EXISTS history (
-		Time DATETIME DEFAULT CURRENT_TIMESTAMP,
-		Path TEXT,
-		Size INTEGER,
-		Title TEXT,
-		Artists TEXT,
-		Album TEXT,
-		Genre TEXT,
-		Year TEXT,
-		Track INTEGER,
-		Length INTEGER
-	);`,
+func initLtables() error {
+
+	var dbLtables = []string{
+		`CREATE TABLE IF NOT EXISTS files (
+			Path TEXT PRIMARY KEY,
+			Size INTEGER,
+			Title TEXT,
+			Artists TEXT,
+			Album TEXT,
+			Comment TEXT,
+			Genre TEXT,
+			Year TEXT,
+			Track INTEGER,
+			Length INTEGER,
+			Bitrate INTEGER,
+			Samplerate INTEGER,
+			Channels INTEGER,
+			Artwork BLOB,
+			Props TEXT
+		);`,
+		`CREATE TABLE IF NOT EXISTS scanned (
+			Path TEXT PRIMARY KEY
+		);`,
+		`CREATE TABLE IF NOT EXISTS last_scan (
+			Time DATETIME,
+			Path TEXT PRIMARY KEY,
+			InDisk INTEGER,
+			InDb INTEGER,
+			MissingFiles INTEGER,
+			NewFiles INTEGER,
+			Err TEXT
+		);`,
+	}
+
+	for _, dbTable := range dbLtables {
+		_, err := db.L.Exec(dbTable)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	return nil
+}
+
+func initRtables() error {
+
+	var dbRtables = []string{
+		`CREATE TABLE IF NOT EXISTS history (
+			Time DATETIME DEFAULT CURRENT_TIMESTAMP,
+	
+			Path TEXT,
+			Size INTEGER,
+			Title TEXT,
+			Artists TEXT,
+			Album TEXT,
+			Genre TEXT,
+			Year TEXT,
+			Track INTEGER,
+			Length INTEGER
+		);`,
+
+		`CREATE TABLE IF NOT EXISTS playlists (
+			Id INTEGER PRIMARY KEY,
+			Name TEXT,
+			Description TEXT,
+			Type CHECK(Type IN ('LIST', 'QUERY')),
+			Query TEXT
+		);`,
+
+		`CREATE TABLE IF NOT EXISTS playlists_songs (
+			PlaylistId INTEGER,
+	
+			Path TEXT,
+			Size INTEGER,
+			Title TEXT,
+			Artists TEXT,
+			Album TEXT,
+			Genre TEXT,
+			Year TEXT,
+			Track INTEGER,
+			Length INTEGER
+		);`,
+
+		`CREATE TABLE IF NOT EXISTS favourites (
+			Path TEXT,
+			Size INTEGER,
+			Title TEXT,
+			Artists TEXT,
+			Album TEXT,
+			Genre TEXT,
+			Year TEXT,
+			Track INTEGER,
+			Length INTEGER
+		);`,
+	}
+
+	for _, dbTable := range dbRtables {
+		_, err := db.R.Exec(dbTable)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	return nil
 }
 
 func scanned() bool {

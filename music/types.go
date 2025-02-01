@@ -43,6 +43,15 @@ type LastScan struct {
 	NewFiles     int
 }
 
+type Playlist struct {
+	Id          int
+	Name        string
+	Description string
+	Type        string
+	Query       string
+	Count       int
+}
+
 type Album struct {
 }
 

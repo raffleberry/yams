@@ -16,6 +16,8 @@ func main() {
 	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint, os.Interrupt)
 
+	log.Default().SetFlags(log.Lshortfile | log.Ldate | log.Ltime)
+
 	log.Println("Started YAMS")
 
 	ip := "127.0.0.1"

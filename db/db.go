@@ -8,7 +8,11 @@ import (
 	"github.com/raffleberry/yams/app"
 )
 
-var L, R *sql.DB
+// Data thats not so important
+var L *sql.DB
+
+// Super Important data, your history, playlists, etc
+var R *sql.DB
 var err error
 
 func init() {
