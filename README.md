@@ -8,4 +8,15 @@ Yet Another Music Server
 ![](docs/3.png)
 
 ## Development
-`export DEV=1`
+
+```
+./bake dev
+```
+
+## Build
+
+```
+# set install directory in .env file
+./bake install
+```
+
