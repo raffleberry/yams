@@ -107,39 +107,18 @@ func ls(path string) ([]File, error) {
 	return files, nil
 }
 
-func updateMeta(m *Music) {
-	row := db.L.QueryRow(`SELECT 
-		Path, Title, Size,
-        Artists, Album, Genre,
-        Year, Track, Length,
-        Bitrate, Samplerate, Channels
-	FROM files
-	WHERE
-		Title=? and Artists=? and Album=? limit 1;`,
-		(*m).Title, (*m).Artists, (*m).Album,
-	)
-	err := row.Scan(
-		(*m).Path, (*m).Title, (*m).Size,
-		(*m).Artists, (*m).Album, (*m).Genre,
-		(*m).Year, (*m).Track, (*m).Length,
-		(*m).Bitrate, (*m).Samplerate, (*m).Channels,
-	)
-	if err != nil {
-		log.Println("Err: ", err)
-	}
-}
-
 func getPlaylistCount(id int, pname string) int {
 	var count int
 	var row *sql.Row
 	if id != -1 {
-		row = db.L.QueryRow("SELECT COUNT(*) FROM playlists_songs where PlaylistId=?;", id)
+		row = db.R.QueryRow("SELECT COUNT(*) FROM playlists_songs where PlaylistId=?;", id)
 	} else {
-		row = db.L.QueryRow("SELECT COUNT(*) FROM " + strings.ToLower(pname) + ";")
+		row = db.R.QueryRow("SELECT COUNT(*) FROM " + strings.ToLower(pname) + ";")
 	}
 	err := row.Scan(&count)
+	log.Println(count)
 	if err != nil {
-		log.Printf("ERR: Failed to get playlist count for %v, %v", id, pname)
+		log.Printf("ERR: Failed to get playlist count for %v, %v, %v", id, pname, err)
 		return 0
 	}
 	return count

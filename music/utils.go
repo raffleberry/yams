@@ -1,6 +1,8 @@
 package music
 
 import (
+	"log"
+	"runtime"
 	"strings"
 )
 
@@ -29,4 +31,11 @@ func isMusic(fname string) bool {
 }
 func sanitizeArtists(artists string) string {
 	return strings.ReplaceAll(artists, "/", ", ")
+}
+
+func logCaller() {
+	_, file, no, ok := runtime.Caller(2)
+	if ok {
+		log.Printf("called from %s#%d\n", file, no)
+	}
 }

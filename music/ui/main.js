@@ -50,7 +50,7 @@ export const updatePageTitle = (title) => {
 }
 
 const pageTitle = computed(() => {
-    if (isPlaying() && currentTrack.value.Title) {
+    if (isPlaying && currentTrack.value.Title) {
         return `${currentTrack.value.Title} - ${currentTrack.value.Artists} | ${currentPage.value}`
     }
     return currentPage.value

@@ -79,9 +79,9 @@ const currentVolume = ref(0.5);
 
 audio.volume = currentVolume.value
 
-export const isPlaying = () => {
+export const isPlaying = computed(() => {
   return playing.value
-}
+})
 
 export const currentTrack = ref({
   Path: "",

@@ -84,6 +84,7 @@ const Playlists = {
         });
 
         return {
+            play,
             name,
             playlistsPlaylist,
             allPlaylists

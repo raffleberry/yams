@@ -75,6 +75,7 @@ func allAlbums(c *server.Context) error {
 			if err := rows.Scan(&m.Album, &m.Artists, &m.Year); err != nil {
 				return err
 			}
+			m.addAux()
 			albums = append(albums, m)
 		}
 		b, err := json.Marshal(albums)
@@ -119,6 +120,7 @@ func getAlbum(c *server.Context) error {
 			&m.Bitrate, &m.Samplerate, &m.Channels); err != nil {
 			return err
 		}
+		m.addAux()
 		musics = append(musics, m)
 	}
 
@@ -148,6 +150,8 @@ func allArtists(c *server.Context) error {
 			if err := rows.Scan(&m.Artists); err != nil {
 				return err
 			}
+
+			m.addAux()
 			artists = append(artists, m)
 		}
 		b, err := json.Marshal(artists)
@@ -217,6 +221,8 @@ func getArtist(c *server.Context) error {
 			ok = ok || slices.Contains(rArtists, strings.TrimSpace(artist))
 		}
 		if ok {
+			log.Println("wokrs")
+			m.addAux()
 			musics = append(musics, m)
 		}
 	}
@@ -258,7 +264,7 @@ func getHistory(c *server.Context) error {
 			&m.Year, &m.Track, &m.Length); err != nil {
 			return err
 		}
-		updateMeta(&m.Music)
+		m.Music.addMeta()
 		musics = append(musics, m)
 	}
 	if err := rows.Err(); err != nil {
@@ -395,7 +401,8 @@ func getPlayist(c *server.Context) error {
 				&m.Year, &m.Track, &m.Length); err != nil {
 				return err
 			}
-			updateMeta(&m)
+			m.addAux()
+			m.addMeta()
 			musics = append(musics, m)
 		}
 		if err := rows.Err(); err != nil {
@@ -440,7 +447,7 @@ func getPlayist(c *server.Context) error {
 			if err != nil {
 				return err
 			}
-			updateMeta(&m)
+			m.addMeta()
 			musics = append(musics, m)
 		}
 		if err := rows.Err(); err != nil {
@@ -540,7 +547,7 @@ func deleteFromPlaylist(c *server.Context) error {
 
 	_, err = db.R.Exec(`DELETE FROM playlists_songs
 		WHERE
-		Title='?' and Artists='?' and Album='?' and PlaylistId=?`,
+		Title=? and Artists=? and Album=? and PlaylistId=?`,
 		m.Title, m.Artists, m.Album, id)
 
 	if err != nil {
@@ -563,7 +570,7 @@ func addToFavourites(c *server.Context) error {
 		Title,
 		Artists, Album, Genre,
 		Year, Track, Length) VALUES
-		(?, ?,
+		(?,
 		?,?,?,
 		?,?,?);`,
 		m.Title,
@@ -589,7 +596,7 @@ func deleteFromFavourites(c *server.Context) error {
 
 	_, err = db.R.Exec(`DELETE FROM favourites
 		WHERE
-		Title='?' and Artists='?' and Album='?'`,
+		Title=? and Artists=? and Album=?`,
 		m.Title, m.Artists, m.Album)
 
 	if err != nil {
@@ -628,7 +635,8 @@ func getFavourites(c *server.Context) error {
 			&m.Year, &m.Track, &m.Length); err != nil {
 			return err
 		}
-		updateMeta(&m)
+		m.IsFavourite = true
+		m.addMeta()
 		musics = append(musics, m)
 	}
 	if err := rows.Err(); err != nil {
@@ -702,6 +710,7 @@ func search(c *server.Context) error {
 			log.Printf("failed to get row: %v\n", err)
 			continue
 		}
+		m.addAux()
 		musicFiles = append(musicFiles, m)
 	}
 	if err := rows.Err(); err != nil {
@@ -751,6 +760,8 @@ func all(c *server.Context) error {
 			log.Printf("failed to get row: %v\n", err)
 			continue
 		}
+		m.addAux()
+
 		musicFiles = append(musicFiles, m)
 	}
 	if err := rows.Err(); err != nil {

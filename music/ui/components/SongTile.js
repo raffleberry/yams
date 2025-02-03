@@ -1,5 +1,8 @@
 import { highlight, getArtwork, formatDuration, PAGE } from "../utils.js";
 import { modalArtworkUrl } from "../modals.js";
+import { ref } from "../vue.js";
+import { currentTrack, isPlaying, playPause } from "../Player.js";
+
 
 const SongsTile = {
     props: {
@@ -32,6 +35,39 @@ const SongsTile = {
 
     },
     setup: (props) => {
+        const track = ref(props.track)
+
+        const updateFavourite = async () => {
+            let method = '';
+            if (track.value.IsFavourite) {
+                method = 'DELETE'
+            } else {
+                method = 'POST'
+            }
+            let url = `/api/playlists/favourites`;
+
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(track.value)
+                });
+
+                if (res.status == 200) {
+                    track.value.IsFavourite = !track.value.IsFavourite
+                } else {
+                    console.error("Failed to update favourite: ", res.status)
+                }
+            } catch (error) {
+                console.error('Error upadting favourite:', error);
+            }
+
+
+        }
+
 
         return {
 
@@ -39,10 +75,14 @@ const SongsTile = {
 
             searchTerm: props.searchTerm,
             play: props.play,
-            track: props.track,
+            track: track,
             dontLinkArtists: props.dontLinkArtists,
 
+            cTrack: currentTrack,
+            playPause,
+            isPlaying,
 
+            updateFavourite: updateFavourite,
             formatDuration,
             highlight,
             getArtwork,
@@ -56,6 +96,8 @@ const SongsTile = {
                 data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(track.Path)">
             <div>
                 <div>
+                    <button class="btn btn-info btn-sm" @click="updateFavourite">{{ track.IsFavourite ? '⭐' : '★' }}</button>
+                    <span class="ms-2"></span>
                     <span v-if="dontLinkAlbum">{{ track.Track }}. </span>
                     <span v-html="highlight(track.Title, searchTerm)"></span>
                 </div>
@@ -79,11 +121,14 @@ const SongsTile = {
                  <router-link :to="{ name: PAGE.YEAR, params: { year: track.Year } }">
                     <small v-html="highlight(track.Year, searchTerm)"></small>
                 </router-link>
-                <br><small>{{ formatDuration(track.Length) }} </small>
-                <br><small> {{ track.Bitrate }}KBps | {{ track.Samplerate }}KHz | {{ track.Channels }} Channels | {{ (track.Size/1048576).toFixed(2) }}MB </small>
-            </div>
+                <br>
+                <small>{{ formatDuration(track.Length) }} | {{ track.Bitrate }}KBps </small>
+                <br>
+                <button :class="['btn', 'btn-sm', cTrack.Path === track.Path ? 'btn-success':'btn-primary']"
+                    @click="cTrack.Path !== track.Path ? play(track) : playPause()">{{ cTrack.Path !== track.Path ? 'Play' : ( isPlaying ? 'Pause' : 'Play' ) }}</button>
+                <span class="ms-2"></span>
         </div>
-        <button class="btn btn-primary btn-sm" @click="play(track)">Play</button>
+        </div>
     </li>
     `
 }
