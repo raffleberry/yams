@@ -24,7 +24,7 @@ elif [ "$1" = "dev" ]; then
 elif [ "$1" = "install" ]; then
   mkdir -p $INSTALL_DIR
   go build -o $INSTALL_DIR/ cmd/yams/yams.go
-  if [ $? -neq 0 ]; then
+  if [ $? -ne 0 ]; then
     exit 1
   fi
   if [ "$HOST" = "windows" ]; then
