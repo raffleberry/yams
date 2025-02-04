@@ -24,6 +24,7 @@ type Music struct {
 
 	// auxilary
 	IsFavourite bool
+	PlayCount   int
 
 	// on demand
 	Artwork []byte `json:"-"`
@@ -36,9 +37,17 @@ func (m *Music) addAux() {
 	err := row.Scan(&count)
 	if err != nil {
 		logCaller()
-		log.Println("ERR : failed to add auxilary fields", err)
+		log.Println("ERR : failed to add IsFavourite fields", err)
 	}
 	m.IsFavourite = count > 0
+
+	row = db.R.QueryRow("SELECT COUNT(*) FROM history WHERE Title=? AND Artists=? AND Album=?;", m.Title, m.Artists, m.Album)
+	err = row.Scan(&count)
+	if err != nil {
+		logCaller()
+		log.Println("ERR : failed to add PlayCount fields", err)
+	}
+	m.PlayCount = count
 }
 
 func (m *Music) addMeta() {

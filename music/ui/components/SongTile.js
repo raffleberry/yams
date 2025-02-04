@@ -126,7 +126,7 @@ const SongsTile = {
                 <br>
                 <button :class="['btn', 'btn-sm', cTrack.Path === track.Path ? 'btn-success':'btn-primary']"
                     @click="cTrack.Path !== track.Path ? play(track) : playPause()">{{ cTrack.Path !== track.Path ? 'Play' : ( isPlaying ? 'Pause' : 'Play' ) }}</button>
-                <span class="ms-2"></span>
+                <span class="ms-2"></span> {{ track.PlayCount }} plays
         </div>
         </div>
     </li>

@@ -116,7 +116,6 @@ func getPlaylistCount(id int, pname string) int {
 		row = db.R.QueryRow("SELECT COUNT(*) FROM " + strings.ToLower(pname) + ";")
 	}
 	err := row.Scan(&count)
-	log.Println(count)
 	if err != nil {
 		log.Printf("ERR: Failed to get playlist count for %v, %v, %v", id, pname, err)
 		return 0

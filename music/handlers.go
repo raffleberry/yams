@@ -221,7 +221,6 @@ func getArtist(c *server.Context) error {
 			ok = ok || slices.Contains(rArtists, strings.TrimSpace(artist))
 		}
 		if ok {
-			log.Println("wokrs")
 			m.addAux()
 			musics = append(musics, m)
 		}
@@ -635,7 +634,7 @@ func getFavourites(c *server.Context) error {
 			&m.Year, &m.Track, &m.Length); err != nil {
 			return err
 		}
-		m.IsFavourite = true
+		m.addAux()
 		m.addMeta()
 		musics = append(musics, m)
 	}
