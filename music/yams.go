@@ -68,6 +68,10 @@ func Api() http.Handler {
 	api.HandleFunc("POST /playlists/{id}", h(addToPlayist))
 	api.HandleFunc("DELETE /playlists/{id}", h(deleteFromPlaylist))
 
+	api.HandleFunc("GET /favourites", h(getFavourites))
+	api.HandleFunc("POST /favourites", h(addToFavourites))
+	api.HandleFunc("DELETE /favourites", h(deleteFromFavourites))
+
 	api.HandleFunc("GET /triggerScan", h(triggerScan))
 	api.HandleFunc("GET /isScanning", h(func(c *server.Context) error {
 		return c.JSON(http.StatusOK, isScanning)

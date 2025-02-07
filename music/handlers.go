@@ -318,13 +318,7 @@ func addToHistory(c *server.Context) error {
 }
 
 func allPlaylists(c *server.Context) error {
-	playlists := []Playlist{
-		{
-			Id:    -1,
-			Name:  "Favourites",
-			Count: getPlaylistCount(-1, "Favourites"),
-		},
-	}
+	var playlists []Playlist
 
 	rows, err := db.R.Query(`SELECT Id, Name, Description, Type, Query FROM playlists;`)
 	if err != nil {
@@ -350,13 +344,8 @@ func allPlaylists(c *server.Context) error {
 
 func getPlayist(c *server.Context) error {
 	offsetParam := c.R.URL.Query().Get("offset")
-	idStr := c.R.PathValue("id")
 
-	if idStr == "favourites" {
-		return getFavourites(c)
-	}
-
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(c.R.PathValue("id"))
 	if err != nil {
 		return err
 	}
@@ -471,13 +460,7 @@ func getPlayist(c *server.Context) error {
 
 func addToPlayist(c *server.Context) error {
 
-	idStr := c.R.PathValue("id")
-
-	if idStr == "favourites" {
-		return addToFavourites(c)
-	}
-
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(c.R.PathValue("id"))
 	if err != nil {
 		return err
 	}
@@ -518,13 +501,7 @@ func addToPlayist(c *server.Context) error {
 
 func deleteFromPlaylist(c *server.Context) error {
 
-	idStr := c.R.PathValue("id")
-
-	if idStr == "favourites" {
-		return deleteFromFavourites(c)
-	}
-
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(c.R.PathValue("id"))
 	if err != nil {
 		return err
 	}

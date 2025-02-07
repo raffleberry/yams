@@ -6,7 +6,7 @@ import { Songs } from "./tabs/Songs.js";
 import { Artists } from "./tabs/Artists.js";
 import { Playlists } from "./tabs/Playlists.js";
 import { PAGE, setupMediaSession } from "./utils.js";
-import { computed, createApp, createRouter, createWebHistory, onMounted, ref, watch } from "./vue.js";
+import { computed, createApp, createPinia, createRouter, createWebHistory, onMounted, ref, watch } from "./vue.js";
 import { Folders } from "./tabs/Folders.js";
 import { History } from "./tabs/History.js";
 import { PropsModal } from "./Props.js";
@@ -60,7 +60,8 @@ watch(pageTitle, () => {
     document.title = pageTitle.value
 })
 
-createApp({
+const app = createApp({
+    pinia: createPinia,
     components: {
         Player,
         Settings,
@@ -78,4 +79,7 @@ createApp({
             pageTitle
         };
     }
-}).use(router).mount('#app');
+})
+
+app.use(router)
+app.mount('#app')
