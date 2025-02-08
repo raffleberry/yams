@@ -1,11 +1,10 @@
-import { AlbumListItem } from "../components/AlbumListItem.js";
 import { PlaylistListItem } from "../components/PlaylistListItem.js";
 import { SongsTile } from "../components/SongTile.js";
-import { updatePageTitle } from "../main.js";
+import { updatePageTitle } from "../../main.js";
 import { currentPlaylist, playTrack } from "../Player.js";
-import { usePlaylistStore } from "../stores.js";
 import { PAGE, scrollPositions } from "../utils.js";
-import { onMounted, onBeforeUnmount, ref, useRoute, watch, storeToRefs } from "../vue.js";
+import { onMounted, onBeforeUnmount, ref, useRoute, watch } from "../vue.js";
+import { store } from "../stores/playlist.js";
 
 export const playlistsPlaylist = ref([]);
 
@@ -53,8 +52,6 @@ const Playlists = {
     },
     setup: () => {
 
-        const store = usePlaylistStore()
-
         const r = useRoute()
 
         const name = ref("")
@@ -89,7 +86,7 @@ const Playlists = {
         return {
             play,
             name,
-            store,
+            fav: store.playlist.favs,
             playlistsPlaylist,
             allPlaylists
         }
@@ -106,7 +103,7 @@ const Playlists = {
     <div v-else>
         <div class="my-3 d-flex flex-column">
             <ul class="list-group">
-                <PlaylistListItem :item="store.fav" />
+                <PlaylistListItem :item="fav" />
                 <PlaylistListItem v-for="(item, index) in allPlaylists" :key="index+item.Name" :item="item" />
             </ul>
         </div>

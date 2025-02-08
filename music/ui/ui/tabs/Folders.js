@@ -1,4 +1,4 @@
-import { updatePageTitle } from "../main.js";
+import { updatePageTitle } from "../../main.js";
 import { PAGE, scrollPositions } from "../utils.js";
 import { onMounted, onBeforeUnmount } from "../vue.js";
 

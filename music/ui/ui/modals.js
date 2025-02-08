@@ -1,6 +1,6 @@
 import { ref } from "./vue.js";
 
-const modalArtworkUrl = ref('/play.png');
+const modalArtworkUrl = ref('/ui/play.png');
 
 const modalAddToPlaylist = {
     props: {

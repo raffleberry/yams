@@ -1,4 +1,4 @@
-import { updatePageTitle } from "../main.js";
+import { updatePageTitle } from "../../main.js";
 import { modalArtworkUrl } from "../modals.js";
 import { currentPlaylist, playTrack } from "../Player.js";
 import { formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";

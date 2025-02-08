@@ -1,47 +1,42 @@
-import { computed, defineStore, ref } from "./vue.js";
+import { computed, ref } from "../vue.js";
 
-const playlistStore = ref({
-    favourites: []
-})
+const favStore = ref([])
+const playlistStore = ref({})
 
 const favs = computed(() => {
     return {
         Id: "favourites",
         Name: "Favourites",
         Description: "Favourites",
-        Tracks: playlists.value.favourites,
-        Count: playlists.value.favourites.length
+        Tracks: favStore.value,
+        Count: favStore.value.length
     }
 })
 
-const fetchFavourites = () => {
-    (async () => {
-        try {
-            const res = await fetch('/api/favourites')
-            if (res.status == 200) {
-                const json = await res.json()
-                playlists.value.favourites = json.Data
-            }
-            console.log("Hello", playlists.value.favourites)
-            console.log("FETCHED")
-        } catch (error) {
-            console.error('Error fetching favourites:', error);
+const fetchFav = async () => {
+    try {
+        const res = await fetch('/api/favourites')
+        if (res.status == 200) {
+            const json = await res.json()
+            favStore.value = json.Data
         }
-    })()
+    } catch (error) {
+        console.error('Error fetching favourites:', error);
+    }
 }
 
-const fetchPlaylists = async () => {
+const fetchAll = async () => {
     try {
-        const res = await fetch('/api/playlists')
+        const res = await fetch(`/api/playlists/${id}`)
         if (res.status == 200) {
-            playlists.value = await res.json()
+            playlistStore.value = await res.json()
         }
     } catch (error) {
         console.error('Error fetching playlists:', error);
     }
 }
 
-const favAdd = (track) => {
+const addFav = (track) => {
     try {
         fetch('/api/favourites', {
             method: 'POST',
@@ -50,13 +45,13 @@ const favAdd = (track) => {
             },
             body: JSON.stringify(track)
         })
-        playlists.value.favourites.push(track)
+        favStore.value.push(track)
     } catch (error) {
         console.error(error)
     }
 }
 
-const favRem = (track) => {
+const remFav = (track) => {
     try {
         fetch(urlFav, {
             method: 'DELETE',
@@ -65,7 +60,7 @@ const favRem = (track) => {
             },
             body: JSON.stringify(track)
         })
-        playlists.value.favourites.splice(playlists.value.favourites.indexOf(track), 1)
+        favStore.value.splice(favStore.value.indexOf(track), 1)
     } catch (error) {
         console.error(error)
     }
@@ -80,10 +75,10 @@ const add = (id, track) => {
             },
             body: JSON.stringify(track)
         })
-        if (!playlists.value[id]) {
-            playlists.value[id] = []
+        if (!playlistStore.value[id]) {
+            playlistStore.value[id] = []
         }
-        playlists.value[id].push(track)
+        playlistStore.value[id].push(track)
     } catch (error) {
         console.error(error)
     }
@@ -107,8 +102,8 @@ const rem = (id, track) => {
 export const store = {
     playlist: {
         add, rem,
-        favs, favAdd, favRem
+        favs, addFav, remFav,
 
+        fetchAll, fetchFav
     },
-
 }
