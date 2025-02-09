@@ -1,7 +1,8 @@
 import { highlight, getArtwork, formatDuration, PAGE } from "../utils.js";
 import { modalArtworkUrl } from "../modals.js";
-import { ref } from "../vue.js";
+import { computed, ref, storeToRefs } from "../vue.js";
 import { currentTrack, isPlaying, playPause } from "../Player.js";
+import { usePlaylistStore } from "../stores/playlist.js";
 
 
 const SongsTile = {
@@ -37,35 +38,23 @@ const SongsTile = {
     setup: (props) => {
         const track = ref(props.track)
 
-        const updateFavourite = async () => {
-            let method = '';
-            if (track.value.IsFavourite) {
-                method = 'DELETE'
+        const store = usePlaylistStore()
+        const { addFav, remFav } = store
+        const { favs } = storeToRefs(store)
+
+        const isFavourite = computed(() => {
+            if (favs.value.includes(track.value)) {
+                return true
+            }
+            return false
+        })
+
+        const updateFavourite = () => {
+            if (favs.value.includes(track.value)) {
+                remFav(track.value)
             } else {
-                method = 'POST'
+                addFav(track.value)
             }
-            let url = `/api/playlists/favourites`;
-
-
-            try {
-                const res = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(track.value)
-                });
-
-                if (res.status == 200) {
-                    track.value.IsFavourite = !track.value.IsFavourite
-                } else {
-                    console.error("Failed to update favourite: ", res.status)
-                }
-            } catch (error) {
-                console.error('Error upadting favourite:', error);
-            }
-
-
         }
 
 
@@ -82,6 +71,8 @@ const SongsTile = {
             playPause,
             isPlaying,
 
+            isFavourite,
+
             updateFavourite: updateFavourite,
             formatDuration,
             highlight,
@@ -96,7 +87,7 @@ const SongsTile = {
                 data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(track.Path)">
             <div>
                 <div>
-                    <button class="btn btn-info btn-sm" @click="updateFavourite">{{ track.IsFavourite ? '⭐' : '★' }}</button>
+                    <button class="btn btn-info btn-sm" @click="updateFavourite">{{ isFavourite ? '⭐' : '★' }}</button>
                     <span class="ms-2"></span>
                     <span v-if="dontLinkAlbum">{{ track.Track }}. </span>
                     <span v-html="highlight(track.Title, searchTerm)"></span>

@@ -6,12 +6,13 @@ import { Songs } from "./ui/tabs/Songs.js";
 import { Artists } from "./ui/tabs/Artists.js";
 import { Playlists } from "./ui/tabs/Playlists.js";
 import { PAGE, setupMediaSession } from "./ui/utils.js";
-import { computed, createApp, createRouter, createWebHistory, onMounted, ref, watch } from "./ui/vue.js";
+import { computed, createApp, createPinia, createRouter, createWebHistory, onMounted, ref, watch } from "./ui/vue.js";
 import { Folders } from "./ui/tabs/Folders.js";
 import { History } from "./ui/tabs/History.js";
 import { PropsModal } from "./ui/Props.js";
 import { NowPlaying } from "./ui/tabs/NowPlaying.js";
 import { Years } from "./ui/tabs/Years.js";
+import { usePlaylistStore } from "./ui/stores/playlist.js";
 
 const currentPage = ref(PAGE.SONGS);
 
@@ -45,7 +46,6 @@ const router = createRouter({
 });
 
 export const updatePageTitle = (title) => {
-    console.log("updated title : ", title)
     currentPage.value = title;
 }
 
@@ -69,8 +69,12 @@ const app = createApp({
 
     setup() {
 
+        const { fetchFav, fetchAll } = usePlaylistStore();
+
         onMounted(() => {
             setupMediaSession(playPause, playPause, nextTrack, previousTrack);
+            fetchFav();
+            fetchAll();
         });
 
         return {
@@ -81,4 +85,5 @@ const app = createApp({
 })
 
 app.use(router)
+app.use(createPinia())
 app.mount('#app')

@@ -3,56 +3,23 @@ import { SongsTile } from "../components/SongTile.js";
 import { updatePageTitle } from "../../main.js";
 import { currentPlaylist, playTrack } from "../Player.js";
 import { PAGE, scrollPositions } from "../utils.js";
-import { onMounted, onBeforeUnmount, ref, useRoute, watch } from "../vue.js";
-import { store } from "../stores/playlist.js";
+import { onMounted, onBeforeUnmount, ref, useRoute, watch, computed, storeToRefs } from "../vue.js";
+import { usePlaylistStore } from "../stores/playlist.js";
 
 export const playlistsPlaylist = ref([]);
-
-const allPlaylists = ref([]);
-
-const fetchSongs = async (playlist) => {
-
-    let url = `/api/playlists/${encodeURIComponent(playlist)}`;
-
-    try {
-        const response = await fetch(url);
-        const result = await response.json();
-        if (result) {
-            playlistsPlaylist.value = result.Data
-        } else {
-            console.error('Error server sent bad result:', result);
-        }
-    } catch (error) {
-        console.error('Error fetching music data:', error);
-    }
-}
-
-const fetchAllPlaylists = async () => {
-    if (allPlaylists.value.length > 0) return;
-
-    let url = `/api/playlists`;
-    try {
-        const response = await fetch(url);
-        const result = await response.json();
-        if (result) {
-            allPlaylists.value = result.Data
-        } else {
-            console.error('Error server sent bad result:', result);
-        }
-    } catch (error) {
-        console.error('Error fetching music data:', error);
-    }
-}
 
 const Playlists = {
     components: {
         SongsTile,
         PlaylistListItem
-
     },
     setup: () => {
 
         const r = useRoute()
+
+        const store = usePlaylistStore()
+
+        const { favs, playlists } = storeToRefs(store)
 
         const name = ref("")
 
@@ -60,10 +27,8 @@ const Playlists = {
             name.value = n
             if (n) {
                 updatePageTitle(`${PAGE.PLAYLIST} - ${n}`)
-                fetchSongs(n)
             } else {
                 updatePageTitle(PAGE.PLAYLIST)
-                fetchAllPlaylists()
             }
         }, { immediate: true })
 
@@ -83,12 +48,13 @@ const Playlists = {
             window.scrollTo({ left: 0, top: scrollPositions.value["Playlists"] || 0, behavior: "auto" })
         });
 
+
+
         return {
             play,
             name,
-            fav: store.playlist.favs,
             playlistsPlaylist,
-            allPlaylists
+            playlists
         }
     },
     template: `
@@ -103,8 +69,8 @@ const Playlists = {
     <div v-else>
         <div class="my-3 d-flex flex-column">
             <ul class="list-group">
-                <PlaylistListItem :item="fav" />
-                <PlaylistListItem v-for="(item, index) in allPlaylists" :key="index+item.Name" :item="item" />
+                <PlaylistListItem :id="'favourites'" /> 
+                <PlaylistListItem v-for="(item, key) in playlists" :key="key" :id="key" />
             </ul>
         </div>
 
