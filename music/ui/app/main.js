@@ -1,18 +1,18 @@
-import { modalArtworkUrl } from "./ui/modals.js";
-import { Player, playPause, nextTrack, previousTrack, currentTrack, isPlaying } from "./ui/Player.js";
-import { Settings } from "./ui/Settings.js";
-import { Albums } from "./ui/tabs/Albums.js";
-import { Songs } from "./ui/tabs/Songs.js";
-import { Artists } from "./ui/tabs/Artists.js";
-import { Playlists } from "./ui/tabs/Playlists.js";
-import { PAGE, setupMediaSession } from "./ui/utils.js";
-import { computed, createApp, createPinia, createRouter, createWebHistory, onMounted, ref, watch } from "./ui/vue.js";
-import { Folders } from "./ui/tabs/Folders.js";
-import { History } from "./ui/tabs/History.js";
-import { PropsModal } from "./ui/Props.js";
-import { NowPlaying } from "./ui/tabs/NowPlaying.js";
-import { Years } from "./ui/tabs/Years.js";
-import { usePlaylistStore } from "./ui/stores/playlist.js";
+import { modalArtworkUrl } from "./modals.js";
+import { Player, playPause, nextTrack, previousTrack, currentTrack, isPlaying } from "./Player.js";
+import { Settings } from "./Settings.js";
+import { Albums } from "./tabs/Albums.js";
+import { Songs } from "./tabs/Songs.js";
+import { Artists } from "./tabs/Artists.js";
+import { Playlists } from "./tabs/Playlists.js";
+import { PAGE, setupMediaSession } from "./utils.js";
+import { computed, createApp, createPinia, createRouter, createWebHistory, onMounted, ref, watch } from "./vue.js";
+import { Folders } from "./tabs/Folders.js";
+import { History } from "./tabs/History.js";
+import { PropsModal } from "./Props.js";
+import { NowPlaying } from "./tabs/NowPlaying.js";
+import { Years } from "./tabs/Years.js";
+import { usePlaylistStore } from "./stores/playlist.js";
 
 const currentPage = ref(PAGE.SONGS);
 

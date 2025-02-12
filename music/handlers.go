@@ -342,6 +342,24 @@ func allPlaylists(c *server.Context) error {
 	})
 }
 
+func newPlaylist(c *server.Context) error {
+	name := c.R.FormValue("Name")
+	description := c.R.FormValue("Description")
+	typ := c.R.FormValue("Type")
+	query := c.R.FormValue("Query")
+
+	_, err := db.R.Exec(`INSERT INTO
+	playlists
+		(Name, Description, Type, Query)
+	VALUES
+		(?,?,?,?);`,
+		name, description, typ, query)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, "OK")
+}
+
 func getPlayist(c *server.Context) error {
 	offsetParam := c.R.URL.Query().Get("offset")
 

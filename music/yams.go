@@ -64,6 +64,7 @@ func Api() http.Handler {
 	api.HandleFunc("GET /albums/{album}", h(getAlbum))
 
 	api.HandleFunc("GET /playlists", h(allPlaylists))
+	api.HandleFunc("POST /playlists", h(newPlaylist))
 	api.HandleFunc("GET /playlists/{id}", h(getPlayist))
 	api.HandleFunc("POST /playlists/{id}", h(addToPlayist))
 	api.HandleFunc("DELETE /playlists/{id}", h(deleteFromPlaylist))
