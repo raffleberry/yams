@@ -65,25 +65,7 @@
     </div> -->
 
     <!-- Tabs for navigation -->
-    <div class="nav nav-tabs sticky-top d-flex justify-content-between" style="background-color: white;">
-      <div class="d-flex flex-row flex-wrap">
-        <li class="nav-item"><router-link class="nav-link" active-class="active" to="/">Songs</router-link></li>
-        <li class="nav-item"><router-link class="nav-link" active-class="active" to="/albums">Albums</router-link></li>
-        <li class="nav-item"><router-link class="nav-link" active-class="active" to="/artists">Artists</router-link>
-        </li>
-        <li class="nav-item"><router-link class="nav-link" active-class="active" to="/playlists">Playlist</router-link>
-        <li class="nav-item"><router-link class="nav-link" active-class="active" to="/folders">Folders</router-link>
-        <li class="nav-item"><router-link class="nav-link" active-class="active" to="/years">Years</router-link>
-        <li class="nav-item"><router-link class="nav-link" active-class="active" to="/history">History</router-link>
-      </div>
-
-      <div class="d-flex flex-row">
-        <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#modalSettings" aria-label="Settings">
-          <i class="bi bi-gear-fill" style="font-size: 1.25rem;"></i>
-        </button>
-      </div>
-
-    </div>
+    <navigation></navigation>
 
     <div class="mt-3" style="margin-bottom: 200px;">
       <router-view></router-view>
@@ -104,6 +86,25 @@
         </div>
       </div>
     </div>
+
+    <!-- AddToPlaylist Modal -->
+    <modal-add-to-playlist></modal-add-to-playlist>
+
+    <!-- NewPlaylist Modal -->
+    <div id="modalNewPlaylist" class="modal fade" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">New Playlist</h5>
+            <button type="button" class="btn-close" data-bs-toggle="modal" data-bs-target="#modalNewPlaylist"></button>
+          </div>
+          <div class="modal-body text-center">
+            <img :src="modalArtworkUrl" alt="Artwork" class="img-fluid">
+          </div>
+        </div>
+      </div>
+    </div>
+
 
     <!-- Settings Modal -->
     <settings></settings>

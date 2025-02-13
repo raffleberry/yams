@@ -1,8 +1,8 @@
 import { PlaylistListItem } from "../components/PlaylistListItem.js";
 import { SongsTile } from "../components/SongTile.js";
-import { updatePageTitle } from "../../main.js";
+import { updatePageTitle } from "../main.js";
 import { currentPlaylist, playTrack } from "../Player.js";
-import { PAGE, scrollPositions } from "../utils.js";
+import { currentPage, PAGE, scrollPositions } from "../utils.js";
 import { onMounted, onBeforeUnmount, ref, useRoute, watch, computed, storeToRefs } from "../vue.js";
 import { usePlaylistStore } from "../stores/playlist.js";
 
@@ -19,18 +19,26 @@ const Playlists = {
 
         const store = usePlaylistStore()
 
-        const { favs, playlists } = storeToRefs(store)
+        const { favs, playlists, loading } = storeToRefs(store)
 
         const name = ref("")
 
-        watch(() => r.params.name, (n) => {
+        watch([loading, r], () => {
+            const n = r.params.name
             name.value = n
             if (n) {
                 updatePageTitle(`${PAGE.PLAYLIST} - ${n}`)
+                currentPage.value = PAGE.PLAYLIST
             } else {
-                updatePageTitle(PAGE.PLAYLIST)
+                updatePageTitle(PAGE.PLAYLISTS)
+                currentPage.value = PAGE.PLAYLISTS
+            }
+            console.log(n)
+            if (!loading.value && n) {
+                playlistsPlaylist.value = name.value === "favourites" ? favs.value : playlists.value[n].Tracks
             }
         }, { immediate: true })
+
 
         const play = (track) => {
             if (currentPlaylist.value !== PAGE.PLAYLIST) {

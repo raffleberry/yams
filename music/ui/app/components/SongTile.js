@@ -1,8 +1,9 @@
-import { highlight, getArtwork, formatDuration, PAGE } from "../utils.js";
+import { highlight, getArtwork, formatDuration, PAGE, isSameTrack, inPlaylist } from "../utils.js";
 import { modalArtworkUrl } from "../modals.js";
 import { computed, ref, storeToRefs } from "../vue.js";
 import { currentTrack, isPlaying, playPause } from "../Player.js";
 import { usePlaylistStore } from "../stores/playlist.js";
+import { selectedTrack as mTrack } from "../modals/common.js";
 
 
 const SongsTile = {
@@ -40,7 +41,7 @@ const SongsTile = {
 
         const store = usePlaylistStore()
         const { addFav, remFav } = store
-        const { favs } = storeToRefs(store)
+        const { favs, playlists } = storeToRefs(store)
 
         const isFavourite = computed(() => {
             if (favs.value.includes(track.value)) {
@@ -56,6 +57,25 @@ const SongsTile = {
                 addFav(track.value)
             }
         }
+
+        const addToPlaylist = (track) => {
+            mTrack.value = track
+        }
+
+        const inPlaylistCnt = computed(() => {
+            let cnt = 0;
+            for (const [id, val] of Object.entries(playlists.value)) {
+                if (inPlaylist(val, track.value)) {
+                    cnt++;
+                }
+            }
+
+            if (cnt > 0) {
+                return `${cnt}`;
+            } else {
+                return '+';
+            }
+        })
 
 
         return {
@@ -77,6 +97,8 @@ const SongsTile = {
             formatDuration,
             highlight,
             getArtwork,
+            addToPlaylist,
+            inPlaylistCnt,
             modalArtworkUrl,
         }
     },
@@ -88,6 +110,7 @@ const SongsTile = {
             <div>
                 <div>
                     <button class="btn btn-info btn-sm" @click="updateFavourite">{{ isFavourite ? '⭐' : '★' }}</button>
+                    <button data-bs-toggle="modal" data-bs-target="#ModalAddToPlaylist" @click="addToPlaylist(track)" class="btn btn-primary btn-sm">{{inPlaylistCnt}}</button>
                     <span class="ms-2"></span>
                     <span v-if="dontLinkAlbum">{{ track.Track }}. </span>
                     <span v-html="highlight(track.Title, searchTerm)"></span>

@@ -2,6 +2,7 @@ import { defineStore, ref } from "../vue.js";
 
 
 export const usePlaylistStore = defineStore('playlist', () => {
+    const loading = ref(true)
     const favs = ref([])
     const playlists = ref({})
 
@@ -12,7 +13,6 @@ export const usePlaylistStore = defineStore('playlist', () => {
                 const json = await res.json()
                 favs.value = json.Data
             }
-
         } catch (error) {
             console.error('Error fetching favourites:', error);
         }
@@ -34,6 +34,7 @@ export const usePlaylistStore = defineStore('playlist', () => {
 
     const fetchAll = async () => {
         try {
+            loading.value = true
             const res = await fetch('/api/playlists')
             if (res.status != 200) {
                 throw new Error('Failed to fetch playlists')
@@ -53,6 +54,8 @@ export const usePlaylistStore = defineStore('playlist', () => {
             playlists.value = data
         } catch (error) {
             console.error('Error fetching playlists:', error);
+        } finally {
+            loading.value = false
         }
     }
 
@@ -146,12 +149,14 @@ export const usePlaylistStore = defineStore('playlist', () => {
             console.error(error)
         }
     }
-
+    fetchAll();
+    fetchFav();
     return {
         favs, playlists,
         fetchFav, fetchAll,
         addFav, remFav,
         add, rem,
+        loading
     }
 
 })

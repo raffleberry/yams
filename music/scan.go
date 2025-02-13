@@ -87,7 +87,9 @@ func initRtables() error {
 			Name TEXT,
 			Description TEXT,
 			Type CHECK(Type IN ('LIST', 'QUERY')),
-			Query TEXT
+			Query TEXT,
+			CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+			UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
 		);`,
 
 		`CREATE TABLE IF NOT EXISTS playlists_songs (

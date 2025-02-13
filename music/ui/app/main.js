@@ -13,6 +13,8 @@ import { PropsModal } from "./Props.js";
 import { NowPlaying } from "./tabs/NowPlaying.js";
 import { Years } from "./tabs/Years.js";
 import { usePlaylistStore } from "./stores/playlist.js";
+import { ModalAddToPlaylist } from "./modals/AddToPlaylist.js";
+import { Navigation } from "./components/Navigation.js";
 
 const currentPage = ref(PAGE.SONGS);
 
@@ -65,6 +67,9 @@ const app = createApp({
         Player,
         Settings,
         PropsModal,
+
+        ModalAddToPlaylist,
+        Navigation
     },
 
     setup() {
@@ -73,8 +78,6 @@ const app = createApp({
 
         onMounted(() => {
             setupMediaSession(playPause, playPause, nextTrack, previousTrack);
-            fetchFav();
-            fetchAll();
         });
 
         return {

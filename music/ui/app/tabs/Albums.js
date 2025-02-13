@@ -1,9 +1,9 @@
 import { AlbumListItem } from "../components/AlbumListItem.js";
 import { SongsTile } from "../components/SongTile.js";
-import { updatePageTitle } from "../../main.js";
+import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
 import { currentPlaylist, playTrack } from "../Player.js";
-import { formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
+import { currentPage, formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
 import { onMounted, onBeforeUnmount, useRoute, ref, onUpdated, watch } from "../vue.js";
 
 export const albumsPlaylist = ref([]);
@@ -58,9 +58,11 @@ const Albums = {
             names.value = n
             if (n) {
                 updatePageTitle(`${PAGE.ALBUM} - ${n}`)
+                currentPage.value = PAGE.ALBUM
                 fetchSongs(n)
             } else {
                 updatePageTitle(PAGE.ALBUMS)
+                currentPage.value = PAGE.ALBUMS
                 fetchAllAlbums()
             }
         }, { immediate: true })

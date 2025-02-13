@@ -1,10 +1,21 @@
+import { selectedTrack } from "../modals/common.js";
 import { usePlaylistStore } from "../stores/playlist.js";
-import { highlight, getArtwork, formatDuration, PAGE } from "../utils.js";
+import { highlight, getArtwork, formatDuration, PAGE, inPlaylist } from "../utils.js";
 import { computed, storeToRefs, toRef } from "../vue.js";
 
 const PlaylistListItem = {
     props: {
-        id: {}
+        id: {},
+        checkbox: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
+        checkboxHandler: {
+            type: Function,
+            required: false,
+            default: (checked, id) => { }
+        }
     },
     components: {
 
@@ -30,14 +41,30 @@ const PlaylistListItem = {
             })
         }
 
+        const checkboxHandler = (e) => {
+            if (e.target.checked) {
+                props.checkboxHandler(true, item.value.Id)
+            } else {
+                props.checkboxHandler(false, item.value.Id)
+            }
+        }
+
+        const checked = computed(() => {
+            return inPlaylist(item.value, selectedTrack.value)
+        })
+
 
         return {
             PAGE,
-            item
+            item,
+            checkbox: props.checkbox,
+            checked,
+            checkboxHandler
         }
     },
     template: `
     <li class="list-group-item d-flex justify-content-flex-start align-items-center">
+        <span class="px-2" v-if="checkbox"> <input :checked="checked" type="checkbox" @change="checkboxHandler" /> </span>
         <router-link :to="{ name: PAGE.PLAYLIST, params: { name: item.Id !== -1 ? item.Id : item.Name?.toLowerCase() } }"> {{ item.Name }} </router-link> <span> - {{ item.Description }} ({{ item.Tracks.length }}) </span>
     </li>
     `
