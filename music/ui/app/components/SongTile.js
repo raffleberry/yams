@@ -1,9 +1,9 @@
-import { highlight, getArtwork, formatDuration, PAGE, isSameTrack, inPlaylist } from "../utils.js";
 import { modalArtworkUrl } from "../modals.js";
-import { computed, ref, storeToRefs } from "../vue.js";
+import { selectedTrack as mTrack } from "../modals/common.js";
 import { currentTrack, isPlaying, playPause } from "../Player.js";
 import { usePlaylistStore } from "../stores/playlist.js";
-import { selectedTrack as mTrack } from "../modals/common.js";
+import { formatDuration, getArtwork, highlight, inPlaylist, PAGE } from "../utils.js";
+import { computed, ref, storeToRefs } from "../vue.js";
 
 
 const SongsTile = {

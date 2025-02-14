@@ -4,7 +4,7 @@ import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
 import { currentPlaylist, playTrack } from "../Player.js";
 import { currentPage, formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
-import { onMounted, onBeforeUnmount, useRoute, ref, onUpdated, watch } from "../vue.js";
+import { onBeforeUnmount, onMounted, ref, useRoute, watch } from "../vue.js";
 
 export const artistsPlaylist = ref([]);
 

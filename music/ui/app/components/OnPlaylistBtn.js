@@ -1,8 +1,5 @@
-import { highlight, getArtwork, formatDuration, PAGE } from "../utils.js";
-import { modalArtworkUrl } from "../modals.js";
-import { computed, ref, storeToRefs } from "../vue.js";
-import { currentTrack, isPlaying, playPause } from "../Player.js";
 import { usePlaylistStore } from "../stores/playlist.js";
+import { computed } from "../vue.js";
 
 
 const OnPlaylistBtn = {

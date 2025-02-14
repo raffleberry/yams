@@ -2,9 +2,9 @@ import { PlaylistListItem } from "../components/PlaylistListItem.js";
 import { SongsTile } from "../components/SongTile.js";
 import { updatePageTitle } from "../main.js";
 import { currentPlaylist, playTrack } from "../Player.js";
-import { currentPage, PAGE, scrollPositions } from "../utils.js";
-import { onMounted, onBeforeUnmount, ref, useRoute, watch, computed, storeToRefs } from "../vue.js";
 import { usePlaylistStore } from "../stores/playlist.js";
+import { currentPage, PAGE, scrollPositions } from "../utils.js";
+import { onBeforeUnmount, onMounted, ref, storeToRefs, useRoute, watch } from "../vue.js";
 
 export const playlistsPlaylist = ref([]);
 

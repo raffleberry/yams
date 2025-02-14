@@ -2,7 +2,7 @@ import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
 import { currentPlaylist, playTrack } from "../Player.js";
 import { currentPage, formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
-import { onMounted, onBeforeUnmount, ref } from "../vue.js";
+import { onBeforeUnmount, onMounted, ref } from "../vue.js";
 
 export const historyPlaylist = ref([]);
 const nextOffset = ref(-1);

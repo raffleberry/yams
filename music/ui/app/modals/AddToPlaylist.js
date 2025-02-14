@@ -51,4 +51,4 @@ const ModalAddToPlaylist = {
 `
 }
 
-export { ModalAddToPlaylist };
+export { ModalAddToPlaylist }

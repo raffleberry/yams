@@ -5,7 +5,7 @@ import { artistsPlaylist } from "./tabs/Artists.js";
 import { historyPlaylist } from "./tabs/History.js";
 import { songsPlaylist } from "./tabs/Songs.js";
 import { formatDuration, getArtwork, getSrc, PAGE, setMediaSessionMetadata } from "./utils.js";
-import { ref, computed } from "./vue.js";
+import { computed, ref } from "./vue.js";
 
 export const currentPlaylist = ref(PAGE.SONGS);
 
@@ -279,4 +279,4 @@ const Player = {
 `
 }
 
-export { Player }
+export { Player };

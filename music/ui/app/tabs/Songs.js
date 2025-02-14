@@ -1,9 +1,9 @@
-import { ref, onMounted, watch, onBeforeUnmount } from "../vue.js";
-import { highlight, getArtwork, formatDuration, scrollPositions, PAGE, currentPage } from "../utils.js";
 import { currentPlaylist, playTrack } from "../Player.js";
-import { modalArtworkUrl } from "../modals.js";
-import { updatePageTitle } from "../main.js";
 import { SongsTile } from "../components/SongTile.js";
+import { updatePageTitle } from "../main.js";
+import { modalArtworkUrl } from "../modals.js";
+import { PAGE, currentPage, formatDuration, getArtwork, highlight, scrollPositions } from "../utils.js";
+import { onBeforeUnmount, onMounted, ref, watch } from "../vue.js";
 
 export const songsPlaylist = ref([]);
 var shuffleList = []

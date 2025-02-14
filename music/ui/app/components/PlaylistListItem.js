@@ -1,7 +1,7 @@
 import { selectedTrack } from "../modals/common.js";
 import { usePlaylistStore } from "../stores/playlist.js";
-import { highlight, getArtwork, formatDuration, PAGE, inPlaylist } from "../utils.js";
-import { computed, storeToRefs, toRef } from "../vue.js";
+import { inPlaylist, PAGE } from "../utils.js";
+import { computed, storeToRefs } from "../vue.js";
 
 const PlaylistListItem = {
     props: {

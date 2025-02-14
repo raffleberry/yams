@@ -1,5 +1,4 @@
-import { highlight, getArtwork, formatDuration, PAGE } from "../utils.js";
-import { modalArtworkUrl } from "../modals.js";
+import { PAGE } from "../utils.js";
 
 const AlbumListItem = {
     props: {

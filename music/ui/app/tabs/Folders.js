@@ -1,6 +1,6 @@
 import { updatePageTitle } from "../main.js";
 import { currentPage, PAGE, scrollPositions } from "../utils.js";
-import { onMounted, onBeforeUnmount } from "../vue.js";
+import { onBeforeUnmount, onMounted } from "../vue.js";
 
 
 const Folders = {
