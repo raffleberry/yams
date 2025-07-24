@@ -5,116 +5,10 @@ import meta
 from typing import Dict
 from pathlib import Path
 import datetime
-import mutagen
 
 log = logging.getLogger(__name__)
 
 IS_SCANNING = False
-
-
-def init_tables():
-    local_tables = [
-        """
-CREATE TABLE IF NOT EXISTS files (
-    Path TEXT PRIMARY KEY,
-    Size INTEGER,
-    Title TEXT,
-    Artists TEXT,
-    Album TEXT,
-    Comment TEXT,
-    Genre TEXT,
-    Year TEXT,
-    Track INTEGER,
-    Length INTEGER,
-    Bitrate INTEGER,
-    Samplerate INTEGER,
-    Channels INTEGER,
-    Artwork BLOB,
-    Lyrics TEXT
-);
-""",
-        """
-CREATE TABLE IF NOT EXISTS scanned (
-    Path TEXT PRIMARY KEY
-);
-""",
-        """
-CREATE TABLE IF NOT EXISTS last_scan (
-    Time DATETIME,
-    Path TEXT PRIMARY KEY,
-    InDisk INTEGER,
-    InDb INTEGER,
-    MissingFiles INTEGER,
-    NewFiles INTEGER,
-    Err TEXT
-);
-""",
-    ]
-    with db.L() as conn:
-        cur = conn.cursor()
-        for table in local_tables:
-            cur.execute(table)
-        conn.commit()
-
-    remote_tables = [
-        """
-CREATE TABLE IF NOT EXISTS history (
-    Time DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-    Path TEXT,
-    Size INTEGER,
-    Title TEXT,
-    Artists TEXT,
-    Album TEXT,
-    Genre TEXT,
-    Year TEXT,
-    Track INTEGER,
-    Length INTEGER
-);
-""",
-        """
-CREATE TABLE IF NOT EXISTS playlists (
-    Id INTEGER PRIMARY KEY,
-    Name TEXT,
-    Description TEXT,
-    Type CHECK(Type IN ('LIST', 'QUERY')),
-    Query TEXT
-);
-""",
-        """
-CREATE TABLE IF NOT EXISTS playlists_songs (
-    PlaylistId INTEGER,
-
-    Path TEXT,
-    Size INTEGER,
-    Title TEXT,
-    Artists TEXT,
-    Album TEXT,
-    Genre TEXT,
-    Year TEXT,
-    Track INTEGER,
-    Length INTEGER
-);
-""",
-        """
-CREATE TABLE IF NOT EXISTS favourites (
-    Path TEXT,
-    Size INTEGER,
-    Title TEXT,
-    Artists TEXT,
-    Album TEXT,
-    Genre TEXT,
-    Year TEXT,
-    Track INTEGER,
-    Length INTEGER
-);
-""",
-    ]
-    with db.R() as conn:
-        cur = conn.cursor()
-        for table in remote_tables:
-            cur.execute(table)
-        conn.commit()
 
 
 def is_media(file_name: str) -> bool:
@@ -139,7 +33,6 @@ def is_scanned(path: str) -> bool:
 
 
 def add_db(new_files: list):
-    ok = []
     failed = []
     with db.L() as conn:
         cur = conn.cursor()
@@ -183,7 +76,9 @@ def add_db(new_files: list):
             )
             conn.commit()
 
-        log.info(f"Added {len(ok)} new files. Failed: {len(failed)}")
+        log.info(
+            f"Added {len(new_files) - len(failed)} new files. Failed: {len(failed)}"
+        )
 
 
 def clean_db(not_in_dir: list):
@@ -202,7 +97,7 @@ def insert_last_scan(last_scan) -> Dict:
             "INSERT OR REPLACE INTO last_scan(Time, Path, InDisk, InDb, MissingFiles, NewFiles, Err) VALUES (?,?,?,?,?,?,?);",
             (
                 datetime.datetime.now(),
-                yams.ROOT_DIR,
+                yams.config.MusicDir,
                 last_scan["in_disk"],
                 last_scan["in_db"],
                 last_scan["missing_files"],
@@ -219,14 +114,17 @@ def scan_db() -> set:
         cur = conn.cursor()
         cur.execute("SELECT Path FROM files;")
         rows = cur.fetchall()
-        return set(row[0] for row in rows if str(row[0]).startswith(yams.ROOT_DIR))
+        return set(
+            row[0] for row in rows if str(row[0]).startswith(yams.config.MusicDir)
+        )
 
 
 def scan_disk():
     files = set()
-    for file in Path(yams.ROOT_DIR).rglob("*"):
+    log.info(f"Scanning: {Path(yams.config.MusicDir)}")
+    for file in Path(yams.config.MusicDir).rglob("*"):
         if file.is_file() and is_media(file.name):
-            set.add(str(file))
+            files.add(str(file))
     return files
 
 
@@ -266,7 +164,7 @@ def scan():
 
         log.info("Done scanning")
     except Exception as e:
-        log.error(e)
+        log.error(e, exc_info=True)
         last_scan["err"] = str(e)
     finally:
         IS_SCANNING = False

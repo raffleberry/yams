@@ -20,7 +20,7 @@ if [ "$1" = "run" ]; then
   go run cmd/yams/yams.go
 elif [ "$1" = "dev" ]; then
   export DEV=1
-  go run cmd/yams/yams.go
+  uv run fastapi dev
 elif [ "$1" = "install" ]; then
   mkdir -p $INSTALL_DIR
   go build -o $INSTALL_DIR/ cmd/yams/yams.go

@@ -8,3 +8,108 @@ def L():
 
 def R():
     return sqlite3.connect(yams.DB_REMOTE)
+
+
+def init_tables():
+    local_tables = [
+        """
+CREATE TABLE IF NOT EXISTS files (
+    Path TEXT PRIMARY KEY,
+    Size INTEGER,
+    Title TEXT,
+    Artists TEXT,
+    Album TEXT,
+    Comment TEXT,
+    Genre TEXT,
+    Year TEXT,
+    Track INTEGER,
+    Length INTEGER,
+    Bitrate INTEGER,
+    Samplerate INTEGER,
+    Channels INTEGER,
+    Artwork BLOB,
+    Lyrics TEXT
+);
+""",
+        """
+CREATE TABLE IF NOT EXISTS scanned (
+    Path TEXT PRIMARY KEY
+);
+""",
+        """
+CREATE TABLE IF NOT EXISTS last_scan (
+    Time DATETIME,
+    Path TEXT PRIMARY KEY,
+    InDisk INTEGER,
+    InDb INTEGER,
+    MissingFiles INTEGER,
+    NewFiles INTEGER,
+    Err TEXT
+);
+""",
+    ]
+    with L() as conn:
+        cur = conn.cursor()
+        for table in local_tables:
+            cur.execute(table)
+        conn.commit()
+
+    remote_tables = [
+        """
+CREATE TABLE IF NOT EXISTS history (
+    Time DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    Path TEXT,
+    Size INTEGER,
+    Title TEXT,
+    Artists TEXT,
+    Album TEXT,
+    Genre TEXT,
+    Year TEXT,
+    Track INTEGER,
+    Length INTEGER
+);
+""",
+        """
+CREATE TABLE IF NOT EXISTS playlists (
+    Id INTEGER PRIMARY KEY,
+    Name TEXT,
+    Description TEXT,
+    Type CHECK(Type IN ('LIST', 'QUERY')),
+    Query TEXT
+);
+""",
+        """
+CREATE TABLE IF NOT EXISTS playlists_songs (
+    PlaylistId INTEGER,
+
+    Path TEXT,
+    Size INTEGER,
+    Title TEXT,
+    Artists TEXT,
+    Album TEXT,
+    Genre TEXT,
+    Year TEXT,
+    Track INTEGER,
+    Length INTEGER
+);
+""",
+        """
+CREATE TABLE IF NOT EXISTS favourites (
+    Path TEXT,
+    Size INTEGER,
+    Title TEXT,
+    Artists TEXT,
+    Album TEXT,
+    Genre TEXT,
+    Year TEXT,
+    Track INTEGER,
+    Length INTEGER
+);
+""",
+    ]
+    with R() as conn:
+        cur = conn.cursor()
+        for table in remote_tables:
+            cur.execute(table)
+        conn.commit()

@@ -11,6 +11,19 @@ def get(path: str) -> Dict:
     d = {
         "Path": path,
         "Size": Path(path).stat().st_size,
+        "Title": None,
+        "Artists": None,
+        "Album": None,
+        "Comment": None,
+        "Genre": None,
+        "Year": None,
+        "Track": None,
+        "Length": None,
+        "Bitrate": None,
+        "Samplerate": None,
+        "Channels": None,
+        "Artwork": None,
+        "Lyrics": None,
     }
     if path.lower().endswith(".mp3"):
         d["Title"] = str(m.get("TIT2", ""))
