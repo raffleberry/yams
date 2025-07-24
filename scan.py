@@ -37,11 +37,10 @@ def add_db(new_files: list):
     with db.L() as conn:
         cur = conn.cursor()
         for path in new_files:
-            m = {}
             try:
                 m = meta.get(path)
             except Exception as e:
-                log.info(f"Failed to add {path} to db. Error: {e}")
+                log.error(e, f"Failed to get meta for:{path} to db")
                 failed.append(path)
             cur.execute(
                 """
@@ -57,21 +56,21 @@ def add_db(new_files: list):
                     ?, ?, ?);
                 """,
                 (
-                    m["Path"],
-                    m["Size"],
-                    m["Title"],
-                    m["Artists"],
-                    m["Album"],
-                    m["Comment"],
-                    m["Genre"],
-                    m["Year"],
-                    m["Track"],
-                    m["Length"],
-                    m["Bitrate"],
-                    m["Samplerate"],
-                    m["Channels"],
-                    m["Artwork"],
-                    m["Lyrics"],
+                    m.Path,
+                    m.Size,
+                    m.Title,
+                    m.Artists,
+                    m.Album,
+                    m.Comment,
+                    m.Genre,
+                    m.Year,
+                    m.Track,
+                    m.Length,
+                    m.Bitrate,
+                    m.Samplerate,
+                    m.Channels,
+                    m.Artwork,
+                    m.Lyrics,
                 ),
             )
             conn.commit()

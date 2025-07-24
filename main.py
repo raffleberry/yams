@@ -1,6 +1,7 @@
 import yams
 import scan
 import db
+import api
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
@@ -13,6 +14,8 @@ logging.basicConfig(
 )
 
 app = FastAPI()
+
+app.include_router(api.router, prefix="/api")
 
 
 @app.get("/{path:path}")
