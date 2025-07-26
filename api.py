@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Response
+from fastapi.responses import FileResponse
 import db
 import yams
 import models
@@ -31,7 +32,6 @@ async def all():
         """)
         rows = cur.fetchall()
         for row in rows:
-            log.info(f"{type(row[5])}, {row[5]}")
             files.append(
                 models.Music(
                     Path=row[0],
@@ -53,7 +53,6 @@ async def all():
 
 @router.get("/artwork")
 async def artwork(path=None):
-    log.info(str(Path(path)))
     if path is not None:
         with db.L() as conn:
             cur = conn.cursor()
@@ -63,11 +62,62 @@ async def artwork(path=None):
                 return Response(content=row[0])
 
 
-# api.HandleFunc("GET /artwork", h(artwork))
+@router.get("/files")
+async def files(path=None):
+    if path is not None and Path(path).is_file():
+        return FileResponse(path)
+
+
+@router.get("/search")
+async def search(query="", offset: int = 0):
+    limit = 10
+    q = f"""SELECT
+        Path, Title, Size,
+        Artists, Album, Genre,
+        Year, Track, Length,
+        Bitrate, Samplerate, Channels
+    FROM
+        files
+    WHERE
+        Path GLOB '{yams.config.MusicDir}*'
+    AND
+        (
+            Artists LIKE '%{query}%'
+            OR Album LIKE '%{query}%'
+            OR Title LIKE '%{query}%'
+            OR Year LIKE '%{query}%'
+        )
+	GROUP BY Title, Artists, Album
+    LIMIT ? OFFSET ?;"""
+    files = []
+    with db.L() as conn:
+        cur = conn.cursor()
+        cur.execute(q, (limit, offset))
+        rows = cur.fetchall()
+        for row in rows:
+            files.append(
+                models.Music(
+                    Path=row[0],
+                    Title=row[1],
+                    Size=row[2],
+                    Artists=row[3],
+                    Album=row[4],
+                    Genre=row[5],
+                    Year=row[6],
+                    Track=row[7],
+                    Length=row[8],
+                    Bitrate=row[9],
+                    Samplerate=row[10],
+                    Channels=row[11],
+                )
+            )
+        return {
+            "Data": files,
+            "Next": -1 if len(files) < limit else offset + limit,
+        }
+
 
 # api.HandleFunc("GET /props", h(props))
-# api.HandleFunc("GET /files", h(files))
-# api.HandleFunc("GET /search", h(search))
 
 # api.HandleFunc("GET /history", h(getHistory))
 # api.HandleFunc("POST /history", h(addToHistory))

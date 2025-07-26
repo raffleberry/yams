@@ -158,8 +158,10 @@ def scan():
         last_scan["missing_files"] = len(not_in_disk)
         last_scan["new_files"] = len(not_in_db)
 
-        clean_db(not_in_disk)
+        log.info(f"Found {len(not_in_db)} new files")
+
         add_db(not_in_db)
+        clean_db(not_in_disk)
 
         log.info("Done scanning")
     except Exception as e:

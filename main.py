@@ -5,6 +5,7 @@ import api
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
+from contextlib import asynccontextmanager
 import logging
 
 logging.basicConfig(
@@ -13,7 +14,18 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # startup
+    yams.init()
+    db.init_tables()
+    scan.scan()
+    yield
+    # shutdown
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(api.router, prefix="/api")
 
@@ -24,15 +36,6 @@ async def frontend_handler(path: str):
     if not fp.exists() or not fp.is_file():
         fp = Path("ui") / "index.html"
     return FileResponse(fp)
-
-
-def init():
-    yams.init()
-    db.init_tables()
-    scan.scan()
-
-
-init()
 
 
 def main():
