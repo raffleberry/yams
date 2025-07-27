@@ -117,7 +117,71 @@ async def search(query="", offset: int = 0):
         }
 
 
-# api.HandleFunc("GET /props", h(props))
+@router.get("/history")
+async def history_get(offset: int = 0):
+    limit = 10
+    q = """
+        SELECT
+			Time, Title, 
+			Artists, Album, Genre,
+			Year, Track, Length
+		FROM
+			history
+		ORDER BY
+			Time DESC LIMIT ? OFFSET ?;
+    """
+    files = []
+    with db.R() as conn:
+        cur = conn.cursor()
+        cur.execute(q, (limit, offset))
+        rows = cur.fetchall()
+        for row in rows:
+            h = models.History(
+                Time=row[0],
+                Title=row[1],
+                Artists=row[2],
+                Album=row[3],
+                Genre=row[4],
+                Year=row[5],
+                Track=row[6],
+                Length=row[7],
+            )
+            h.updateMeta()
+            files.append(h)
+        return {
+            "Data": files,
+            "Next": -1 if len(files) < limit else offset + limit,
+        }
+
+
+@router.post("/history")
+async def history_add(h: models.History):
+    with db.R() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """INSERT INTO history (
+		Title, Artists, Album,
+        Genre, Year, Track, Length)
+        VALUES
+		(?,?,?,
+        ?,?,?,?);
+        """,
+            (
+                h.Title,
+                h.Artists,
+                h.Album,
+                h.Genre,
+                h.Year,
+                h.Track,
+                h.Length,
+            ),
+        )
+        return {
+            "Message": "Playback history updated",
+            "Title": h.Title,
+            "Artists": h.Artists,
+        }
+
 
 # api.HandleFunc("GET /history", h(getHistory))
 # api.HandleFunc("POST /history", h(addToHistory))
@@ -137,3 +201,5 @@ async def search(query="", offset: int = 0):
 # api.HandleFunc("GET /isScanning", h(func(c *server.Context) error {
 #     return c.JSON(http.StatusOK, isScanning)
 # }))
+
+# api.HandleFunc("GET /props", h(props))

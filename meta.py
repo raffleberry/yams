@@ -9,6 +9,12 @@ def get(path: str) -> Music:
     if m is None:
         raise Exception(f"Failed to get meta for {path}")
     d = Music(Path=path, Size=Path(path).stat().st_size)
+
+    d.Length = int(m.info.length)
+    d.Bitrate = int(m.info.bitrate // 1000)
+    d.Samplerate = int(m.info.sample_rate)
+    d.Channels = int(m.info.channels)
+
     if path.lower().endswith(".mp3"):
         d.Title = str(m.get("TIT2", ""))
         d.Artists = str(m.get("TPE1", ""))
@@ -33,11 +39,6 @@ def get(path: str) -> Music:
         comment = m.tags.getall("COMM")
         if len(comment) > 0:
             d.Comment = comment[0][0]
-
-        d.Length = int(m.info.length)
-        d.Bitrate = int(m.info.bitrate)
-        d.Samplerate = int(m.info.sample_rate)
-        d.Channels = int(m.info.channels)
 
     elif path.lower().endswith(".m4a"):
         title = m.get("©nam")
@@ -75,11 +76,6 @@ def get(path: str) -> Music:
         lyrics = m.get("©lyr")
         if lyrics is not None and len(lyrics) > 0:
             d.Lyrics = lyrics[0]
-
-        d.Length = int(m.info.length)
-        d.Bitrate = int(m.info.bitrate)
-        d.Samplerate = int(m.info.sample_rate)
-        d.Channels = int(m.info.channels)
 
     elif path.lower().endswith(".flac"):
         title = m.get("title")
@@ -121,10 +117,6 @@ def get(path: str) -> Music:
         if lyrics is not None and len(lyrics) > 0:
             d.Lyrics = lyrics[0]
 
-        d.Length = int(m.info.length)
-        d.Bitrate = int(m.info.bitrate)
-        d.Samplerate = int(m.info.sample_rate)
-        d.Channels = int(m.info.channels)
     else:
         raise Exception(f"unknown file type {path}")
     return d
