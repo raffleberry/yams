@@ -18,14 +18,14 @@ DB_REMOTE = pathlib.Path.joinpath(CONFIG_DIR, "yams_remote.sqlite")
 ROOT_DIR = pathlib.Path.cwd()
 
 
-def read_config(path):
+def _read_config(path):
     global config
     with open(path, "rb") as f:
         data = json.load(f)
         config = Config(**data)
 
 
-def write_config(path, data: BaseModel):
+def _write_config(path, data: BaseModel):
     with open(path, "w") as f:
         f.write(data.model_dump_json(indent=4))
 
@@ -33,5 +33,5 @@ def write_config(path, data: BaseModel):
 def init():
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     if not CONFIG_FILE.exists():
-        write_config(CONFIG_FILE, config)
-    read_config(CONFIG_FILE)
+        _write_config(CONFIG_FILE, config)
+    _read_config(CONFIG_FILE)

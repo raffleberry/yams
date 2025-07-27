@@ -15,8 +15,7 @@ def get(path: str) -> Music:
         d.Album = str(m.get("TALB", ""))
         d.Genre = str(m.get("TCON", ""))
         drc = str(m.get("TDRC", ""))
-        if len(drc) >= 4:
-            d.Year = drc[:4]
+        d.Year = drc[:4]
         trck = str(m.get("TRCK", ""))
         try:
             d.Track = int(trck.split("/")[0])
@@ -59,7 +58,7 @@ def get(path: str) -> Music:
 
         year = m.get("©day")
         if year is not None and len(year) > 0:
-            d.Year = year[0]
+            d.Year = year[0][:4]
 
         track = m.get("trkn")
         if track is not None and len(track) > 0:
@@ -100,7 +99,7 @@ def get(path: str) -> Music:
             d.Genre = genre[0]
 
         year = m.get("date")
-        if year is not None and len(year) > 0 and len(year[0]) >= 4:
+        if year is not None and len(year) > 0:
             d.Year = year[0][:4]
 
         track = m.get("tracknumber")
