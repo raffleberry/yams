@@ -14,28 +14,46 @@ class Config(BaseModel):
 
 
 class Music(BaseModel):
-    Path: str = ""
-    Title: str = ""
-    Size: int = 0
-    Artists: str = ""
-    Album: str = ""
-    Genre: str = ""
-    Year: str = ""
-    Track: int = 0
-    Length: int = 0
-    Bitrate: int = 0
-    Samplerate: int = 0
-    Channels: int = 0
-    Lyrics: str = ""
-    Comment: str = ""
+    Path: Optional[str] = ""
+    Title: Optional[str] = ""
+    Size: Optional[int] = 0
+    Artists: Optional[str] = ""
+    Album: Optional[str] = ""
+    Genre: Optional[str] = ""
+    Year: Optional[str] = ""
+    Track: Optional[int] = 0
+    Length: Optional[int] = 0
+    Bitrate: Optional[int] = 0
+    Samplerate: Optional[int] = 0
+    Channels: Optional[int] = 0
+    Lyrics: Optional[str] = ""
+    Comment: Optional[str] = ""
 
     # auxilary
-    IsFavourite: bool = False
-    PlayCount: int = 0
+    IsFavourite: Optional[bool] = False
+    PlayCount: Optional[int] = 0
 
     # on demand
-    Artwork: bytes = None
-    Props: str = None
+    Artwork: Optional[bytes] = None
+    Props: Optional[str] = None
+
+    def addAux(self):
+        with db.R() as conn:
+            cur = conn.cursor()
+
+            cur.execute(
+                "SELECT COUNT(*) FROM favourites WHERE Title=? AND Artists=? AND Album=?;",
+                (self.Title, self.Artists, self.Album),
+            )
+            row = cur.fetchone()
+            self.IsFavourite = row[0]
+
+            cur.execute(
+                "SELECT COUNT(*) FROM history WHERE Title=? AND Artists=? AND Album=?;",
+                (self.Title, self.Artists, self.Album),
+            )
+            row = cur.fetchone()
+            self.PlayCount = row[0]
 
 
 class History(Music):

@@ -119,4 +119,7 @@ def get(path: str) -> Music:
 
     else:
         raise Exception(f"unknown file type {path}")
+
+    # sanitize artists
+    d.Artists = d.Artists.replace("/", ",")
     return d

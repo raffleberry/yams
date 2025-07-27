@@ -11,7 +11,6 @@ log = logging.getLogger(__name__)
 router = APIRouter()
 
 
-# api.HandleFunc("GET /all", h(all))
 @router.get("/all")
 async def all():
     limit = 10
@@ -32,22 +31,22 @@ async def all():
         """)
         rows = cur.fetchall()
         for row in rows:
-            files.append(
-                models.Music(
-                    Path=row[0],
-                    Title=row[1],
-                    Size=row[2],
-                    Artists=row[3],
-                    Album=row[4],
-                    Genre=row[5],
-                    Year=row[6],
-                    Track=row[7],
-                    Length=row[8],
-                    Bitrate=row[9],
-                    Samplerate=row[10],
-                    Channels=row[11],
-                )
+            m = models.Music(
+                Path=row[0],
+                Title=row[1],
+                Size=row[2],
+                Artists=row[3],
+                Album=row[4],
+                Genre=row[5],
+                Year=row[6],
+                Track=row[7],
+                Length=row[8],
+                Bitrate=row[9],
+                Samplerate=row[10],
+                Channels=row[11],
             )
+            m.addAux()
+            files.append(m)
     return {"Data": files, "Next": -1}
 
 
@@ -95,22 +94,22 @@ async def search(query="", offset: int = 0):
         cur.execute(q, (limit, offset))
         rows = cur.fetchall()
         for row in rows:
-            files.append(
-                models.Music(
-                    Path=row[0],
-                    Title=row[1],
-                    Size=row[2],
-                    Artists=row[3],
-                    Album=row[4],
-                    Genre=row[5],
-                    Year=row[6],
-                    Track=row[7],
-                    Length=row[8],
-                    Bitrate=row[9],
-                    Samplerate=row[10],
-                    Channels=row[11],
-                )
+            m = models.Music(
+                Path=row[0],
+                Title=row[1],
+                Size=row[2],
+                Artists=row[3],
+                Album=row[4],
+                Genre=row[5],
+                Year=row[6],
+                Track=row[7],
+                Length=row[8],
+                Bitrate=row[9],
+                Samplerate=row[10],
+                Channels=row[11],
             )
+            m.addAux()
+            files.append(m)
         return {
             "Data": files,
             "Next": -1 if len(files) < limit else offset + limit,
@@ -176,21 +175,144 @@ async def history_add(h: models.History):
                 h.Length,
             ),
         )
+        conn.commit()
+    return {
+        "Message": "Playback history updated",
+        "Title": h.Title,
+        "Artists": h.Artists,
+    }
+
+
+@router.get("/artists")
+async def artists_all():
+    with db.L() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            f"""
+            SELECT Artists FROM files
+            WHERE Path GLOB '{yams.config.MusicDir}*' group by Artists;
+        """,
+        )
+        files = []
+        rows = cur.fetchall()
+        for row in rows:
+            files.append(models.Music(Artists=row[0]))
+
         return {
-            "Message": "Playback history updated",
-            "Title": h.Title,
-            "Artists": h.Artists,
+            "Data": files,
         }
 
 
-# api.HandleFunc("GET /history", h(getHistory))
-# api.HandleFunc("POST /history", h(addToHistory))
+@router.get("/artists/{artists}")
+async def artists_get(artists: str):
+    q = f"""SELECT
+		Path, Title, Size,
+		Artists, Album, Genre,
+		Year, Track, Length,
+		Bitrate, Samplerate, Channels
+	FROM files WHERE Path GLOB '{yams.config.MusicDir}*'
+    """
+    args = ()
+    for artist in artists.split(","):
+        args += (f"%{artist.strip()}%",)
+        q += " AND Artists LIKE ? "
+    q += " GROUP BY Title, Artists, Album ORDER BY YEAR DESC; "
 
-# api.HandleFunc("GET /artists", h(allArtists))
-# api.HandleFunc("GET /artists/{artists}", h(getArtist))
+    files = []
+    with db.L() as conn:
+        cur = conn.cursor()
+        cur.execute(q, args)
+        rows = cur.fetchall()
+        for row in rows:
+            m = models.Music(
+                Path=row[0],
+                Title=row[1],
+                Size=row[2],
+                Artists=row[3],
+                Album=row[4],
+                Genre=row[5],
+                Year=row[6],
+                Track=row[7],
+                Length=row[8],
+                Bitrate=row[9],
+                Samplerate=row[10],
+                Channels=row[11],
+            )
+            m.addAux()
+            files.append(m)
 
-# api.HandleFunc("GET /albums", h(allAlbums))
-# api.HandleFunc("GET /albums/{album}", h(getAlbum))
+        return {
+            "Data": files,
+        }
+
+
+@router.get("/albums")
+async def albums_all():
+    q = f"""
+    SELECT Album, MIN(Artists) as Artists, Year
+    FROM files
+    WHERE Path GLOB '{yams.config.MusicDir}*' group by Album, Year;
+    """
+
+    files = []
+
+    with db.L() as conn:
+        cur = conn.cursor()
+        cur.execute(q)
+        rows = cur.fetchall()
+        for row in rows:
+            m = models.Music(
+                Album=row[0],
+                Artists=row[1],
+                Year=row[2],
+            )
+            files.append(m)
+    return {
+        "Data": files,
+    }
+
+
+@router.get("/albums/{album}")
+async def albums_get(album: str):
+    q = f"""
+    SELECT
+        Path, Title, Size,
+        Artists, Album, Genre,
+        Year, Track, Length,
+        Bitrate, Samplerate, Channels
+    FROM files WHERE Path GLOB '{yams.config.MusicDir}*'
+    AND Album = ? GROUP BY Title, Artists ORDER BY Track ASC;
+    """
+
+    files = []
+
+    with db.L() as conn:
+        cur = conn.cursor()
+        print(q, album)
+        cur.execute(q, (album,))
+        rows = cur.fetchall()
+        for row in rows:
+            m = models.Music(
+                Path=row[0],
+                Title=row[1],
+                Size=row[2],
+                Artists=row[3],
+                Album=row[4],
+                Genre=row[5],
+                Year=row[6],
+                Track=row[7],
+                Length=row[8],
+                Bitrate=row[9],
+                Samplerate=row[10],
+                Channels=row[11],
+            )
+            m.addAux()
+            files.append(m)
+
+    return {
+        "Data": files,
+    }
+
 
 # api.HandleFunc("GET /playlists", h(allPlaylists))
 # api.HandleFunc("GET /playlists/{id}", h(getPlayist))
