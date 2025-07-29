@@ -314,10 +314,248 @@ async def albums_get(album: str):
     }
 
 
-# api.HandleFunc("GET /playlists", h(allPlaylists))
-# api.HandleFunc("GET /playlists/{id}", h(getPlayist))
-# api.HandleFunc("POST /playlists/{id}", h(addToPlayist))
-# api.HandleFunc("DELETE /playlists/{id}", h(deleteFromPlaylist))
+@router.get("/playlists")
+async def playlists_all():
+    playlists = [
+        models.Playlist(
+            Id=-1,
+            Name="Favourites",
+            Count=getPlaylistCount(-1),
+        )
+    ]
+
+    with db.R() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT Id, Name, Description, Type, Query FROM playlists;")
+        rows = cur.fetchall()
+        for row in rows:
+            p = models.Playlist(
+                Id=row[0],
+                Name=row[1],
+                Description=row[2],
+                Type=row[3],
+                Query=row[4],
+                Count=getPlaylistCount(row[0]),
+            )
+            playlists.append(p)
+    return {
+        "Data": playlists,
+    }
+
+
+@router.get("/playlists/favourites")
+async def playlists_getfav(offset: int = 0):
+    print("Hello")
+    limit = 10
+    files = []
+    with db.R() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """SELECT
+                Title, Artists, Album,
+                Genre, Year, Track, Length
+            FROM
+                favourites;""",
+        )
+        rows = cur.fetchall()
+        for row in rows:
+            m = models.Music(
+                Title=row[0],
+                Artists=row[1],
+                Album=row[2],
+                Genre=row[3],
+                Year=row[4],
+                Track=row[5],
+                Length=row[6],
+            )
+            m.addAux()
+            m.updateMeta()
+            files.append(m)
+
+    return {
+        "Data": files,
+        "Next": -1 if len(files) < limit else offset + limit,
+    }
+
+
+@router.post("/playlists/favourites")
+async def playlists_addfav(m: models.Music):
+    with db.R() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """INSERT INTO favourites (
+		Title, Artists, Album, Genre,
+		Year, Track, Length) VALUES
+		(?,?,?,?,
+		?,?,?);""",
+            (
+                m.Title,
+                m.Artists,
+                m.Album,
+                m.Genre,
+                m.Year,
+                m.Track,
+                m.Length,
+            ),
+        )
+        conn.commit()
+    return {
+        "Message": "Added to favourites",
+        "Title": m.Title,
+        "Artists": m.Artists,
+    }
+
+
+@router.delete("/playlists/favourites")
+async def playlists_delfav(m: models.Music):
+    with db.R() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """DELETE FROM favourites
+		WHERE
+		Title=? and Artists=? and Album=?""",
+            (
+                m.Title,
+                m.Artists,
+                m.Album,
+            ),
+        )
+        conn.commit()
+    return {
+        "Message": "Removed from favourites",
+        "Title": m.Title,
+        "Artists": m.Artists,
+    }
+
+
+@router.get("/playlists/{id}")
+async def playlists_get(id: int, offset: int = 0):
+    limit = 10
+    files = []
+    with db.R() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT Id, Type, Query FROM playlists WHERE Id=?;",
+            (id,),
+        )
+        row = cur.fetchone()
+        if row is None:
+            raise Exception("Playlist not found")
+        p = models.Playlist(
+            Id=row[0],
+            Type=row[3],
+            Query=row[4],
+        )
+
+        if p.Type == models.PlaylistType.LIST:
+            cur.execute(
+                """SELECT
+                    Title, Artists, Album,
+                    Genre, Year, Track, Length
+                FROM
+                    playlists_songs
+                WHERE
+                    PlaylistId = ?;""",
+                (id,),
+            )
+            rows = cur.fetchall()
+            for row in rows:
+                m = models.Music(
+                    Title=row[0],
+                    Artists=row[1],
+                    Album=row[2],
+                    Genre=row[3],
+                    Year=row[4],
+                    Track=row[5],
+                    Length=row[6],
+                )
+                m.addAux()
+                m.updateMeta()
+                files.append(m)
+
+    return {
+        "Data": files,
+        "Next": -1 if len(files) < limit else offset + limit,
+    }
+
+
+@router.post("/playlists/{id}")
+async def playlists_add(id: int, m: models.Music):
+    with db.R() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT Id FROM playlists WHERE Id = ?;", (id,))
+        row = cur.fetchone()
+        if row is None:
+            raise Exception("Playlist not found")
+        cur.execute(
+            """INSERT INTO playlists_songs (
+		PlaylistId, Title,
+		Artists, Album, Genre,
+		Year, Track, Length) VALUES
+		(?, ?,
+		?,?,?,
+		?,?,?);""",
+            (
+                id,
+                m.Title,
+                m.Artists,
+                m.Album,
+                m.Genre,
+                m.Year,
+                m.Track,
+                m.Length,
+            ),
+        )
+        conn.commit()
+
+    return {
+        "Message": "Added to playlist",
+        "Title": m.Title,
+        "Artists": m.Artists,
+    }
+
+
+@router.delete("/playlists/{id}")
+async def playlists_del(id: int, m: models.Music):
+    with db.R() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT Id FROM playlists WHERE Id = ?;", (id,))
+        row = cur.fetchone()
+        if row is None:
+            raise Exception("Playlist not found")
+        cur.execute(
+            """DELETE FROM playlists_songs
+		WHERE
+		Title=? and Artists=? and Album=?
+        and PlaylistId=?""",
+            (
+                m.Title,
+                m.Artists,
+                m.Album,
+                id,
+            ),
+        )
+        conn.commit()
+
+    return {
+        "Message": "Removed from playlist",
+        "Title": m.Title,
+        "Artists": m.Artists,
+    }
+
+
+def getPlaylistCount(id):
+    with db.R() as conn:
+        cur = conn.cursor()
+        if id != -1:
+            cur.execute(
+                "SELECT COUNT(*) FROM playlists_songs where PlaylistId=?;", (id,)
+            )
+        else:
+            cur.execute("SELECT COUNT(*) FROM favourites;")
+        row = cur.fetchone()
+        return row[0]
+
 
 # api.HandleFunc("GET /triggerScan", h(triggerScan))
 # api.HandleFunc("GET /isScanning", h(func(c *server.Context) error {

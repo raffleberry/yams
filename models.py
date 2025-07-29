@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+from enum import Enum
 import db
 import logging
 
@@ -55,10 +56,6 @@ class Music(BaseModel):
             row = cur.fetchone()
             self.PlayCount = row[0]
 
-
-class History(Music):
-    Time: datetime = None
-
     def updateMeta(self):
         try:
             with db.L() as conn:
@@ -89,3 +86,19 @@ class History(Music):
                     self.Channels = row[11]
         except Exception as e:
             log.error(e, "failed while updating meta")
+
+
+class History(Music):
+    Time: datetime = datetime.now()
+
+
+PlaylistType = Enum("PlaylistType", [("LIST", "LIST"), ("QUERY", "QUERY")])
+
+
+class Playlist(BaseModel):
+    Id: Optional[int] = 0
+    Name: Optional[str] = ""
+    Description: Optional[str] = ""
+    Type: Optional[str] = ""
+    Query: Optional[str] = ""
+    Count: Optional[int] = 0
