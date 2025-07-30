@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import Optional
 from datetime import datetime
 from enum import Enum
 import db
@@ -15,28 +14,27 @@ class Config(BaseModel):
 
 
 class Music(BaseModel):
-    Path: Optional[str] = ""
-    Title: Optional[str] = ""
-    Size: Optional[int] = 0
-    Artists: Optional[str] = ""
-    Album: Optional[str] = ""
-    Genre: Optional[str] = ""
-    Year: Optional[str] = ""
-    Track: Optional[int] = 0
-    Length: Optional[int] = 0
-    Bitrate: Optional[int] = 0
-    Samplerate: Optional[int] = 0
-    Channels: Optional[int] = 0
-    Lyrics: Optional[str] = ""
-    Comment: Optional[str] = ""
+    Path: str = ""
+    Title: str = ""
+    Size: int = 0
+    Artists: str = ""
+    Album: str = ""
+    Genre: str = ""
+    Year: str = ""
+    Track: int = 0
+    Length: int = 0
+    Bitrate: int = 0
+    Samplerate: int = 0
+    Channels: int = 0
+    Lyrics: str = ""
+    Comment: str = ""
 
     # auxilary
-    IsFavourite: Optional[bool] = False
-    PlayCount: Optional[int] = 0
+    IsFavourite: bool = False
+    PlayCount: int = 0
 
     # on demand
-    Artwork: Optional[bytes] = None
-    Props: Optional[str] = None
+    Artwork: bytes = b""
 
     def addAux(self):
         with db.R() as conn:

@@ -38,41 +38,41 @@ def add_db(new_files: list):
         cur = conn.cursor()
         for path in new_files:
             try:
-                m = meta.get(path)
+                m: meta.Music = meta.get(path)
+                cur.execute(
+                    """
+                    INSERT INTO files (
+                        Path, Size, Title, Artists,
+                        Album, Comment, Genre, Year,
+                        Track, Length, Bitrate, Samplerate,
+                        Channels, Artwork, Lyrics
+                    ) VALUES (
+                        ?, ?, ?, ?,
+                        ?, ?, ?, ?,
+                        ?, ?, ?, ?,
+                        ?, ?, ?);
+                    """,
+                    (
+                        m.Path,
+                        m.Size,
+                        m.Title,
+                        m.Artists,
+                        m.Album,
+                        m.Comment,
+                        m.Genre,
+                        m.Year,
+                        m.Track,
+                        m.Length,
+                        m.Bitrate,
+                        m.Samplerate,
+                        m.Channels,
+                        m.Artwork,
+                        m.Lyrics,
+                    ),
+                )
             except Exception as e:
                 log.error(e, f"Failed to get meta for:{path} to db")
                 failed.append(path)
-            cur.execute(
-                """
-                INSERT INTO files (
-                    Path, Size, Title, Artists,
-                    Album, Comment, Genre, Year,
-                    Track, Length, Bitrate, Samplerate,
-                    Channels, Artwork, Lyrics
-                ) VALUES (
-                    ?, ?, ?, ?,
-                    ?, ?, ?, ?,
-                    ?, ?, ?, ?,
-                    ?, ?, ?);
-                """,
-                (
-                    m.Path,
-                    m.Size,
-                    m.Title,
-                    m.Artists,
-                    m.Album,
-                    m.Comment,
-                    m.Genre,
-                    m.Year,
-                    m.Track,
-                    m.Length,
-                    m.Bitrate,
-                    m.Samplerate,
-                    m.Channels,
-                    m.Artwork,
-                    m.Lyrics,
-                ),
-            )
             conn.commit()
 
         log.info(

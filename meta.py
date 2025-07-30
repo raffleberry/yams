@@ -1,11 +1,10 @@
 from pathlib import Path
 from models import Music
-
 import mutagen
 
 
 def get(path: str) -> Music:
-    m: mutagen.FileType = mutagen.File(path)
+    m = mutagen.File(path)  # pyright: ignore[reportPrivateImportUsage]
     if m is None:
         raise Exception(f"Failed to get meta for {path}")
     d = Music(Path=path, Size=Path(path).stat().st_size)
@@ -121,5 +120,5 @@ def get(path: str) -> Music:
         raise Exception(f"unknown file type {path}")
 
     # sanitize artists
-    d.Artists = d.Artists.replace("/", ",")
+    d.Artists = str(d.Artists).replace("/", ",")
     return d
