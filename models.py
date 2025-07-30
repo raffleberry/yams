@@ -56,6 +56,7 @@ class Music(BaseModel):
             row = cur.fetchone()
             self.PlayCount = row[0]
 
+    # required: Title, Artists, Album
     def updateMeta(self):
         try:
             with db.L() as conn:
@@ -96,9 +97,9 @@ PlaylistType = Enum("PlaylistType", [("LIST", "LIST"), ("QUERY", "QUERY")])
 
 
 class Playlist(BaseModel):
-    Id: Optional[int] = 0
-    Name: Optional[str] = ""
-    Description: Optional[str] = ""
-    Type: Optional[str] = ""
-    Query: Optional[str] = ""
-    Count: Optional[int] = 0
+    Id: int = 0
+    Name: str = ""
+    Description: str = ""
+    Type: str = ""
+    Query: str = ""
+    Count: int = 0

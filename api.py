@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Response
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Response, BackgroundTasks
+from fastapi.responses import FileResponse, JSONResponse
+import scan
 import db
 import yams
 import models
@@ -447,7 +448,7 @@ async def playlists_get(id: int, offset: int = 0):
             Query=row[4],
         )
 
-        if p.Type == models.PlaylistType.LIST:
+        if p.Type == models.PlaylistType.LIST.value:
             cur.execute(
                 """SELECT
                     Title, Artists, Album,
@@ -471,6 +472,22 @@ async def playlists_get(id: int, offset: int = 0):
                 )
                 m.addAux()
                 m.updateMeta()
+                files.append(m)
+        elif p.Type == models.PlaylistType.QUERY.value:
+            colsRequired = ["Title", "Artists", "Album"]
+            for col in colsRequired:
+                if col not in p.Query:
+                    raise Exception("Invalid query: missing - " + col)
+            cur.execute(p.Query)
+            rows = cur.fetchall()
+            for row in rows:
+                m = models.Music(
+                    Title=row["Title"],
+                    Artists=row["Artists"],
+                    Album=row["Album"],
+                )
+                m.updateMeta()
+                m.addAux()
                 files.append(m)
 
     return {
@@ -557,9 +574,18 @@ def getPlaylistCount(id):
         return row[0]
 
 
-# api.HandleFunc("GET /triggerScan", h(triggerScan))
-# api.HandleFunc("GET /isScanning", h(func(c *server.Context) error {
-#     return c.JSON(http.StatusOK, isScanning)
-# }))
+@router.get("/triggerScan")
+async def trigger_scan(background_tasks: BackgroundTasks):
+    if scan.IS_SCANNING:
+        return {"Message": "Scan already in progress"}
 
-# api.HandleFunc("GET /props", h(props))
+    background_tasks.add_task(scan.scan)
+
+    return {
+        "Message": "Scan started",
+    }
+
+
+@router.get("/isScanning")
+async def is_scanning():
+    return JSONResponse(scan.IS_SCANNING)
