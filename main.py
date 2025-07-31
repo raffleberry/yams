@@ -1,12 +1,14 @@
-import yams
-import scan
-import db
-import api
+import logging
+from contextlib import asynccontextmanager
 from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
-from contextlib import asynccontextmanager
-import logging
+
+import api
+import db
+import scan
+import yams
 
 logging.basicConfig(
     format="%(asctime)s,%(msecs)03d %(filename)s:%(lineno)-4s %(levelname)-8s %(message)s",

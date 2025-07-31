@@ -1,9 +1,9 @@
-import { ref, onMounted, watch, onBeforeUnmount } from "../vue.js";
-import { highlight, getArtwork, formatDuration, scrollPositions, PAGE } from "../utils.js";
 import { currentPlaylist, playTrack } from "../Player.js";
-import { modalArtworkUrl } from "../modals.js";
-import { updatePageTitle } from "../main.js";
 import { SongsTile } from "../components/SongTile.js";
+import { updatePageTitle } from "../main.js";
+import { modalArtworkUrl } from "../modals.js";
+import { PAGE, currentPage, formatDuration, getArtwork, highlight, scrollPositions } from "../utils.js";
+import { onBeforeUnmount, onMounted, ref, watch } from "../vue.js";
 
 export const songsPlaylist = ref([]);
 var shuffleList = []
@@ -70,6 +70,7 @@ const Songs = {
 
         onMounted(() => {
             updatePageTitle(PAGE.SONGS);
+            currentPage.value = PAGE.SONGS
             window.scrollTo({ left: 0, top: scrollPositions.value[PAGE.SONGS] || 0, behavior: "auto" })
 
             if (!calledOnce) {
@@ -82,10 +83,8 @@ const Songs = {
             if (searchTerm.value.length > 1) {
                 searchMusic();
             }
-            console.log(ov, nv)
             // restore shuffle
             if (ov.length > 1 && nv.length <= 1) {
-                console.log("triggered")
                 songsPlaylist.value = shuffleList
             }
         })

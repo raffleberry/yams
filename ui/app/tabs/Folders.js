@@ -1,6 +1,6 @@
 import { updatePageTitle } from "../main.js";
-import { PAGE, scrollPositions } from "../utils.js";
-import { onMounted, onBeforeUnmount } from "../vue.js";
+import { currentPage, PAGE, scrollPositions } from "../utils.js";
+import { onBeforeUnmount, onMounted } from "../vue.js";
 
 
 const Folders = {
@@ -14,6 +14,7 @@ const Folders = {
 
         onMounted(() => {
             updatePageTitle(PAGE.FOLDERS)
+            currentPage.value = PAGE.FOLDERS
             window.scrollTo({ left: 0, top: scrollPositions.value["Folders"] || 0, behavior: "auto" })
         });
 

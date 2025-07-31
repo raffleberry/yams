@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Response, BackgroundTasks
-from fastapi.responses import FileResponse, JSONResponse
-import scan
-import db
-import yams
-import models
 import logging
 from pathlib import Path
+
+from fastapi import APIRouter, BackgroundTasks, Response
+from fastapi.responses import FileResponse, JSONResponse
+
+import db
+import models
+import scan
+import yams
 
 log = logging.getLogger(__name__)
 
@@ -315,15 +317,27 @@ async def albums_get(album: str):
     }
 
 
+@router.post("/playlists")
+async def playlists_new(p: models.Playlist):
+    with db.R() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO
+        playlists
+            (Name, Description, Type, Query)
+        VALUES
+            (?,?,?,?);
+        """,
+            (p.Name, p.Description, p.Type.value, p.Query),
+        )
+        conn.commit()
+    return JSONResponse("OK")
+
+
 @router.get("/playlists")
 async def playlists_all():
-    playlists = [
-        models.Playlist(
-            Id=-1,
-            Name="Favourites",
-            Count=getPlaylistCount(-1),
-        )
-    ]
+    playlists = []
 
     with db.R() as conn:
         cur = conn.cursor()
@@ -344,8 +358,8 @@ async def playlists_all():
     }
 
 
-@router.get("/playlists/favourites")
-async def playlists_getfav(offset: int = 0):
+@router.get("/favourites")
+async def favourites_get(offset: int = 0):
     print("Hello")
     limit = 10
     files = []
@@ -379,8 +393,8 @@ async def playlists_getfav(offset: int = 0):
     }
 
 
-@router.post("/playlists/favourites")
-async def playlists_addfav(m: models.Music):
+@router.post("/favourites")
+async def favourites_add(m: models.Music):
     with db.R() as conn:
         cur = conn.cursor()
         cur.execute(
@@ -407,8 +421,8 @@ async def playlists_addfav(m: models.Music):
     }
 
 
-@router.delete("/playlists/favourites")
-async def playlists_delfav(m: models.Music):
+@router.delete("/favourites")
+async def favourites_del(m: models.Music):
     with db.R() as conn:
         cur = conn.cursor()
         cur.execute(
@@ -444,8 +458,10 @@ async def playlists_get(id: int, offset: int = 0):
             raise Exception("Playlist not found")
         p = models.Playlist(
             Id=row[0],
-            Type=row[3],
-            Query=row[4],
+            Name="",
+            Description="",
+            Type=models.PlaylistType(row[1]),
+            Query=row[2],
         )
 
         if p.Type == models.PlaylistType.LIST.value:

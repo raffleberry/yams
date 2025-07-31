@@ -1,8 +1,10 @@
-from pydantic import BaseModel
+import logging
 from datetime import datetime
 from enum import Enum
+
+from pydantic import BaseModel
+
 import db
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -96,8 +98,8 @@ PlaylistType = Enum("PlaylistType", [("LIST", "LIST"), ("QUERY", "QUERY")])
 
 class Playlist(BaseModel):
     Id: int = 0
-    Name: str = ""
+    Name: str
     Description: str = ""
-    Type: str = ""
+    Type: PlaylistType
     Query: str = ""
     Count: int = 0

@@ -1,7 +1,9 @@
 import json
 import pathlib
-from models import Config
+
 from pydantic import BaseModel
+
+from models import Config
 
 config = Config(
     MusicDir="",

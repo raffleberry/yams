@@ -1,10 +1,11 @@
-import db
-import logging
-import yams
-import meta
-from typing import Dict
-from pathlib import Path
 import datetime
+import logging
+from pathlib import Path
+from typing import Dict
+
+import db
+import meta
+import yams
 
 log = logging.getLogger(__name__)
 

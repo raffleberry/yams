@@ -5,52 +5,52 @@ const scanStatus = ref('Unavailable')
 
 
 const checkStatus = async () => {
-    let isScanning = true
-    try {
-        let url = '/api/isScanning'
-        isScanning = await (await fetch(url)).json()
-        if (isScanning) {
-            scanStatus.value = 'Scanning'
-            console.log("checking again after 10s ;|")
-            setTimeout(checkStatus, 10000)
-        } else {
-            scanStatus.value = 'Scan'
-            console.log("scan available :)")
-        }
-    } catch (error) {
-        console.error(error)
+  let isScanning = true
+  try {
+    let url = '/api/isScanning'
+    isScanning = await (await fetch(url)).json()
+    if (isScanning) {
+      scanStatus.value = 'Scanning'
+      console.log("checking again after 10s ;|")
+      setTimeout(checkStatus, 10000)
+    } else {
+      scanStatus.value = 'Scan'
+      console.log("scan available :)")
     }
+  } catch (error) {
+    console.error(error)
+  }
 
 }
 
 const triggerScan = async () => {
-    let url = '/api/triggerScan'
-    try {
-        let res = await fetch(url)
-        if (res.status === 503) {
-            alert("Scan is already running")
-        }
-    } catch (error) {
-        console.error(error)
-        alert("Failed to trigger scan")
+  let url = '/api/triggerScan'
+  try {
+    let res = await fetch(url)
+    if (res.status === 503) {
+      alert("Scan is already running")
     }
-    checkStatus()
+  } catch (error) {
+    console.error(error)
+    alert("Failed to trigger scan")
+  }
+  checkStatus()
 }
 
 const Settings = {
-    setup() {
-        onMounted(async () => {
-            if (!execOnce) {
-                execOnce = true
-                checkStatus()
-            }
-        })
-        return {
-            scanStatus,
-            triggerScan
-        }
-    },
-    template: `
+  setup() {
+    onMounted(async () => {
+      if (!execOnce) {
+        execOnce = true
+        checkStatus()
+      }
+    })
+    return {
+      scanStatus,
+      triggerScan
+    }
+  },
+  template: `
     <div id="modalSettings" class="modal fade" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -99,4 +99,4 @@ const Settings = {
     `
 }
 
-export { Settings }
+export { Settings };

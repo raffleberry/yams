@@ -1,4 +1,5 @@
 import sqlite3
+
 import yams
 
 
@@ -58,7 +59,6 @@ CREATE TABLE IF NOT EXISTS last_scan (
         """
 CREATE TABLE IF NOT EXISTS history (
     Time DATETIME DEFAULT CURRENT_TIMESTAMP,
-
     Path TEXT,
     Size INTEGER,
     Title TEXT,
@@ -76,13 +76,14 @@ CREATE TABLE IF NOT EXISTS playlists (
     Name TEXT,
     Description TEXT,
     Type CHECK(Type IN ('LIST', 'QUERY')),
-    Query TEXT
+    Query TEXT,
+    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 """,
         """
 CREATE TABLE IF NOT EXISTS playlists_songs (
     PlaylistId INTEGER,
-
     Path TEXT,
     Size INTEGER,
     Title TEXT,

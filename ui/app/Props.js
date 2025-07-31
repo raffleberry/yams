@@ -1,6 +1,6 @@
 import { currentTrack } from "./Player.js";
 import { getProps } from "./utils.js";
-import { onMounted, ref } from "./vue.js";
+import { ref } from "./vue.js";
 
 export const propsModalData = ref({})
 
@@ -73,4 +73,4 @@ const PropsModal = {
 `
 }
 
-export { PropsModal }
+export { PropsModal };

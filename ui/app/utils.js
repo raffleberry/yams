@@ -40,6 +40,8 @@ export const PAGE = {
     NOW_PLAYING: 'NowPlaying'
 }
 
+export const currentPage = ref(PAGE.SONGS)
+
 export const scrollPositions = ref({ Songs: 0, Playlists: 0, Albums: 0, Artists: 0, Folders: 0, Years: 0, History: 0, NowPlaying: 0 });
 
 export const getArtwork = (path) => {
@@ -79,4 +81,12 @@ export const setMediaSessionMetadata = (track) => {
             ]
         });
     }
+}
+
+export const isSameTrack = (track1, track2) => {
+    return track1.Title === track2.Title && track1.Artists === track2.Artists && track1.Album === track2.Album;
+}
+
+export const inPlaylist = (playlist, track) => {
+    return playlist.Tracks.findIndex(t => isSameTrack(t, track)) !== -1
 }

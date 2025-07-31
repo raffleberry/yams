@@ -1,3 +1,9 @@
 {
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.removeUnusedImports": "always",
+        "source.organizeImports": "always",
+    },
+    "editor.autoIndent": "full",
+    "editor.tabSize": 4
 }

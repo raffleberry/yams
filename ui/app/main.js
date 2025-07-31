@@ -1,17 +1,20 @@
+import { Navigation } from "./components/Navigation.js";
 import { modalArtworkUrl } from "./modals.js";
-import { Player, playPause, nextTrack, previousTrack, currentTrack, isPlaying } from "./Player.js";
+import { ModalAddToPlaylist } from "./modals/AddToPlaylist.js";
+import { currentTrack, isPlaying, nextTrack, Player, playPause, previousTrack } from "./Player.js";
+import { PropsModal } from "./Props.js";
 import { Settings } from "./Settings.js";
+import { usePlaylistStore } from "./stores/playlist.js";
 import { Albums } from "./tabs/Albums.js";
-import { Songs } from "./tabs/Songs.js";
 import { Artists } from "./tabs/Artists.js";
-import { Playlists } from "./tabs/Playlists.js";
-import { PAGE, setupMediaSession } from "./utils.js";
-import { computed, createApp, createRouter, createWebHistory, onMounted, ref, watch } from "./vue.js";
 import { Folders } from "./tabs/Folders.js";
 import { History } from "./tabs/History.js";
-import { PropsModal } from "./Props.js";
 import { NowPlaying } from "./tabs/NowPlaying.js";
+import { Playlists } from "./tabs/Playlists.js";
+import { Songs } from "./tabs/Songs.js";
 import { Years } from "./tabs/Years.js";
+import { PAGE, setupMediaSession } from "./utils.js";
+import { computed, createApp, createPinia, createRouter, createWebHistory, onMounted, ref, watch } from "./vue.js";
 
 const currentPage = ref(PAGE.SONGS);
 
@@ -45,7 +48,6 @@ const router = createRouter({
 });
 
 export const updatePageTitle = (title) => {
-    console.log("updated title : ", title)
     currentPage.value = title;
 }
 
@@ -60,14 +62,19 @@ watch(pageTitle, () => {
     document.title = pageTitle.value
 })
 
-createApp({
+const app = createApp({
     components: {
         Player,
         Settings,
         PropsModal,
+
+        ModalAddToPlaylist,
+        Navigation
     },
 
     setup() {
+
+        const { fetchFav, fetchAll } = usePlaylistStore();
 
         onMounted(() => {
             setupMediaSession(playPause, playPause, nextTrack, previousTrack);
@@ -78,4 +85,8 @@ createApp({
             pageTitle
         };
     }
-}).use(router).mount('#app');
+})
+
+app.use(router)
+app.use(createPinia())
+app.mount('#app')

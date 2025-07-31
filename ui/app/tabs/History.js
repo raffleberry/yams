@@ -1,8 +1,8 @@
 import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
 import { currentPlaylist, playTrack } from "../Player.js";
-import { formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
-import { onMounted, onBeforeUnmount, ref } from "../vue.js";
+import { currentPage, formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
+import { onBeforeUnmount, onMounted, ref } from "../vue.js";
 
 export const historyPlaylist = ref([]);
 const nextOffset = ref(-1);
@@ -39,6 +39,7 @@ const History = {
 
         onMounted(() => {
             updatePageTitle(PAGE.HISTORY);
+            currentPage.value = PAGE.HISTORY
             window.scrollTo({ left: 0, top: scrollPositions.value[PAGE.HISTORY] || 0, behavior: "auto" })
             fetchMusic()
         });

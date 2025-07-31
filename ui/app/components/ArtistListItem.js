@@ -1,7 +1,6 @@
-import { highlight, getArtwork, formatDuration, PAGE } from "../utils.js";
-import { modalArtworkUrl } from "../modals.js";
+import { PAGE } from "../utils.js";
 
-const AlbumListItem = {
+const ArtistListItem = {
     props: {
         item: {
             type: Object,
@@ -20,8 +19,8 @@ const AlbumListItem = {
     },
     template: `
     <li class="list-group-item d-flex justify-content-flex-start align-items-center">
-        <router-link :to="{ name: PAGE.ALBUM, params: { names: item.Album } }"> {{ item.Album }} </router-link> - ({{ item.Year }})
+        <router-link :to="{ name: PAGE.ARTIST, params: { names: item.Artists } }"> {{ item.Artists }} </router-link>
     </li>
     `
 }
-export { AlbumListItem };
+export { ArtistListItem };

@@ -1,25 +1,24 @@
-import { ArtistListItem } from "../components/ArtistListItem.js";
+import { AlbumListItem } from "../components/AlbumListItem.js";
 import { SongsTile } from "../components/SongTile.js";
 import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
 import { currentPlaylist, playTrack } from "../Player.js";
-import { formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
-import { onMounted, onBeforeUnmount, useRoute, ref, onUpdated, watch } from "../vue.js";
+import { currentPage, formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
+import { onBeforeUnmount, onMounted, ref, useRoute, watch } from "../vue.js";
 
-export const artistsPlaylist = ref([]);
+export const albumsPlaylist = ref([]);
 
-const allArtists = ref([]);
+const allAlbums = ref([]);
 
-const fetchAllArtists = async () => {
+const fetchSongs = async (albums) => {
 
-    if (allArtists.value.length > 0) return;
+    let url = `/api/albums/${encodeURIComponent(albums)}`;
 
-    let url = `/api/artists`;
     try {
         const response = await fetch(url);
         const result = await response.json();
         if (result) {
-            allArtists.value = result.Data
+            albumsPlaylist.value = result.Data
         } else {
             console.error('Error server sent bad result:', result);
         }
@@ -28,14 +27,15 @@ const fetchAllArtists = async () => {
     }
 }
 
-const fetchSongs = async (artists) => {
+const fetchAllAlbums = async () => {
+    if (allAlbums.value.length > 0) return;
 
-    let url = `/api/artists/${encodeURIComponent(artists)}`;
+    let url = `/api/albums`;
     try {
         const response = await fetch(url);
         const result = await response.json();
         if (result) {
-            artistsPlaylist.value = result.Data
+            allAlbums.value = result.Data
         } else {
             console.error('Error server sent bad result:', result);
         }
@@ -44,10 +44,10 @@ const fetchSongs = async (artists) => {
     }
 }
 
-const Artists = {
+const Albums = {
     components: {
         SongsTile,
-        ArtistListItem
+        AlbumListItem
     },
     setup: () => {
         const r = useRoute()
@@ -57,36 +57,38 @@ const Artists = {
         watch(() => r.params.names, (n) => {
             names.value = n
             if (n) {
-                updatePageTitle(`${PAGE.ARTIST} - ${n}`)
+                updatePageTitle(`${PAGE.ALBUM} - ${n}`)
+                currentPage.value = PAGE.ALBUM
                 fetchSongs(n)
             } else {
-                updatePageTitle(PAGE.ARTISTS)
-                fetchAllArtists()
+                updatePageTitle(PAGE.ALBUMS)
+                currentPage.value = PAGE.ALBUMS
+                fetchAllAlbums()
             }
         }, { immediate: true })
 
         const play = (track) => {
-            if (currentPlaylist.value !== PAGE.ARTIST) {
-                currentPlaylist.value = PAGE.ARTIST
+            if (currentPlaylist.value !== PAGE.ALBUM) {
+                currentPlaylist.value = PAGE.ALBUM
             }
             playTrack(track)
         }
 
         onBeforeUnmount(() => {
-            scrollPositions.value[PAGE.ARTISTS] = window.scrollY;
+            scrollPositions.value[PAGE.ALBUMS] = window.scrollY;
         });
 
         onMounted(() => {
-            window.scrollTo({ left: 0, top: scrollPositions.value[PAGE.ARTISTS] || 0, behavior: "auto" })
+            window.scrollTo({ left: 0, top: scrollPositions.value[PAGE.ALBUMS] || 0, behavior: "auto" })
         });
 
         return {
             names,
 
-            artistsPlaylist,
+            albumsPlaylist,
+            allAlbums,
 
             PAGE,
-            allArtists,
 
             play,
             formatDuration,
@@ -98,7 +100,7 @@ const Artists = {
     <div v-if="names">
         <div class="my-3 d-flex flex-column">
             <ul class="list-group">
-                <SongsTile v-for="(track, index) in artistsPlaylist" :key="index+names+track.Artists" :track="track" :play="play" :dontLinkArtists="names.split(',').flatMap((x) => x.trim())">
+                <SongsTile v-for="(track, index) in albumsPlaylist" :key="index+names+track.Path" :track="track" :play="play" :dontLinkAlbum="true">
                 </SongsTile>
             </ul>
         </div>
@@ -106,10 +108,12 @@ const Artists = {
     <div v-else>
         <div class="my-3 d-flex flex-column">
             <ul class="list-group">
-                <ArtistListItem v-for="(item, index) in allArtists" :key="index+item.Artists" :item="item" />
+                <AlbumListItem v-for="(item, index) in allAlbums" :key="index+item.Album+item.Year" :item="item">
+                </AlbumListItem>
             </ul>
         </div>
+
     </div>
     `
 }
-export { Artists };
+export { Albums };

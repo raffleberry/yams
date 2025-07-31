@@ -1,6 +1,8 @@
 from pathlib import Path
-from models import Music
+
 import mutagen
+
+from models import Music
 
 
 def get(path: str) -> Music:
