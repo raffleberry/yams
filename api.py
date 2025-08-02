@@ -73,6 +73,7 @@ async def files(path=None):
 @router.get("/search")
 async def search(query="", offset: int = 0):
     limit = 10
+    query = f"%{query}%"
     q = f"""SELECT
         Path, Title, Size,
         Artists, Album, Genre,
@@ -84,17 +85,17 @@ async def search(query="", offset: int = 0):
         Path GLOB '{yams.config.MusicDir}*'
     AND
         (
-            Artists LIKE '%{query}%'
-            OR Album LIKE '%{query}%'
-            OR Title LIKE '%{query}%'
-            OR Year LIKE '%{query}%'
+            Artists LIKE ?
+            OR Album LIKE ?
+            OR Title LIKE ?
+            OR Year LIKE ?
         )
 	GROUP BY Title, Artists, Album
     LIMIT ? OFFSET ?;"""
     files = []
     with db.L() as conn:
         cur = conn.cursor()
-        cur.execute(q, (limit, offset))
+        cur.execute(q, (query, query, query, query, limit, offset))
         rows = cur.fetchall()
         for row in rows:
             m = models.Music(
@@ -148,7 +149,6 @@ async def history_get(offset: int = 0):
                 Track=row[6],
                 Length=row[7],
             )
-            h.updateMeta()
             files.append(h)
         return {
             "Data": files,
@@ -360,7 +360,6 @@ async def playlists_all():
 
 @router.get("/favourites")
 async def favourites_get(offset: int = 0):
-    print("Hello")
     limit = 10
     files = []
     with db.R() as conn:

@@ -2,6 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
@@ -16,11 +17,13 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
+yams.init()
+bundle_dir = Path(__file__).parent
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # startup
-    yams.init()
     db.init_tables()
     scan.scan()
     yield
@@ -34,15 +37,14 @@ app.include_router(api.router, prefix="/api")
 
 @app.get("/{path:path}")
 async def frontend_handler(path: str):
-    fp = Path("ui") / path
+    fp = bundle_dir / Path("ui") / path
     if not fp.exists() or not fp.is_file():
-        fp = Path("ui") / "index.html"
+        fp = bundle_dir / Path("ui") / "index.html"
     return FileResponse(fp)
 
 
 def main():
-    print("Hello from yams!")
-    print("Hint: `uv run fastapi dev`")
+    uvicorn.run(app, host=yams.config.Ip, port=yams.config.Port)
 
 
 if __name__ == "__main__":

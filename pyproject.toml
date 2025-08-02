@@ -7,5 +7,11 @@ requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.115.13",
     "mutagen>=1.47.0",
-    "pydantic>=2.11.7"
+    "pydantic>=2.11.7",
+    "uvicorn>=0.34.3",
+]
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.14.2",
 ]

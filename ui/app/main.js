@@ -1,6 +1,7 @@
 import { Navigation } from "./components/Navigation.js";
 import { modalArtworkUrl } from "./modals.js";
 import { ModalAddToPlaylist } from "./modals/AddToPlaylist.js";
+import { ModalCreatePlaylist } from "./modals/CreatePlaylist.js";
 import { currentTrack, isPlaying, nextTrack, Player, playPause, previousTrack } from "./Player.js";
 import { PropsModal } from "./Props.js";
 import { Settings } from "./Settings.js";
@@ -69,6 +70,7 @@ const app = createApp({
         PropsModal,
 
         ModalAddToPlaylist,
+        ModalCreatePlaylist,
         Navigation
     },
 

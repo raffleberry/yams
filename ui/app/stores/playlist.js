@@ -101,6 +101,24 @@ export const usePlaylistStore = defineStore('playlist', () => {
         }
     }
 
+    const create = async (name) => {
+        try {
+            const res = await fetch('/api/playlists', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ Name: name })
+            })
+
+            if (res.status != 200) {
+                throw new Error('Failed to create playlist')
+            }
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
     const add = async (id, track) => {
         try {
             const res = await fetch(`/api/playlists/${id}`, {

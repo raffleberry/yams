@@ -43,7 +43,10 @@ const ModalAddToPlaylist = {
                   <PlaylistListItem v-for="(item, key) in playlists" :key="key" :id="key"
                       :checkbox="true" :checkboxHandler="onClick"/>
               </ul>
-            </div>
+              <ul class="list-group">
+                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#ModalCreatePlaylist">Create Playlist</button>
+              </ul>
+          </div>
           </div>
         </div>
       </div>

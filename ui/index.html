@@ -87,24 +87,9 @@
       </div>
     </div>
 
-    <!-- AddToPlaylist Modal -->
+    <!-- Modals -->
     <modal-add-to-playlist></modal-add-to-playlist>
-
-    <!-- NewPlaylist Modal -->
-    <div id="modalNewPlaylist" class="modal fade" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">New Playlist</h5>
-            <button type="button" class="btn-close" data-bs-toggle="modal" data-bs-target="#modalNewPlaylist"></button>
-          </div>
-          <div class="modal-body text-center">
-            <img :src="modalArtworkUrl" alt="Artwork" class="img-fluid">
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <modal-create-playlist></modal-create-playlist>
 
     <!-- Settings Modal -->
     <settings></settings>
@@ -119,7 +104,6 @@
 
   </div>
   <script src="/app/main.js" type="module"></script>
-
 </body>
 
 </html>

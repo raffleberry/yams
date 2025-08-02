@@ -9,37 +9,26 @@ if [ -f ".env" ]; then
   export $(grep -v '^#' .env | xargs -d '\n')
 fi
 
-HOST=$(go env | grep GOHOSTOS | cut -d'=' -f2)
-ARCH=$(go env | grep GOARCH | cut -d'=' -f2)
-
 INSTALL_DIR=`eval echo $INSTALL_DIR`
-
+BUILD_CMD="pyinstaller --add-data ui:ui --icon ui/favicon.ico --name yams main.py"
 set -x
 
 if [ "$1" = "run" ]; then
-  go run cmd/yams/yams.go
 elif [ "$1" = "dev" ]; then
   export DEV=1
   uv run fastapi dev
 elif [ "$1" = "install" ]; then
   mkdir -p $INSTALL_DIR
-  go build -o $INSTALL_DIR/ cmd/yams/yams.go
-  if [ $? -ne 0 ]; then
-    exit 1
-  fi
-  if [ "$HOST" = "windows" ]; then
-    dllmod=$(echo "$(grep 'github.*tags' go.mod)" | sed -E 's/^[^a-zA-Z]*//; s/[[:space:]]+/@/')
-    modcache=$(go env GOMODCACHE)
-    cp "$(go env GOMODCACHE)/$dllmod/lib/$HOST/$ARCH/bin/"* $INSTALL_DIR/
-  fi
+  $BUILD_CMD
+  cp -r dist/yams $INSTALL_DIR
 
 elif [ "$1" = "uninstall" ]; then
   rm $INSTALL_DIR/yams
 elif [ "$1" = "build" ]; then
-  mkdir -p build
-  go build -o build/ cmd/yams/yams.go
+  $BUILD_CMD
 elif [ "$1" = "clean" ]; then
-  rm -rf build/
+  rm -rf build/ dist/ main.spec __pycache__
+  pyinstaller --clean
 else
   set +x
   echo "Shiver me timbers!!.. Invalid arrghh - $1"
