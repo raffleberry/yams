@@ -66,7 +66,7 @@ const PlaylistListItem = {
     template: `
     <li class="list-group-item d-flex justify-content-flex-start align-items-center">
         <span class="px-2" v-if="checkbox"> <input :checked="checked" type="checkbox" @change="checkboxHandler" /> </span>
-        <router-link :to="{ name: PAGE.PLAYLIST, params: { name: item.Id !== -1 ? item.Id : item.Name?.toLowerCase() } }"> {{ item.Name }} </router-link> <span> - {{ item.Description }} </span> <span v-if="item.Type === 'LIST'"> ({{ item.Count }}) </span> </span>
+        <router-link :to="{ name: PAGE.PLAYLIST, params: { name: item.Id !== -1 ? item.Id : item.Name?.toLowerCase() } }"> {{ item.Name }} </router-link> - {{ item.Description }} <span v-if="item.Type === 'LIST'"> ({{ item.Count }}) </span>
     </li>
     `
 }

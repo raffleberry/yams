@@ -3,17 +3,22 @@ import { fetchProps } from "./Props.js";
 import { albumsPlaylist } from "./tabs/Albums.js";
 import { artistsPlaylist } from "./tabs/Artists.js";
 import { historyPlaylist } from "./tabs/History.js";
+import { playlistsPlaylist } from "./tabs/Playlists.js";
 import { songsPlaylist } from "./tabs/Songs.js";
 import { formatDuration, getArtwork, getSrc, PAGE, setMediaSessionMetadata } from "./utils.js";
 import { computed, ref } from "./vue.js";
 
 export const currentPlaylist = ref(PAGE.SONGS);
 
+function wc(playlist) {
+  return computed(() => playlist.value.filter(t => t.Path))
+}
 const playlistMap = {
-  [PAGE.SONGS]: songsPlaylist,
-  [PAGE.HISTORY]: historyPlaylist,
-  [PAGE.ARTIST]: artistsPlaylist,
-  [PAGE.ALBUM]: albumsPlaylist,
+  [PAGE.SONGS]: wc(songsPlaylist),
+  [PAGE.HISTORY]: wc(historyPlaylist),
+  [PAGE.ARTIST]: wc(artistsPlaylist),
+  [PAGE.ALBUM]: wc(albumsPlaylist),
+  [PAGE.PLAYLIST]: wc(playlistsPlaylist),
 }
 
 const playlist = () => {
