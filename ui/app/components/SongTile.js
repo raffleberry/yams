@@ -139,6 +139,7 @@ const SongsTile = {
                 <small>{{ formatDuration(track.Length) }} | {{ track.Bitrate }}KBps </small>
                 <br>
                 <button :class="['btn', 'btn-sm', cTrack.Path === track.Path ? 'btn-success':'btn-primary']"
+                    :disabled="!track.Path"
                     @click="cTrack.Path !== track.Path ? play(track) : playPause()">{{ cTrack.Path !== track.Path ? 'Play' : ( isPlaying ? 'Pause' : 'Play' ) }}</button>
                 <span class="ms-2"></span> {{ track.PlayCount }} plays
         </div>

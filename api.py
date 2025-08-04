@@ -149,6 +149,7 @@ async def history_get(offset: int = 0):
                 Track=row[6],
                 Length=row[7],
             )
+            h.updateMeta()
             files.append(h)
         return {
             "Data": files,
@@ -331,8 +332,9 @@ async def playlists_new(p: models.Playlist):
         """,
             (p.Name, p.Description, p.Type.value, p.Query),
         )
+        p.Id = cur.lastrowid if cur.lastrowid is not None else -1
         conn.commit()
-    return JSONResponse("OK")
+    return p
 
 
 @router.get("/playlists")
@@ -463,7 +465,7 @@ async def playlists_get(id: int, offset: int = 0):
             Query=row[2],
         )
 
-        if p.Type == models.PlaylistType.LIST.value:
+        if p.Type == models.PlaylistType.LIST:
             cur.execute(
                 """SELECT
                     Title, Artists, Album,
@@ -488,7 +490,7 @@ async def playlists_get(id: int, offset: int = 0):
                 m.addAux()
                 m.updateMeta()
                 files.append(m)
-        elif p.Type == models.PlaylistType.QUERY.value:
+        elif p.Type == models.PlaylistType.QUERY:
             colsRequired = ["Title", "Artists", "Album"]
             for col in colsRequired:
                 if col not in p.Query:

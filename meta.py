@@ -48,7 +48,7 @@ def get(path: str) -> Music:
 
         artists = m.get("©ART")
         if artists is not None and len(artists) > 0:
-            d.Artists = artists[0]
+            d.Artists = ", ".join(artists)
 
         album = m.get("©alb")
         if album is not None and len(album) > 0:
