@@ -61,16 +61,13 @@ const postPlaybackHistory = async (track) => {
     })
 
     const resJson = await res.json()
-    console.log("playback History recorded: ", resJson)
+    console.log("History recorded: ", resJson)
     playbackPosted = true
   } catch (error) {
     console.error('Error posting playback history:', error)
   }
   playbackPosting = false
 }
-// setInterval(() => {
-//   console.log(playbackTime)
-// }, 2000)
 
 /* playback history logic ::: END*/
 

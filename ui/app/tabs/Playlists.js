@@ -33,7 +33,6 @@ const Playlists = {
                 updatePageTitle(PAGE.PLAYLISTS)
                 currentPage.value = PAGE.PLAYLISTS
             }
-            console.log(n)
             if (!loading.value && n) {
                 playlistsPlaylist.value = name.value === "favourites" ? favs.value : playlists.value[n].Tracks
             }

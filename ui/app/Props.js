@@ -4,20 +4,19 @@ import { ref } from "./vue.js";
 
 export const propsModalData = ref({})
 
-const propsList = ["Lyrics", "Copyright", "Encoding", "Comment", "Date"]
+const propsList = ["Genre", "Size", "Comment", "Lyrics"]
 
 export const fetchProps = async () => {
     let url = getProps(currentTrack.value.Path)
     try {
         const res = await fetch(url)
         const resJson = await res.json()
-        console.log(resJson)
         const jsonKeys = Object.keys(resJson)
         const filteredJson = {}
         for (const prop of propsList) {
             for (const key of jsonKeys) {
                 if (key.toLowerCase() === prop.toLowerCase()) {
-                    filteredJson[prop] = resJson[key][0]
+                    filteredJson[prop] = resJson[key]
                 }
             }
         }

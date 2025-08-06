@@ -11,11 +11,9 @@ const checkStatus = async () => {
     isScanning = await (await fetch(url)).json()
     if (isScanning) {
       scanStatus.value = 'Scanning'
-      console.log("checking again after 10s ;|")
-      setTimeout(checkStatus, 10000)
+      setTimeout(checkStatus, 5000)
     } else {
       scanStatus.value = 'Scan'
-      console.log("scan available :)")
     }
   } catch (error) {
     console.error(error)

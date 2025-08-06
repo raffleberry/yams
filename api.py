@@ -591,6 +591,24 @@ def getPlaylistCount(id):
         return row[0]
 
 
+@router.get("/props")
+async def props(path: str):
+    with db.L() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT Lyrics, Genre, Comment, Size FROM files WHERE Path=?;", (path,)
+        )
+        row = cur.fetchone()
+        res = {}
+        if row:
+            res["Lyrics"] = row[0]
+            res["Genre"] = row[1]
+            res["Comment"] = row[2]
+            res["Size"] = f"{row[3] / 1024 / 1024:.2f} MB"
+
+        return res
+
+
 @router.get("/triggerScan")
 async def trigger_scan(background_tasks: BackgroundTasks):
     if scan.IS_SCANNING:
