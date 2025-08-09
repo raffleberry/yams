@@ -5,19 +5,18 @@ from pydantic import BaseModel
 
 from models import Config
 
-config = Config(
-    MusicDir="",
-    Ip="127.0.0.1",
-    Port=5550,
-)
-
-
 # use app.<name> to access config
 CONFIG_DIR = pathlib.Path.joinpath(pathlib.Path.home(), ".yams")
 CONFIG_FILE = pathlib.Path.joinpath(CONFIG_DIR, "config.json")
 DB_LOCAL = pathlib.Path.joinpath(CONFIG_DIR, "yams.sqlite")
 DB_REMOTE = pathlib.Path.joinpath(CONFIG_DIR, "yams_remote.sqlite")
 ROOT_DIR = pathlib.Path.cwd()
+
+config = Config(
+    MusicDir=str(pathlib.Path.home() / "Music"),
+    Ip="127.0.0.1",
+    Port=5550,
+)
 
 
 def _read_config(path):
