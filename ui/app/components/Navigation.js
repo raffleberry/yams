@@ -7,7 +7,6 @@ const Navigation = {
 
   },
   setup: (props) => {
-    console.log(currentPage.value)
     return {
       c: currentPage,
       PAGE,

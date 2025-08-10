@@ -82,11 +82,6 @@ const SongsTile = {
 
             PAGE,
 
-            searchTerm: props.searchTerm,
-            play: props.play,
-            track: track,
-            dontLinkArtists: props.dontLinkArtists,
-
             cTrack: currentTrack,
             playPause,
             isPlaying,
@@ -132,9 +127,11 @@ const SongsTile = {
                     <small v-html="highlight(track.Album, searchTerm)"></small>
                 </component>
                  - 
-                 <router-link :to="{ name: PAGE.YEAR, params: { year: track.Year } }">
+                 <component
+                    :is="track.Year ? 'span' : 'router-link'"
+                    :to="{ name: PAGE.YEAR, params: { year: track.Year } }">
                     <small v-html="highlight(track.Year, searchTerm)"></small>
-                </router-link>
+                </component>
                 <br>
                 <small>{{ formatDuration(track.Length) }} | {{ track.Bitrate }}KBps </small>
                 <br>

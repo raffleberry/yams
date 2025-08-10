@@ -1,4 +1,5 @@
 import logging
+import sqlite3
 from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, Response
@@ -216,9 +217,11 @@ async def artists_get(artists: str):
 		Bitrate, Samplerate, Channels
 	FROM files WHERE Path GLOB '{yams.config.MusicDir}*'
     """
+    arts = []
     args = ()
-    for artist in artists.split(","):
-        args += (f"%{artist.strip()}%",)
+    for a in artists.split(","):
+        arts.append(a.strip())
+        args += (f"%{a.strip()}%",)
         q += " AND Artists LIKE ? "
     q += " GROUP BY Title, Artists, Album ORDER BY YEAR DESC; "
 
@@ -242,6 +245,14 @@ async def artists_get(artists: str):
                 Samplerate=row[10],
                 Channels=row[11],
             )
+            valid = False
+            for a in m.Artists.split(","):
+                if a.strip() in arts:
+                    valid = True
+                    break
+            if not valid:
+                continue
+
             m.addAux()
             files.append(m)
 
@@ -449,6 +460,7 @@ async def playlists_get(id: int, offset: int = 0):
     limit = 10
     files = []
     with db.R() as conn:
+        conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         cur.execute(
             "SELECT Id, Type, Query FROM playlists WHERE Id=?;",
@@ -491,7 +503,7 @@ async def playlists_get(id: int, offset: int = 0):
                 m.updateMeta()
                 files.append(m)
         elif p.Type == models.PlaylistType.QUERY:
-            colsRequired = ["Title", "Artists", "Album"]
+            colsRequired = ["Title", "Artists", "Album", "Year"]
             for col in colsRequired:
                 if col not in p.Query:
                     raise Exception("Invalid query: missing - " + col)
@@ -502,7 +514,9 @@ async def playlists_get(id: int, offset: int = 0):
                     Title=row["Title"],
                     Artists=row["Artists"],
                     Album=row["Album"],
+                    Year=row["Year"],
                 )
+
                 m.updateMeta()
                 m.addAux()
                 files.append(m)
