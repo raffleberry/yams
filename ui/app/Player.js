@@ -6,7 +6,7 @@ import { historyPlaylist } from "./tabs/History.js";
 import { playlistsPlaylist } from "./tabs/Playlists.js";
 import { songsPlaylist } from "./tabs/Songs.js";
 import { formatDuration, getArtwork, getSrc, PAGE, setMediaSessionMetadata } from "./utils.js";
-import { computed, ref } from "./vue.js";
+import { computed, ref, useTemplateRef, watch } from "./vue.js";
 
 export const currentPlaylist = ref(PAGE.SONGS);
 
@@ -36,7 +36,7 @@ var playbackPosting = false
 const playbackTimeThreshold = 30
 
 
-const startPlaybackTimeCapture = () => {
+const setupPlaybackTimeCapture = () => {
   lastTime = 0
   playbackTime = 0
   playbackPosted = false
@@ -73,13 +73,7 @@ const postPlaybackHistory = async (track) => {
 
 
 
-const currentTime = ref(0);
-
 const playing = ref(false);
-
-const currentVolume = ref(0.5);
-
-audio.volume = currentVolume.value
 
 export const isPlaying = computed(() => {
   return playing.value
@@ -101,12 +95,22 @@ export const currentTrack = ref({
   Props: ""
 });
 
+const audioBlob = ref(null)
 
-export const playTrack = (track) => {
+export const playTrack = async (track) => {
   currentTrack.value = track
-  startPlaybackTimeCapture()
-  audio.src = getSrc(track.Path)
-  setMediaSessionMetadata(track)
+  setupPlaybackTimeCapture()
+  const url = getSrc(track.Path)
+  try {
+    URL.revokeObjectURL(audio.src)
+    const res = await fetch(url)
+    const blob = await res.blob()
+    audioBlob.value = blob
+    audio.src = URL.createObjectURL(blob)
+    setMediaSessionMetadata(track)
+  } catch (error) {
+    console.log("Error setting audio source: ", error)
+  }
 };
 
 export const previousTrack = () => {
@@ -130,56 +134,6 @@ export const nextTrack = () => {
   playTrack(playlist().value[newIndex]);
 };
 
-audio.onloadeddata = () => {
-  if (audio.paused) {
-    audio.play()
-  }
-}
-audio.ontimeupdate = () => {
-  const c = audio.currentTime;
-  currentTime.value = Math.floor(c);
-  if (playing.value) {
-    let diff = c - lastTime
-    if (diff >= 0 && diff < 2) {
-      playbackTime += diff;
-    }
-    if (!playbackPosted && playbackTime >= playbackTimeThreshold && !playbackPosting) {
-      postPlaybackHistory(currentTrack.value)
-    }
-  }
-  lastTime = c;
-}
-
-audio.onplay = () => {
-  playing.value = true;
-  lastTime = audio.currentTime;
-}
-
-audio.onpause = () => {
-  playbackTime += audio.currentTime - lastTime;
-  playing.value = false;
-}
-
-audio.onended = () => {
-  if (playbackMode.value === 'autoPlayNext') {
-    nextTrack();
-  } else if (playbackMode.value === 'repeatCurrent') {
-    audio.currentTime = 0;
-    playTrack(currentTrack.value);
-  }
-};
-
-
-const changeVolume = (event) => {
-  const volBar = event.currentTarget;
-  const clickX = event.offsetX;
-  const width = volBar.clientWidth;
-  const newVolume = (clickX / width);
-  audio.volume = newVolume;
-  currentVolume.value = newVolume;
-};
-
-
 export const playPause = () => {
   if (audio.paused) {
     audio.play();
@@ -188,16 +142,7 @@ export const playPause = () => {
   }
 };
 
-const seek = (event) => {
-  const progressBar = event.currentTarget;
-  const clickX = event.offsetX;
-  const width = progressBar.clientWidth;
-  const seekTime = (clickX / width) * currentTrack.value.Length;
-  audio.currentTime = seekTime;
-  currentTime.value = Math.floor(seekTime);
-};
 
-const progress = computed(() => (currentTime.value / currentTrack.value.Length) * 100);
 
 const playbackMode = ref('autoPlayNext');
 
@@ -211,8 +156,147 @@ const Player = {
   },
   setup() {
 
+    const currentTime = ref(0);
+
+    const currentVolume = ref(0.5);
+
+    audio.volume = currentVolume.value
+
+    const waveformDiv = useTemplateRef("waveform");
+    const waveformCanvas = useTemplateRef("waveformCanvas");
+
+    let waveformData = []; // stores precomputed peaks
+    let waveformCtx = null;
+
+    watch(audioBlob, generateWaveform)
+
+    async function generateWaveform() {
+      waveformData = []
+      const canvas = waveformCanvas.value;
+      const ctx = canvas.getContext("2d");
+
+      waveformDiv.value.style.display = "block";
+      const cssWidth = waveformDiv.value.clientWidth;
+      const cssHeight = 70;
+      const scale = window.devicePixelRatio || 1;
+      canvas.width = cssWidth * scale;
+      canvas.height = cssHeight * scale;
+      canvas.style.height = cssHeight + "px";
+
+      ctx.scale(scale, scale);
+      const blob = audioBlob.value;
+      const arrayBuffer = await blob.arrayBuffer()
+      const audioCtx = new AudioContext();
+      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      const rawData = audioBuffer.getChannelData(0); // left channel
+      const samples = cssWidth; // number of peaks we want
+      const blockSize = Math.floor(rawData.length / samples);
+
+      const filteredData = [];
+
+      for (let i = 0; i < samples; i++) {
+        let sum = 0;
+        for (let j = 0; j < blockSize; j++) {
+          sum += Math.abs(rawData[(i * blockSize) + j]);
+        }
+        filteredData.push(sum / blockSize);
+      }
+
+      const max = Math.max(...filteredData);
+      waveformData = filteredData.map(n => n / max);
+
+      drawWaveform();
+    }
+
+    // Draw waveform background
+    function drawWaveform(progressRatio = 0) {
+      const canvas = waveformCanvas.value;
+      if (!canvas || !waveformData) return;
+      const ctx = canvas.getContext("2d");
+
+      const cssWidth = canvas.clientWidth;
+      const cssHeight = parseInt(canvas.style.height);
+      ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+      const middle = cssHeight / 2;
+      const barWidth = 1; // exactly one pixel wide
+
+      waveformData.forEach((val, i) => {
+        const barHeight = val * cssHeight;
+        ctx.fillStyle = i / waveformData.length < progressRatio ? "rgba(13, 110, 253, 1)" : "whitesmoke";
+        ctx.fillRect(i * barWidth, middle - barHeight / 2, barWidth, barHeight);
+      });
+    }
+
+    function seek(event) {
+      const rect = waveformCanvas.value.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const width = waveformCanvas.value.clientWidth;
+      const seekTime = (clickX / width) * currentTrack.value.Length;
+      audio.currentTime = seekTime;
+      currentTime.value = Math.floor(seekTime);
+    }
+
+    const changeVolume = (event) => {
+      const volBar = event.currentTarget;
+      const clickX = event.offsetX;
+      const width = volBar.clientWidth;
+      const newVolume = (clickX / width);
+      audio.volume = newVolume;
+      currentVolume.value = newVolume;
+    };
+
+
+    const progress = computed(() => (currentTime.value / currentTrack.value.Length) * 100);
+
+    audio.onloadeddata = () => {
+      if (audio.paused) {
+        audio.play()
+      }
+    }
+    audio.ontimeupdate = () => {
+      const c = audio.currentTime;
+      currentTime.value = Math.floor(c);
+      if (playing.value) {
+        let diff = c - lastTime
+        if (diff >= 0 && diff < 2) {
+          playbackTime += diff;
+        }
+        if (!playbackPosted && playbackTime >= playbackTimeThreshold && !playbackPosting) {
+          postPlaybackHistory(currentTrack.value)
+        }
+      }
+      lastTime = c;
+
+      if (waveformData.length > 0 && audio.duration > 0) {
+        const ratio = audio.currentTime / audio.duration;
+        drawWaveform(ratio);
+      }
+    }
+
+    audio.onplay = () => {
+      playing.value = true;
+      lastTime = audio.currentTime;
+    }
+
+    audio.onpause = () => {
+      playbackTime += audio.currentTime - lastTime;
+      playing.value = false;
+    }
+
+    audio.onended = () => {
+      if (playbackMode.value === 'autoPlayNext') {
+        nextTrack();
+      } else if (playbackMode.value === 'repeatCurrent') {
+        audio.currentTime = 0;
+        playTrack(currentTrack.value);
+      }
+    };
+
+
     return {
       getArtwork,
+      audioBlob,
       currentTrack,
       currentTime,
       playing,
@@ -242,8 +326,12 @@ const Player = {
         <div class="flex-grow-1">
           <div><strong>{{ currentTrack.Title || 'No Track Selected' }}</strong> - <em>{{ currentTrack.Artists }}</em>
           </div>
-          <div class="progress mt-2" style="height: 5px; cursor: pointer;" @click="seek">
-            <div class="progress-bar" role="progressbar" :style="{ width: progress + '%'  }"></div>
+          <div ref="waveform" v-show="audioBlob">
+            <canvas ref="waveformCanvas" 
+              class="mt-2" 
+              style="width: 100%; cursor: pointer;" 
+              @click="seek">
+            </canvas>
           </div>
           <div class="d-flex justify-content-between">
             <small>{{ formatDuration(currentTime) }}</small>
@@ -263,13 +351,13 @@ const Player = {
           </div>
           <div>
             <button class="btn btn-dark btn-lg" @click="previousTrack">
-              <i class="bi bi-rewind"></i>
+              <i class="bi bi-caret-left"></i>
             </button>
             <button class="btn btn-dark btn-lg" @click="playPause">
               <i class="bi" :class="{ 'bi-play': !playing, 'bi-pause': playing }"></i>
             </button>
             <button class="btn btn-dark btn-lg" @click="nextTrack">
-              <i class="bi bi-fast-forward"></i>
+              <i class="bi bi-caret-right"></i>
             </button>
           </div>
           <div class="progress" style="width: 150px; height: 5px; cursor: pointer;" @click="changeVolume">
