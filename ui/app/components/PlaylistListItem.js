@@ -5,7 +5,9 @@ import { computed, storeToRefs } from "../vue.js";
 
 const PlaylistListItem = {
     props: {
-        id: {},
+        id: {
+            required: true
+        },
         checkbox: {
             type: Boolean,
             required: false,
@@ -25,6 +27,7 @@ const PlaylistListItem = {
 
         const { playlists, favs } = storeToRefs(store)
         let item = null;
+        let count = null;
         if (props.id == "favourites") {
             item = computed(() => {
                 return {
@@ -36,9 +39,15 @@ const PlaylistListItem = {
                     Count: favs.value.length
                 }
             })
+            count = computed(() => {
+                return favs.value.length
+            })
         } else {
             item = computed(() => {
                 return playlists.value[props.id]
+            })
+            count = computed(() => {
+                return playlists.value[props.id].Tracks.length
             })
         }
 
@@ -58,15 +67,19 @@ const PlaylistListItem = {
         return {
             PAGE,
             item,
+            count,
             checkbox: props.checkbox,
             checked,
             checkboxHandler
         }
     },
     template: `
-    <li class="list-group-item d-flex justify-content-flex-start align-items-center">
-        <span class="px-2" v-if="checkbox"> <input :checked="checked" type="checkbox" @change="checkboxHandler" /> </span>
-        <router-link :to="{ name: PAGE.PLAYLIST, params: { name: item.Id !== -1 ? item.Id : item.Name?.toLowerCase() } }"> {{ item.Name }} </router-link> - {{ item.Description }} <span v-if="item.Type === 'LIST'"> ({{ item.Count }}) </span>
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+            <span class="px-2" v-if="checkbox"> <input :checked="checked" type="checkbox" @change="checkboxHandler" /> </span>
+            <router-link :to="{ name: PAGE.PLAYLIST, params: { name: item.Id !== -1 ? item.Id : item.Name?.toLowerCase() } }"> {{ item.Name }} </router-link> &nbsp;• {{ item.Description }} <span v-if="item.Type === 'LIST'"> </span>
+        </div>
+        <button type="button" class="btn btn-info">{{ count }}</button>
     </li>
     `
 }

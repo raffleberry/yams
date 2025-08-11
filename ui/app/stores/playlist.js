@@ -4,6 +4,18 @@ import { defineStore, ref } from "../vue.js";
 export const usePlaylistStore = defineStore('playlist', () => {
     const loading = ref(true)
     const favs = ref([])
+
+    /**
+     * {
+     *   "id": {
+     *     "Name": "name",
+     *     "Description": "description",
+     *     "Type": "LIST/QUERY",
+     *     "Query": "SELECT * FROM table;",
+     *     "Tracks": []
+     *   }
+     * }
+     */
     const playlists = ref({})
 
     const fetchFav = async () => {

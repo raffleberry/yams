@@ -126,7 +126,7 @@ async def history_get(offset: int = 0):
     limit = 10
     q = """
         SELECT
-			Time, Title, 
+			datetime(Time, 'localtime'), Title, 
 			Artists, Album, Genre,
 			Year, Track, Length
 		FROM
