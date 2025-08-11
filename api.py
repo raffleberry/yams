@@ -348,6 +348,34 @@ async def playlists_new(p: models.Playlist):
     return p
 
 
+@router.delete("/playlists")
+async def playlists_del(id: int):
+    del_count = 0
+    with db.R() as conn:
+        cur = conn.cursor()
+
+        cur.execute("SELECT Type FROM playlists WHERE Id = ?;", (id,))
+        row = cur.fetchone()
+        if row is None:
+            raise Exception("Playlist not found")
+
+        t = models.PlaylistType(row[0])
+
+        cur.execute("DELETE FROM playlists WHERE Id = ?;", (id,))
+
+        if t == models.PlaylistType.LIST:
+            res = cur.execute(
+                "DELETE FROM playlists_songs WHERE PlaylistId = ?;", (id,)
+            )
+            del_count = res.rowcount
+        conn.commit()
+
+    return {
+        "Message": "Playlist deleted",
+        "Count": del_count,
+    }
+
+
 @router.get("/playlists")
 async def playlists_all():
     playlists = []
@@ -528,7 +556,7 @@ async def playlists_get(id: int, offset: int = 0):
 
 
 @router.post("/playlists/{id}")
-async def playlists_add(id: int, m: models.Music):
+async def playlists_add_to(id: int, m: models.Music):
     with db.R() as conn:
         cur = conn.cursor()
         cur.execute("SELECT Id FROM playlists WHERE Id = ?;", (id,))
@@ -564,7 +592,7 @@ async def playlists_add(id: int, m: models.Music):
 
 
 @router.delete("/playlists/{id}")
-async def playlists_del(id: int, m: models.Music):
+async def playlists_del_from(id: int, m: models.Music):
     with db.R() as conn:
         cur = conn.cursor()
         cur.execute("SELECT Id FROM playlists WHERE Id = ?;", (id,))

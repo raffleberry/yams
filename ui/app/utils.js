@@ -88,5 +88,6 @@ export const isSameTrack = (track1, track2) => {
 }
 
 export const inPlaylist = (playlist, track) => {
+    if (playlist.Type !== "LIST") return 0
     return playlist.Tracks.findIndex(t => isSameTrack(t, track)) !== -1
 }

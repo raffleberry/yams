@@ -147,6 +147,27 @@ export const usePlaylistStore = defineStore('playlist', () => {
         }
     }
 
+    const del = async (id) => {
+        try {
+            const res = await fetch(`/api/playlists?id=${id}`, {
+                method: 'DELETE',
+            })
+
+            if (res.status != 200) {
+                throw new Error('Failed to DELETE playlist')
+            }
+            let d = {
+                ...playlists.value
+            }
+            delete d[id]
+            playlists.value = d
+            return null
+        } catch (error) {
+            console.error(error)
+            return error
+        }
+    }
+
     const add = async (id, track) => {
         try {
             const res = await fetch(`/api/playlists/${id}`, {
@@ -202,6 +223,7 @@ export const usePlaylistStore = defineStore('playlist', () => {
         fetchFav, fetchAll,
         addFav, remFav,
         create, add, rem,
+        del,
         loading
     }
 
