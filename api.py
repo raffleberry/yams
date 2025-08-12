@@ -262,28 +262,32 @@ async def artists_get(artists: str):
 
 
 @router.get("/albums")
-async def albums_all():
+async def albums_all(offset: int = 0):
+    limit = 10
     q = f"""
-    SELECT Album, MIN(Artists) as Artists, Year
+    SELECT Path, Album, Year, COUNT(DISTINCT Title) as Songs
     FROM files
-    WHERE Path GLOB '{yams.config.MusicDir}*' group by Album, Year;
+    WHERE Path GLOB '{yams.config.MusicDir}*'
+    GROUP BY Album, Year ORDER BY Songs DESC LIMIT {limit} OFFSET ?;
     """
 
     files = []
 
     with db.L() as conn:
         cur = conn.cursor()
-        cur.execute(q)
+        cur.execute(q, (offset,))
         rows = cur.fetchall()
         for row in rows:
-            m = models.Music(
-                Album=row[0],
-                Artists=row[1],
-                Year=row[2],
-            )
+            m = {
+                "Path": row[0],
+                "Album": row[1],
+                "Year": row[2],
+                "Songs": row[3],
+            }
             files.append(m)
     return {
         "Data": files,
+        "Next": -1 if len(files) < limit else offset + limit,
     }
 
 
@@ -342,6 +346,24 @@ async def playlists_new(p: models.Playlist):
             (?,?,?,?);
         """,
             (p.Name, p.Description, p.Type.value, p.Query),
+        )
+        p.Id = cur.lastrowid if cur.lastrowid is not None else -1
+        conn.commit()
+    return p
+
+
+@router.put("/playlists")
+async def playlists_edit(p: models.Playlist):
+    with db.R() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            UPDATE
+        playlists
+            SET Name = ?, Description = ?
+        WHERE Id = ?
+        """,
+            (p.Name, p.Description, p.Id),
         )
         p.Id = cur.lastrowid if cur.lastrowid is not None else -1
         conn.commit()

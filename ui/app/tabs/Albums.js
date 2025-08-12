@@ -9,6 +9,8 @@ import { onBeforeUnmount, onMounted, ref, useRoute, watch } from "../vue.js";
 export const albumsPlaylist = ref([]);
 
 const allAlbums = ref([]);
+const nextOffset = ref(0);
+
 
 const fetchSongs = async (albums) => {
 
@@ -27,20 +29,21 @@ const fetchSongs = async (albums) => {
     }
 }
 
-const fetchAllAlbums = async () => {
-    if (allAlbums.value.length > 0) return;
-
-    let url = `/api/albums`;
+const fetchAlbums = async () => {
+    let url = `/api/albums?offset=${nextOffset.value}`;
     try {
         const response = await fetch(url);
         const result = await response.json();
         if (result) {
-            allAlbums.value = result.Data
+            allAlbums.value = [...allAlbums.value, ...result.Data]
+            nextOffset.value = result.Next
+            return null
         } else {
-            console.error('Error server sent bad result:', result);
+            throw new Error('Error server sent bad result:', result);
         }
     } catch (error) {
         console.error('Error fetching music data:', error);
+        return error;
     }
 }
 
@@ -63,7 +66,7 @@ const Albums = {
             } else {
                 updatePageTitle(PAGE.ALBUMS)
                 currentPage.value = PAGE.ALBUMS
-                fetchAllAlbums()
+                fetchAlbums()
             }
         }, { immediate: true })
 
@@ -90,6 +93,8 @@ const Albums = {
 
             PAGE,
 
+            fetchAlbums,
+
             play,
             formatDuration,
             getArtwork,
@@ -98,6 +103,12 @@ const Albums = {
     },
     template: `
     <div v-if="names">
+        <h1>{{ names }} </h1>
+        <p>
+            <span>{{ albumsPlaylist.length }} song(s)</span>
+            <span v-if="albumsPlaylist.length > 0" > • {{ albumsPlaylist[0].Year }}</span>
+        </p>
+
         <div class="my-3 d-flex flex-column">
             <ul class="list-group">
                 <SongsTile v-for="(track, index) in albumsPlaylist" :key="index+names+track.Path" :track="track" :play="play" :dontLinkAlbum="true">
@@ -106,13 +117,29 @@ const Albums = {
         </div>
     </div>
     <div v-else>
-        <div class="my-3 d-flex flex-column">
-            <ul class="list-group">
-                <AlbumListItem v-for="(item, index) in allAlbums" :key="index+item.Album+item.Year" :item="item">
-                </AlbumListItem>
-            </ul>
-        </div>
-
+    <table class="table table-striped">
+        <thead>
+            <tr>
+            <th scope="col">Artwork</th>
+            <th scope="col">Name</th>
+            <th scope="col">Year</th>
+            <th scope="col">Songs</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="(item, index) in allAlbums" :key="item.Path">
+                <td>
+                    <img :src="getArtwork(item.Path)" alt="Artwork" class="rounded me-3" style="width: 100px; height: 100px;"
+                    data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(item.Path)">
+                </td>
+                <td><router-link :to="{ name: PAGE.ALBUM, params: { names: item.Album } }"> {{ item.Album }} </router-link></td>
+                <td>{{ item.Year }}</td>
+                <td>{{ item.Songs }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <button @click="fetchAlbums"
+        class="btn btn-primary mt-3">Load More</button>
     </div>
     `
 }

@@ -76,7 +76,7 @@ const Playlists = {
 
         const { favs, playlists, loading } = storeToRefs(store)
 
-        const name = ref("")
+        const playlist = ref({})
 
 
         const setupPid = (pid) => {
@@ -90,15 +90,20 @@ const Playlists = {
             currentPage.value = PAGE.PLAYLIST
         }
         const setupFavourites = () => {
-            name.value = "favourites"
+            playlist.value = {
+                Name: "favourites",
+                Description: "Starred",
+                Type: "LIST",
+                Count: favs.value.length
+            }
             updatePageTitle(`${PAGE.PLAYLIST} - favourites`)
             currentPage.value = PAGE.PLAYLIST
             playlistsPlaylist.value = favs.value
         }
 
         const setupPlaylist = (id) => {
-            name.value = playlists.value[id].Name
-            updatePageTitle(`${PAGE.PLAYLIST} - ${name.value}`)
+            playlist.value = playlists.value[id]
+            updatePageTitle(`${PAGE.PLAYLIST} - ${playlist.value.Name}`)
             currentPage.value = PAGE.PLAYLIST
             if (!loading.value) {
                 playlistsPlaylist.value = playlists.value[id].Tracks
@@ -109,7 +114,7 @@ const Playlists = {
             if (pid) {
                 setupPid(pid)
             } else {
-                name.value = ""
+                playlist.value = {}
                 updatePageTitle(PAGE.PLAYLISTS)
                 currentPage.value = PAGE.PLAYLISTS
             }
@@ -161,7 +166,7 @@ const Playlists = {
         return {
             PAGE,
             play,
-            name,
+            playlist,
             favs,
             onEdit,
             onDelete,
@@ -170,7 +175,7 @@ const Playlists = {
         }
     },
     template: `
-    <div v-if="!name">
+    <div v-if="!playlist.Name">
         <div class="my-3 d-flex flex-column">
             <ul class="list-group">
 
@@ -198,10 +203,18 @@ const Playlists = {
         </div>
     </div>
     <div v-else>
+        <div>
+            <h1>{{ playlist.Name }} </h1>
+            <p>
+                <span v-if="playlist.Type === 'LIST'">{{ playlist.Count }} song(s)</span>
+                
+                <span v-if="playlist.Description"> • {{ playlist.Description }}</span>
+            </p>
+        </div>
         <div class="my-3 d-flex flex-column">
             <ul class="list-group">
                 <SongsTile v-for="(track, index) in playlistsPlaylist"
-                    :key="index+name+track.Path"
+                    :key="index+playlist.Name+track.Path"
                     :track="track"
                     :play="play">
                 </SongsTile>
