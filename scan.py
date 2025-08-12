@@ -44,14 +44,14 @@ def add_db(new_files: list):
                     """
                     INSERT INTO files (
                         Path, Size, Title, Artists,
-                        Album, Comment, Genre, Year,
-                        Track, Length, Bitrate, Samplerate,
-                        Channels, Artwork, Lyrics
+                        Album, AlbumArtist, Comment, Genre,
+                        Year, Track, Length, Bitrate,
+                        Samplerate, Channels, Artwork, Lyrics
                     ) VALUES (
                         ?, ?, ?, ?,
                         ?, ?, ?, ?,
                         ?, ?, ?, ?,
-                        ?, ?, ?);
+                        ?, ?, ?, ?);
                     """,
                     (
                         m.Path,
@@ -59,6 +59,7 @@ def add_db(new_files: list):
                         m.Title,
                         m.Artists,
                         m.Album,
+                        m.AlbumArtist,
                         m.Comment,
                         m.Genre,
                         m.Year,

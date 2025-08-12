@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS files (
     Title TEXT,
     Artists TEXT,
     Album TEXT,
+    AlbumArtist TEXT,
     Comment TEXT,
     Genre TEXT,
     Year TEXT,

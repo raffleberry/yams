@@ -121,7 +121,8 @@ const Albums = {
         <thead>
             <tr>
             <th scope="col">Artwork</th>
-            <th scope="col">Name</th>
+            <th scope="col">Album</th>
+            <th scope="col">Artist</th>
             <th scope="col">Year</th>
             <th scope="col">Songs</th>
             </tr>
@@ -133,6 +134,13 @@ const Albums = {
                     data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(item.Path)">
                 </td>
                 <td><router-link :to="{ name: PAGE.ALBUM, params: { names: item.Album } }"> {{ item.Album }} </router-link></td>
+                <td>
+                    <component
+                        :is="item.AlbumArtist.trim() ? 'router-link': 'span'"
+                        :to="{ name: PAGE.ARTIST, params: { names: item.AlbumArtist.trim() } }">
+                        {{ item.AlbumArtist }}
+                    </component>
+                </td>
                 <td>{{ item.Year }}</td>
                 <td>{{ item.Songs }}</td>
             </tr>

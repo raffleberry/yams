@@ -265,7 +265,7 @@ async def artists_get(artists: str):
 async def albums_all(offset: int = 0):
     limit = 10
     q = f"""
-    SELECT Path, Album, Year, COUNT(DISTINCT Title) as Songs
+    SELECT Path, Album, AlbumArtist, Year, COUNT(DISTINCT Title) as Songs
     FROM files
     WHERE Path GLOB '{yams.config.MusicDir}*'
     GROUP BY Album, Year ORDER BY Songs DESC LIMIT {limit} OFFSET ?;
@@ -281,8 +281,9 @@ async def albums_all(offset: int = 0):
             m = {
                 "Path": row[0],
                 "Album": row[1],
-                "Year": row[2],
-                "Songs": row[3],
+                "AlbumArtist": row[2],
+                "Year": row[3],
+                "Songs": row[4],
             }
             files.append(m)
     return {
@@ -307,7 +308,6 @@ async def albums_get(album: str):
 
     with db.L() as conn:
         cur = conn.cursor()
-        print(q, album)
         cur.execute(q, (album,))
         rows = cur.fetchall()
         for row in rows:

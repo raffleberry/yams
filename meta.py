@@ -19,6 +19,7 @@ def get(path: str) -> Music:
     if path.lower().endswith(".mp3"):
         d.Title = str(m.get("TIT2", ""))
         d.Artists = str(m.get("TPE1", ""))
+        d.AlbumArtist = str(m.get("TPE2", ""))
         d.Album = str(m.get("TALB", ""))
         d.Genre = str(m.get("TCON", ""))
         drc = str(m.get("TDRC", ""))
@@ -45,6 +46,10 @@ def get(path: str) -> Music:
         title = m.get("©nam")
         if title is not None and len(title) > 0:
             d.Title = title[0]
+
+        album_artist = m.get("aART")
+        if album_artist is not None and len(album_artist) > 0:
+            d.AlbumArtist = album_artist[0]
 
         artists = m.get("©ART")
         if artists is not None and len(artists) > 0:
@@ -82,6 +87,10 @@ def get(path: str) -> Music:
         title = m.get("title")
         if title is not None and len(title) > 0:
             d.Title = title[0]
+
+        album_artists = m.get("ALBUMARTIST")
+        if album_artists is not None and len(album_artists) > 0:
+            d.AlbumArtist = album_artists[0]
 
         artists = m.get("artist")
         if artists is not None and len(artists) > 0:

@@ -20,6 +20,7 @@ class Music(BaseModel):
     Title: str = ""
     Size: int = 0
     Artists: str = ""
+    AlbumArtist: str = ""
     Album: str = ""
     Genre: str = ""
     Year: str = ""
