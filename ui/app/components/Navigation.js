@@ -1,4 +1,5 @@
 import { currentPage, PAGE } from "../utils.js";
+import { ref, watch } from "../vue.js";
 
 const Navigation = {
   props: {
@@ -7,13 +8,26 @@ const Navigation = {
 
   },
   setup: (props) => {
+    const theme = ref(localStorage.getItem("theme") || "light");
+
+    watch(theme, () => {
+      document.documentElement.setAttribute("data-bs-theme", theme.value);
+      localStorage.setItem("theme", theme.value);
+    }, { immediate: true });
+
+    const toggleTheme = () => {
+      theme.value = theme.value === "light" ? "dark" : "light";
+    };
+
     return {
       c: currentPage,
+      theme,
+      toggleTheme,
       PAGE,
     }
   },
   template: `
-    <div class="nav nav-tabs sticky-top d-flex justify-content-between" style="background-color: white;">
+    <div class="nav nav-tabs sticky-top d-flex justify-content-between bg-body" >
       <div class="d-flex flex-row flex-wrap">
         <li class="nav-item"><router-link :class="{'nav-link': true, active: c === PAGE.SONGS }" to="/">Songs</router-link></li>
         <li class="nav-item"><router-link :class="{'nav-link': true, active: c === PAGE.ALBUMS || c === PAGE.ALBUM }" to="/albums">Albums</router-link></li>
@@ -25,6 +39,9 @@ const Navigation = {
       </div>
 
       <div class="d-flex flex-row">
+        <button class="btn btn-link" @click="toggleTheme" aria-label="darkMode">
+          <i :class="{'bi bi-brightness-high-fill': theme !== 'light', 'bi bi-moon-fill': theme !== 'dark'}" style="font-size: 1.25rem;"></i>
+        </button>
         <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#modalSettings" aria-label="Settings">
           <i class="bi bi-gear-fill" style="font-size: 1.25rem;"></i>
         </button>

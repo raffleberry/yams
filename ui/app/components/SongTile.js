@@ -100,7 +100,7 @@ const SongsTile = {
     template: `
     <li class="list-group-item d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center">
-            <img :src="getArtwork(track.Path)" alt="Artwork" class="rounded me-3" style="width: 100px; height: 100px;"
+            <img :src="getArtwork(track.Path)" alt="Artwork" class="rounded border border-3 me-3" style="width: 100px; height: 100px;"
                 data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(track.Path)">
             <div>
                 <div>
@@ -136,7 +136,7 @@ const SongsTile = {
                 <small>{{ formatDuration(track.Length) }} | {{ track.Bitrate }}KBps </small>
                 <br>
                 <button :class="['btn', 'btn-sm', cTrack.Path === track.Path ? 'btn-success':'btn-primary']"
-                    :disabled="!track.Path"
+                    :title="track.Path" :disabled="!track.Path"
                     @click="cTrack.Path !== track.Path ? play(track) : playPause()">{{ cTrack.Path !== track.Path ? 'Play' : ( isPlaying ? 'Pause' : 'Play' ) }}</button>
                 <span class="ms-2"></span> {{ track.PlayCount }} plays
         </div>
