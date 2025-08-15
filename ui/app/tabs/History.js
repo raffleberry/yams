@@ -71,7 +71,7 @@ const History = {
         <li v-for="(track, index) in historyPlaylist" :key="index"
             class="list-group-item d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-                <img :src="getArtwork(track.Path)" alt="Artwork" class="rounded me-3" style="width: 100px; height: 100px;"
+                <img :src="getArtwork(track.Path)" alt="Artwork" class="rounded border border-3 me-3" style="width: 100px; height: 100px;"
                     data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(track.Path)">
                 <div>
                     <div>{{ (new Date(track.Time)).toLocaleString() }} </div>

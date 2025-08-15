@@ -75,11 +75,11 @@ const ModalAddToPlaylist = {
                           &nbsp;
                           <router-link :to="{ name: PAGE.PLAYLIST, params: { pid: item.Id !== -1 ? item.Id : item.Name?.toLowerCase() } }"> {{ item.Name }} </router-link> <span v-if="item.Description"> • {{ item.Description }} </span>
                       </div>
-                      <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#ModalCreatePlaylist">{{ item.Tracks.length }}</button>
+                      <span class="btn btn-info">{{ item.Tracks.length }}</span>
                   </li>
               </ul>
               <ul class="list-group">
-                <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#ModalCreatePlaylist"><i class="bi bi-plus"></i></button>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#ModalCreatePlaylist"><i class="bi bi-plus"></i></button>
               </ul>
           </div>
           </div>
