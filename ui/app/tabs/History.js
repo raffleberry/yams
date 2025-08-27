@@ -69,7 +69,7 @@ const History = {
     template: `
     <ul class="list-group">
         <li v-for="(track, index) in historyPlaylist" :key="index"
-            class="list-group-item d-flex justify-content-between align-items-center">
+            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
                 <img :src="getArtwork(track.Path)" alt="Artwork" class="rounded border border-3 me-3" style="width: 100px; height: 100px;"
                     data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(track.Path)">

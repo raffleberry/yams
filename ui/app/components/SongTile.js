@@ -95,16 +95,21 @@ const SongsTile = {
         }
     },
     template: `
-    <li class="list-group-item d-flex justify-content-between align-items-center"
+    <li class="list-group-item d-flex justify-content-between align-items-start list-group-item-action"
         @mouseover="hover = true" @mouseleave="hover = false">
         <div class="d-flex align-items-center">
             <img :src="getArtwork(track.Path)" alt="Artwork" class="rounded border border-3 me-3" style="width: 100px; height: 100px;"
                 data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(track.Path)">
             <div>
                 <div>
-                    <span v-if="isFavourite">⭐</span>
+                    <span class="me-2" v-if="isFavourite">⭐</span>
                     <span v-if="dontLinkAlbum">{{ track.Track }}. </span>
                     <span v-html="highlight(track.Title, searchTerm)"></span>
+                    <button
+                        data-bs-toggle="modal" data-bs-target="#ModalAddToPlaylist" @click="selectTrack(track)"
+                        class="btn badge text-bg-primary rounded-pill ms-2" v-if="inPlaylistCnt">
+                        {{inPlaylistCnt}}
+                    </button>
                 </div>
                 
                 <div>
@@ -112,6 +117,7 @@ const SongsTile = {
                         <component
                             :is="dontLinkArtists.includes(artist.trim()) ? 'span' : 'router-link'"
                             :key="artist"
+                            :class="{ 'router-text-link': !dontLinkArtists.includes(artist.trim()) }"
                             :to="{ name: PAGE.ARTIST, params: { names: artist.trim() } }">
                             <small v-html="highlight(artist, searchTerm)"></small>
                         </component>
@@ -121,12 +127,14 @@ const SongsTile = {
 
                 <component
                     :is="dontLinkAlbum ? 'span' : 'router-link'"
+                    :class="{ 'router-text-link': !dontLinkAlbum }"
                     :to="{ name: PAGE.ALBUM, params: { names: track.Album } }">
                     <small v-html="highlight(track.Album, searchTerm)"></small>
                 </component>
                  - 
                  <component
                     :is="track.Year ? 'span' : 'router-link'"
+                    :class="{ 'router-text-link': !track.Year }"
                     :to="{ name: PAGE.YEAR, params: { year: track.Year } }">
                     <small v-html="highlight(track.Year, searchTerm)"></small>
                 </component>
@@ -142,12 +150,11 @@ const SongsTile = {
                 </button>
 
                 <span class="ms-2"></span> {{ track.PlayCount }} plays
-                <span v-if="inPlaylistCnt">• in {{inPlaylistCnt}} playlists</span>
             </div>
         </div>
 
         <span>
-            <i v-show="hover" class="btn btn-link bi bi-three-dots-vertical dropdown" data-bs-toggle="dropdown"></i></a>
+            <i v-show="hover" class="btn btn-link bi bi-three-dots-vertical dropdown" data-bs-toggle="dropdown"></i>
             <ul class="dropdown-menu">
                 <li><a @click="updateFavourite" class="dropdown-item" href="#">{{isFavourite ? "Unfavorite" : "Favorite"}}</a></li>
                 <li>
