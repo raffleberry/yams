@@ -17,13 +17,13 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-yams.init()
-bundle_dir = Path(__file__).parent
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global bundle_dir
     # startup
+    bundle_dir = Path(__file__).parent
+    yams.init()
     db.init_tables()
     scan.scan()
     yield

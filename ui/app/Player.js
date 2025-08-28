@@ -295,6 +295,7 @@ const Player = {
 
 
     return {
+      PAGE,
       getArtwork,
       audioBlob,
       currentTrack,
@@ -317,14 +318,24 @@ const Player = {
   },
 
   template: `
-    <div class="fixed-bottom d-flex bg-dark text-white p-3 d-flex align-items-center">
+    <div v-if="currentTrack.Path" class="fixed-bottom d-flex bg-dark text-white p-3 d-flex align-items-center">
       <div class="me-3">
         <img :src="getArtwork(currentTrack.Path)" alt="Artwork" class="rounded" style="width: 150px; height: 150px;"
           data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(currentTrack.Path)">
       </div>
       <div class="mt-2 flex-grow-1">
         <div class="flex-grow-1">
-          <div><strong>{{ currentTrack.Title || 'No Track Selected' }}</strong> - <em>{{ currentTrack.Artists }}</em>
+          <div><strong>{{ currentTrack.Title || 'No Track Selected' }}</strong> - <em>
+              <span v-for="(artist, index) in currentTrack.Artists.split(',')">
+                <router-link
+                    class="router-text-link"
+                    :key="artist"
+                    :to="{ name: PAGE.ARTIST, params: { names: artist.trim() } }">
+                    {{ artist }}
+                </router-link>
+                <span v-if="index !== currentTrack.Artists.split(',').length - 1">,</span>
+            </span>
+          </em>
           </div>
           <div ref="waveform" v-show="audioBlob">
             <canvas ref="waveformCanvas" 
