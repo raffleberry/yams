@@ -3,7 +3,7 @@ import { selectedTrack as mTrack } from "../modals/common.js";
 import { currentTrack, isPlaying, playPause } from "../Player.js";
 import { usePlaylistStore } from "../stores/playlist.js";
 import { formatDuration, getArtwork, highlight, inPlaylist, PAGE } from "../utils.js";
-import { computed, ref, storeToRefs } from "../vue.js";
+import { computed, ContextMenu, ref, storeToRefs } from "../vue.js";
 
 
 const SongsTile = {
@@ -34,7 +34,7 @@ const SongsTile = {
         }
     },
     components: {
-
+        ContextMenu
     },
     setup: (props) => {
         const track = ref(props.track)
@@ -74,7 +74,28 @@ const SongsTile = {
 
         const hover = ref(false)
 
+        const menu = ref()
+        const menuItems = ref([
+            {
+                label: 'Add to playlist',
+                command: () => {
+                    // selectTrack(track.value)
+                    menu.value.hide()
+                },
+            },
+            {
+                label: 'Favorite',
+                command: () => {
+                    // updateFavourite()
+                    menu.value.hide()
+                },
+            }
+        ])
+
         return {
+
+            menu,
+            menuItems,
 
             PAGE,
 
@@ -96,7 +117,8 @@ const SongsTile = {
     },
     template: `
     <li class="list-group-item d-flex justify-content-between align-items-start list-group-item-action"
-        @mouseover="hover = true" @mouseleave="hover = false">
+        @mouseover="hover = true" @mouseleave="hover = false" @contextmenu="(e) => menu.show(e)">
+        <ContextMenu ref="menu" :model="menuItems"  />
         <div class="d-flex align-items-center">
             <img :src="getArtwork(track.Path)" alt="Artwork" class="rounded border border-3 me-3" style="width: 100px; height: 100px;"
                 data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(track.Path)">
@@ -142,28 +164,30 @@ const SongsTile = {
 
                 <small>{{ formatDuration(track.Length) }} | {{ track.Bitrate }}KBps </small>
                 <br>
+                <div class="btn-group dropup">
+                    <button :class="['btn', 'btn-sm', cTrack.Path === track.Path ? 'btn-success':'btn-primary']"
+                        :title="track.Path" :disabled="!track.Path"
+                        @click="cTrack.Path !== track.Path ? play(track) : playPause()">
+                        {{ cTrack.Path !== track.Path ? 'Play' : ( isPlaying ? 'Pause' : 'Play' ) }}
+                    </button>
 
-                <button :class="['btn', 'btn-sm', cTrack.Path === track.Path ? 'btn-success':'btn-primary']"
-                    :title="track.Path" :disabled="!track.Path"
-                    @click="cTrack.Path !== track.Path ? play(track) : playPause()">
-                    {{ cTrack.Path !== track.Path ? 'Play' : ( isPlaying ? 'Pause' : 'Play' ) }}
-                </button>
+                    <button type="button" data-bs-toggle="dropdown" 
+                        :class="['btn', 'btn-sm', cTrack.Path === track.Path ? 'btn-success':'btn-primary', 'dropdown-toggle', 'dropdown-toggle-split']">
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a @click="updateFavourite" class="dropdown-item" href="#">{{isFavourite ? "Unfavorite" : "Favorite"}}</a></li>
+                        <li>
+                            <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#ModalAddToPlaylist" @click="selectTrack(track)">
+                                Add to Playlist
+                            </button>
+                        </li>
+                    </ul>
+
+                </div>
 
                 <span class="ms-2"></span> {{ track.PlayCount }} plays
             </div>
         </div>
-
-        <span>
-            <i v-show="hover" class="btn btn-link bi bi-three-dots-vertical dropdown" data-bs-toggle="dropdown"></i>
-            <ul class="dropdown-menu">
-                <li><a @click="updateFavourite" class="dropdown-item" href="#">{{isFavourite ? "Unfavorite" : "Favorite"}}</a></li>
-                <li>
-                    <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#ModalAddToPlaylist" @click="selectTrack(track)">
-                        Add to Playlist
-                    </button>
-                </li>
-            </ul>
-        </span>
     </li>
     `
 }

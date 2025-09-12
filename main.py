@@ -11,6 +11,8 @@ import db
 import scan
 import yams
 
+yams.init()
+
 logging.basicConfig(
     format="%(asctime)s,%(msecs)03d %(filename)s:%(lineno)-4s %(levelname)-8s %(message)s",
     datefmt="%Y-%m-%dT%H:%M:%S",
@@ -23,7 +25,6 @@ async def lifespan(app: FastAPI):
     global bundle_dir
     # startup
     bundle_dir = Path(__file__).parent
-    yams.init()
     db.init_tables()
     scan.scan()
     yield

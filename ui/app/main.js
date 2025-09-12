@@ -15,7 +15,7 @@ import { Playlists } from "./tabs/Playlists.js";
 import { Songs } from "./tabs/Songs.js";
 import { Years } from "./tabs/Years.js";
 import { PAGE, setupMediaSession } from "./utils.js";
-import { computed, createApp, createPinia, createRouter, createWebHistory, onMounted, ref, watch } from "./vue.js";
+import { computed, Config, createApp, createPinia, createRouter, createWebHistory, onMounted, ref, watch } from "./vue.js";
 
 const currentPage = ref(PAGE.SONGS);
 
@@ -91,4 +91,6 @@ const app = createApp({
 
 app.use(router)
 app.use(createPinia())
+app.use(Config);
 app.mount('#app')
+
