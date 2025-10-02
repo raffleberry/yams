@@ -115,3 +115,6 @@ CREATE TABLE IF NOT EXISTS favourites (
         for table in remote_tables:
             cur.execute(table)
         conn.commit()
+
+
+init_tables()

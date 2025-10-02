@@ -1,19 +1,20 @@
 import json
-import pathlib
+from pathlib import Path
 
 from pydantic import BaseModel
 
 from models import Config
 
 # use app.<name> to access config
-CONFIG_DIR = pathlib.Path.joinpath(pathlib.Path.home(), ".yams")
-CONFIG_FILE = pathlib.Path.joinpath(CONFIG_DIR, "config.json")
-DB_LOCAL = pathlib.Path.joinpath(CONFIG_DIR, "yams.sqlite")
-DB_REMOTE = pathlib.Path.joinpath(CONFIG_DIR, "yams_remote.sqlite")
-ROOT_DIR = pathlib.Path.cwd()
+APP_DIR = Path(__file__).parent
+CONFIG_DIR = Path.home() / ".yams"
+CONFIG_FILE = CONFIG_DIR / "config.json"
+DB_LOCAL = CONFIG_DIR / "yams.sqlite"
+DB_REMOTE = CONFIG_DIR / "yams_remote.sqlite"
+ROOT_DIR = Path.cwd()
 
 config = Config(
-    MusicDir=str(pathlib.Path.home() / "Music"),
+    MusicDir=str(Path.home() / "Music"),
     Ip="127.0.0.1",
     Port=5550,
 )
@@ -36,3 +37,6 @@ def init():
     if not CONFIG_FILE.exists():
         _write_config(CONFIG_FILE, config)
     _read_config(CONFIG_FILE)
+
+
+init()

@@ -7,7 +7,6 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
 import api
-import db
 import scan
 import yams
 
@@ -20,11 +19,7 @@ logging.basicConfig(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global bundle_dir
     # startup
-    bundle_dir = Path(__file__).parent
-    yams.init()
-    db.init_tables()
     scan.scan()
     yield
     # shutdown
@@ -37,9 +32,9 @@ app.include_router(api.router, prefix="/api")
 
 @app.get("/{path:path}")
 async def frontend_handler(path: str):
-    fp = bundle_dir / Path("ui") / path
+    fp = yams.APP_DIR / "ui" / path
     if not fp.exists() or not fp.is_file():
-        fp = bundle_dir / Path("ui") / "index.html"
+        fp = yams.APP_DIR / "ui" / "index.html"
     return FileResponse(fp)
 
 
