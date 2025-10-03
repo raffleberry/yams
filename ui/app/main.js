@@ -1,9 +1,9 @@
 import { Navigation } from "./components/Navigation.js";
+import { SongsTileCtxMenu } from "./components/SongTileCtxMenu.js";
 import { modalArtworkUrl } from "./modals.js";
 import { ModalAddToPlaylist } from "./modals/AddToPlaylist.js";
 import { ModalCreatePlaylist } from "./modals/CreatePlaylist.js";
 import { currentTrack, isPlaying, nextTrack, Player, playPause, previousTrack } from "./Player.js";
-import { PVConfig } from "./primevue.js";
 import { PropsModal } from "./Props.js";
 import { Settings } from "./Settings.js";
 import { usePlaylistStore } from "./stores/playlist.js";
@@ -72,7 +72,9 @@ const app = createApp({
 
         ModalAddToPlaylist,
         ModalCreatePlaylist,
-        Navigation
+        Navigation,
+
+        SongsTileCtxMenu
     },
 
     setup() {
@@ -90,12 +92,6 @@ const app = createApp({
     }
 })
 
-app.use(PVConfig, {
-    theme: {
-        preset: PrimeUIX.Themes.Aura,
-        ripple: true,
-    },
-})
 app.use(router)
 app.use(createPinia())
 app.mount('#app')

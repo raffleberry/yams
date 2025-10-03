@@ -3,7 +3,9 @@ import { selectedTrack as mTrack } from "../modals/common.js";
 import { currentTrack, isPlaying, playPause } from "../Player.js";
 import { usePlaylistStore } from "../stores/playlist.js";
 import { formatDuration, getArtwork, highlight, inPlaylist, PAGE } from "../utils.js";
-import { computed, ref, storeToRefs } from "../vue.js";
+import { computed, onMounted, ref, storeToRefs, useTemplateRef } from "../vue.js";
+
+const { computePosition, offset, flip, shift } = window.FloatingUIDOM;
 
 
 const SongsTile = {
@@ -74,6 +76,52 @@ const SongsTile = {
 
         const hover = ref(false)
 
+        const songTileRef = useTemplateRef("songTile")
+        const menu = document.querySelector('#songsTileCtxMenu')
+        let touchTimeout;
+
+        const showCtxMenu = (x, y) => {
+            selectTrack(track.value)
+            const virtualElement = {
+                getBoundingClientRect: () => ({
+                    x, y, left: x, top: y, right: x, bottom: y, width: 0, height: 0
+                })
+            };
+            computePosition(virtualElement, menu, {
+                placement: 'right-start',
+                middleware: [offset(4), flip(), shift()]
+            }).then(({ x, y }) => {
+                Object.assign(menu.style, {
+                    left: `${x}px`,
+                    top: `${y}px`,
+                    display: 'block'
+                });
+            });
+        }
+
+        onMounted(() => {
+            songTileRef.value.addEventListener('contextmenu', (e) => {
+                if (songTileRef.value.contains(e.target)) {
+                    e.preventDefault();
+                    showCtxMenu(e.clientX, e.clientY);
+                } else {
+                    menu.style.display = 'none';
+                }
+            });
+
+            songTileRef.value.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    const touch = e.touches[0];
+                    touchTimeout = setTimeout(() => {
+                        showCtxMenu(touch.clientX, touch.clientY);
+                    }, 600);
+                }
+            });
+            songTileRef.value.addEventListener('touchend', () => clearTimeout(touchTimeout));
+            songTileRef.value.addEventListener('touchmove', () => clearTimeout(touchTimeout));
+        })
+
+
         return {
 
             PAGE,
@@ -95,7 +143,7 @@ const SongsTile = {
         }
     },
     template: `
-    <li class="list-group-item d-flex justify-content-between align-items-start list-group-item-action"
+    <li ref="songTile" class="list-group-item d-flex justify-content-between align-items-start list-group-item-action"
         @mouseover="hover = true" @mouseleave="hover = false">
         <div class="d-flex align-items-center">
             <img :src="getArtwork(track.Path)" alt="Artwork" class="rounded border border-3 me-3" style="width: 100px; height: 100px;"
@@ -152,18 +200,6 @@ const SongsTile = {
                 <span class="ms-2"></span> {{ track.PlayCount }} plays
             </div>
         </div>
-
-        <span>
-            <i v-show="hover" class="btn btn-link bi bi-three-dots-vertical dropdown" data-bs-toggle="dropdown"></i>
-            <ul class="dropdown-menu">
-                <li><a @click="updateFavourite" class="dropdown-item" href="#">{{isFavourite ? "Unfavorite" : "Favorite"}}</a></li>
-                <li>
-                    <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#ModalAddToPlaylist" @click="selectTrack(track)">
-                        Add to Playlist
-                    </button>
-                </li>
-            </ul>
-        </span>
     </li>
     `
 }
