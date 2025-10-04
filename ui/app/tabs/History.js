@@ -1,6 +1,6 @@
 import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
-import { currentPlaylist, playTrack } from "../Player.js";
+import { currentTracklistId, playTrack, setTracklist } from "../Player.js";
 import { currentPage, formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
 import { onBeforeUnmount, onMounted, ref } from "../vue.js";
 
@@ -20,6 +20,9 @@ const fetchMusic = async (offset = 0) => {
         if (result) {
             historyPlaylist.value = [...historyPlaylist.value, ...result.Data];
             nextOffset.value = result.Next;
+            if (currentTracklistId.value === PAGE.HISTORY) {
+                setTracklist(historyPlaylist.value)
+            }
         } else {
             console.error('Error server sent bad result:', result);
         }
@@ -44,11 +47,12 @@ const History = {
             fetchMusic()
         });
 
-        const play = (track) => {
-            if (currentPlaylist.value !== PAGE.HISTORY) {
-                currentPlaylist.value = PAGE.HISTORY
+        const play = (index) => {
+            if (currentTracklistId.value !== PAGE.HISTORY) {
+                currentTracklistId.value = PAGE.HISTORY
+                setTracklist(historyPlaylist.value)
             }
-            playTrack(track)
+            playTrack(index)
         }
 
 
@@ -81,7 +85,7 @@ const History = {
                     <br><small>{{ formatDuration(track.Length) }}</small>
                 </div>
             </div>
-            <button class="btn btn-primary btn-sm" @click="play(track)">Play</button>
+            <button class="btn btn-primary btn-sm" @click="play(index)">Play</button>
         </li>
     </ul>
     <button v-if="nextOffset !== -1" @click="(e) => fetchMusic(nextOffset)"

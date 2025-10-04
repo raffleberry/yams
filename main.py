@@ -1,6 +1,4 @@
-import logging
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI
@@ -9,12 +7,6 @@ from fastapi.responses import FileResponse
 import api
 import scan
 import yams
-
-logging.basicConfig(
-    format="%(asctime)s,%(msecs)03d %(filename)s:%(lineno)-4s %(levelname)-8s %(message)s",
-    datefmt="%Y-%m-%dT%H:%M:%S",
-    level=logging.INFO,
-)
 
 
 @asynccontextmanager
@@ -39,7 +31,12 @@ async def frontend_handler(path: str):
 
 
 def main():
-    uvicorn.run(app, host=yams.config.Ip, port=yams.config.Port)
+    uvicorn.run(
+        app,
+        host=yams.config.Ip,
+        port=yams.config.Port,
+        log_level=yams.config.LogLevel,
+    )
 
 
 if __name__ == "__main__":

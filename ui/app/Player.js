@@ -1,28 +1,17 @@
 import { modalArtworkUrl } from "./modals.js";
 import { fetchProps } from "./Props.js";
-import { albumsPlaylist } from "./tabs/Albums.js";
-import { artistsPlaylist } from "./tabs/Artists.js";
-import { historyPlaylist } from "./tabs/History.js";
-import { playlistsPlaylist } from "./tabs/Playlists.js";
-import { songsPlaylist } from "./tabs/Songs.js";
 import { formatDuration, getArtwork, getSrc, PAGE, setMediaSessionMetadata } from "./utils.js";
 import { computed, ref, useTemplateRef, watch } from "./vue.js";
 
-export const currentPlaylist = ref(PAGE.SONGS);
+export const currentTracklistId = ref("");
 
-function wc(playlist) {
-  return computed(() => playlist.value.filter(t => t.Path))
-}
-const playlistMap = {
-  [PAGE.SONGS]: wc(songsPlaylist),
-  [PAGE.HISTORY]: wc(historyPlaylist),
-  [PAGE.ARTIST]: wc(artistsPlaylist),
-  [PAGE.ALBUM]: wc(albumsPlaylist),
-  [PAGE.PLAYLIST]: wc(playlistsPlaylist),
-}
 
-const playlist = () => {
-  return playlistMap[currentPlaylist.value]
+const trackQueue = ref([])
+const trackIndex = ref(-1)
+
+export const setTracklist = (trackList) => {
+  trackIndex.value = -1
+  trackQueue.value = trackList.filter(t => t.Path)
 }
 
 
@@ -97,7 +86,11 @@ export const currentTrack = ref({
 
 const audioBlob = ref(null)
 
-export const playTrack = async (track) => {
+export const playTrack = async (index, track) => {
+  if (!track) {
+    track = trackQueue.value[index]
+    trackIndex.value = index
+  }
   currentTrack.value = track
   setupPlaybackTimeCapture()
   const url = getSrc(track.Path)
@@ -114,7 +107,7 @@ export const playTrack = async (track) => {
 };
 
 export const previousTrack = () => {
-  let currentIndex = (playlist().value.findIndex(t => t.Title === currentTrack.value.Title && t.Artists === currentTrack.value.Artists));
+  let currentIndex = trackIndex.value;
   let newIndex = 0
   if (currentIndex !== -1) {
     newIndex = currentIndex - 1
@@ -122,16 +115,16 @@ export const previousTrack = () => {
       newIndex = 0
     }
   }
-  playTrack(playlist().value[newIndex]);
+  playTrack(newIndex);
 }
 
 export const nextTrack = () => {
-  let currentIndex = (playlist().value.findIndex(t => t.Title === currentTrack.value.Title && t.Artists === currentTrack.value.Artists));
+  let currentIndex = trackIndex.value;
   let newIndex = 0
   if (currentIndex !== -1) {
-    newIndex = (currentIndex + 1) % playlist().value.length
+    newIndex = (currentIndex + 1) % trackQueue.value.length
   }
-  playTrack(playlist().value[newIndex]);
+  playTrack(newIndex);
 };
 
 export const playPause = () => {
@@ -289,7 +282,7 @@ const Player = {
         nextTrack();
       } else if (playbackMode.value === 'repeatCurrent') {
         audio.currentTime = 0;
-        playTrack(currentTrack.value);
+        playTrack(-69, currentTrack.value);
       }
     };
 

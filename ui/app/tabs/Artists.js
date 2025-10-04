@@ -2,7 +2,7 @@ import { ArtistListItem } from "../components/ArtistListItem.js";
 import { SongsTile } from "../components/SongTile.js";
 import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
-import { currentPlaylist, playTrack } from "../Player.js";
+import { currentTracklistId, playTrack, setTracklist } from "../Player.js";
 import { currentPage, formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
 import { onBeforeUnmount, onMounted, ref, useRoute, watch } from "../vue.js";
 
@@ -67,11 +67,13 @@ const Artists = {
             }
         }, { immediate: true })
 
-        const play = (track) => {
-            if (currentPlaylist.value !== PAGE.ARTIST) {
-                currentPlaylist.value = PAGE.ARTIST
+        const play = (index) => {
+            const id = `ARTISTS_${names.value}`
+            if (currentTracklistId.value !== id) {
+                currentTracklistId.value = id
+                setTracklist(artistsPlaylist.value)
             }
-            playTrack(track)
+            playTrack(index)
         }
 
         onBeforeUnmount(() => {
@@ -100,7 +102,7 @@ const Artists = {
     <div v-if="names">
         <div class="my-3 d-flex flex-column">
             <ul class="list-group">
-                <SongsTile v-for="(track, index) in artistsPlaylist" :key="index+names+track.Artists" :track="track" :play="play" :dontLinkArtists="names.split(',').flatMap((x) => x.trim())">
+                <SongsTile v-for="(track, index) in artistsPlaylist" :key="index+names+track.Artists" :track="track" :play="() => play(index)" :dontLinkArtists="names.split(',').flatMap((x) => x.trim())">
                 </SongsTile>
             </ul>
         </div>
@@ -115,3 +117,4 @@ const Artists = {
     `
 }
 export { Artists };
+

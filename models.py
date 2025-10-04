@@ -1,18 +1,18 @@
-import logging
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
 
 from pydantic import BaseModel
 
 import db
-
-log = logging.getLogger(__name__)
+from logg import log
 
 
 class Config(BaseModel):
-    MusicDir: str
-    Ip: str
-    Port: int
+    MusicDir: str = f"{Path.home() / 'Music'}"
+    Ip: str = "127.0.0.1"
+    Port: int = 5550
+    LogLevel: str = "error"
 
 
 class Music(BaseModel):

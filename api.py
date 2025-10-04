@@ -1,4 +1,3 @@
-import logging
 import sqlite3
 from pathlib import Path
 
@@ -9,8 +8,6 @@ import db
 import models
 import scan
 import yams
-
-log = logging.getLogger(__name__)
 
 router = APIRouter()
 

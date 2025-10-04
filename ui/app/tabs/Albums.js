@@ -2,7 +2,7 @@ import { AlbumListItem } from "../components/AlbumListItem.js";
 import { SongsTile } from "../components/SongTile.js";
 import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
-import { currentPlaylist, playTrack } from "../Player.js";
+import { currentTracklistId, playTrack, setTracklist } from "../Player.js";
 import { currentPage, formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
 import { onBeforeUnmount, onMounted, ref, useRoute, watch } from "../vue.js";
 
@@ -70,11 +70,13 @@ const Albums = {
             }
         }, { immediate: true })
 
-        const play = (track) => {
-            if (currentPlaylist.value !== PAGE.ALBUM) {
-                currentPlaylist.value = PAGE.ALBUM
+        const play = (index) => {
+            const id = `ALBUM_${names.value}`
+            if (currentTracklistId.value !== id) {
+                currentTracklistId.value = id
+                setTracklist(albumsPlaylist.value)
             }
-            playTrack(track)
+            playTrack(index)
         }
 
         onBeforeUnmount(() => {
@@ -111,7 +113,7 @@ const Albums = {
 
         <div class="my-3 d-flex flex-column">
             <ul class="list-group">
-                <SongsTile v-for="(track, index) in albumsPlaylist" :key="index+names+track.Path" :track="track" :play="play" :dontLinkAlbum="true">
+                <SongsTile v-for="(track, index) in albumsPlaylist" :key="index+names+track.Path" :track="track" :play="() => play(index)" :dontLinkAlbum="true">
                 </SongsTile>
             </ul>
         </div>
@@ -152,3 +154,4 @@ const Albums = {
     `
 }
 export { Albums };
+

@@ -1,4 +1,4 @@
-import { currentPlaylist, playTrack } from "../Player.js";
+import { currentTracklistId, playTrack, setTracklist } from "../Player.js";
 import { SongsTile } from "../components/SongTile.js";
 import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
@@ -29,6 +29,9 @@ const fetchShuffle = async () => {
 
 const fetchAndSetShuffle = async () => {
     await fetchShuffle()
+    if (currentTracklistId.value === PAGE.SONGS) {
+        setTracklist(shuffleList)
+    }
     songsPlaylist.value = shuffleList
 }
 
@@ -57,11 +60,12 @@ const Songs = {
     },
     setup: () => {
 
-        const play = (track) => {
-            if (currentPlaylist.value !== PAGE.SONGS) {
-                currentPlaylist.value = PAGE.SONGS
+        const play = (index) => {
+            if (currentTracklistId.value !== PAGE.SONGS) {
+                currentTracklistId.value = PAGE.SONGS
+                setTracklist(songsPlaylist.value)
             }
-            playTrack(track)
+            playTrack(index)
         }
 
         onBeforeUnmount(() => {
@@ -114,7 +118,7 @@ const Songs = {
             <input type="text" class="form-control" v-model="searchTerm">
         </div>
         <ul class="list-group">
-            <SongsTile v-for="(track, index) in songsPlaylist" :key="index+track.Path" :track="track" :play="play" :searchTerm="searchTerm">
+            <SongsTile v-for="(track, index) in songsPlaylist" :key="index+track.Path" :track="track" :play="() => play(index)" :searchTerm="searchTerm">
             </SongsTile>
         </ul>
         <button v-if="searchTerm.length > 1 && nextSearchOffset !== -1" @click="(e) => searchMusic(nextSearchOffset)"

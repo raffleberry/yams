@@ -13,11 +13,12 @@ DB_LOCAL = CONFIG_DIR / "yams.sqlite"
 DB_REMOTE = CONFIG_DIR / "yams_remote.sqlite"
 ROOT_DIR = Path.cwd()
 
-config = Config(
-    MusicDir=str(Path.home() / "Music"),
-    Ip="127.0.0.1",
-    Port=5550,
-)
+config = Config()
+
+
+def _write_config(path, data: BaseModel):
+    with open(path, "w") as f:
+        f.write(data.model_dump_json(indent=4))
 
 
 def _read_config(path):
@@ -25,11 +26,7 @@ def _read_config(path):
     with open(path, "rb") as f:
         data = json.load(f)
         config = Config(**data)
-
-
-def _write_config(path, data: BaseModel):
-    with open(path, "w") as f:
-        f.write(data.model_dump_json(indent=4))
+        _write_config(path, config)
 
 
 def init():

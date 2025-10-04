@@ -193,7 +193,7 @@ const SongsTile = {
 
                 <button :class="['btn', 'btn-sm', cTrack.Path === track.Path ? 'btn-success':'btn-primary']"
                     :title="track.Path" :disabled="!track.Path"
-                    @click="cTrack.Path !== track.Path ? play(track) : playPause()">
+                    @click="cTrack.Path !== track.Path ? play() : playPause()">
                     {{ cTrack.Path !== track.Path ? 'Play' : ( isPlaying ? 'Pause' : 'Play' ) }}
                 </button>
 

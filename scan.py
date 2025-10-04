@@ -1,13 +1,11 @@
 import datetime
-import logging
 from pathlib import Path
 from typing import Dict
 
 import db
 import meta
 import yams
-
-log = logging.getLogger(__name__)
+from logg import log
 
 IS_SCANNING = False
 

@@ -1,6 +1,6 @@
 import { SongsTile } from "../components/SongTile.js";
 import { updatePageTitle } from "../main.js";
-import { currentPlaylist, playTrack } from "../Player.js";
+import { currentTracklistId, playTrack, setTracklist } from "../Player.js";
 import { usePlaylistStore } from "../stores/playlist.js";
 import { currentPage, PAGE, scrollPositions } from "../utils.js";
 import { onBeforeUnmount, onMounted, ref, storeToRefs, useRoute, watch } from "../vue.js";
@@ -129,11 +129,13 @@ const Playlists = {
         })
 
 
-        const play = (track) => {
-            if (currentPlaylist.value !== PAGE.PLAYLIST) {
-                currentPlaylist.value = PAGE.PLAYLIST
+        const play = (index) => {
+            const id = `PLAYLIST_${r.params.pid}`
+            if (currentTracklistId.value !== id) {
+                currentTracklistId.value = id
+                setTracklist(playlistsPlaylist.value)
             }
-            playTrack(track)
+            playTrack(index)
         }
 
         onBeforeUnmount(() => {
@@ -216,7 +218,7 @@ const Playlists = {
                 <SongsTile v-for="(track, index) in playlistsPlaylist"
                     :key="index+playlist.Name+track.Path"
                     :track="track"
-                    :play="play">
+                    :play="() => play(index)">
                 </SongsTile>
             </ul>
         </div>
@@ -224,3 +226,4 @@ const Playlists = {
     `
 }
 export { Playlists };
+
