@@ -3,9 +3,9 @@ import { SongsTile } from "../components/SongTile.js";
 import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
 import { PAGE, currentPage, formatDuration, getArtwork, highlight, scrollPositions } from "../utils.js";
-import { onBeforeUnmount, onMounted, ref, watch } from "../vue.js";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "../vue.js";
 
-export const songsPlaylist = ref([]);
+const songsPlaylist = ref([]);
 var shuffleList = []
 
 var calledOnce = false;
@@ -59,10 +59,12 @@ const Songs = {
         SongsTile
     },
     setup: () => {
-
+        const trackListId = computed(() =>
+            `${PAGE.SONGS}_${songsPlaylist.value.length}_${crypto.randomUUID()}`
+        );
         const play = (index) => {
-            if (currentTracklistId.value !== PAGE.SONGS) {
-                currentTracklistId.value = PAGE.SONGS
+            if (currentTracklistId.value !== trackListId.value) {
+                currentTracklistId.value = trackListId.value
                 setTracklist(songsPlaylist.value)
             }
             playTrack(index)
@@ -90,6 +92,7 @@ const Songs = {
             // restore shuffle
             if (ov.length > 1 && nv.length <= 1) {
                 songsPlaylist.value = shuffleList
+                nextSearchOffset.value = -1
             }
         })
 

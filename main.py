@@ -31,6 +31,7 @@ async def frontend_handler(path: str):
 
 
 def main():
+    print(f"Starting Yams on : http://{yams.config.Ip}:{yams.config.Port}/")
     uvicorn.run(
         app,
         host=yams.config.Ip,
