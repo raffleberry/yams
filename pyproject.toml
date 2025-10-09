@@ -1,9 +1,9 @@
 [project]
 name = "yams"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2.0"
+description = "Music Server"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "fastapi[standard]>=0.115.13",
     "mutagen>=1.47.0",
@@ -15,3 +15,16 @@ dependencies = [
 dev = [
     "pyinstaller>=6.14.2",
 ]
+
+[tool.uv]
+package = true
+
+[tool.setuptools.packages.find]
+where = ["./"]
+include = ["yams"]
+
+[tool.setuptools.package-data]
+yams = ["ui/**"]
+
+[project.scripts]
+yams = "yams.main:main"

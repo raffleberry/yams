@@ -1,18 +1,10 @@
 from datetime import datetime
 from enum import Enum
-from pathlib import Path
 
 from pydantic import BaseModel
 
-import db
-from logg import log
-
-
-class Config(BaseModel):
-    MusicDir: str = f"{Path.home() / 'Music'}"
-    Ip: str = "127.0.0.1"
-    Port: int = 5550
-    LogLevel: str = "error"
+from yams import db
+from yams.logg import log
 
 
 class Music(BaseModel):
@@ -48,7 +40,7 @@ class Music(BaseModel):
                 (self.Title, self.Artists, self.Album),
             )
             row = cur.fetchone()
-            self.IsFavourite = row[0]
+            self.IsFavourite = True if row[0] else False
 
             cur.execute(
                 "SELECT COUNT(*) FROM history WHERE Title=? AND Artists=? AND Album=?;",

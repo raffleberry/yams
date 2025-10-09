@@ -2,7 +2,7 @@ from pathlib import Path
 
 import mutagen
 
-from models import Music
+from yams.models import Music
 
 
 def get(path: str) -> Music:

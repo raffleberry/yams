@@ -1,14 +1,14 @@
 import sqlite3
 
-import yams
+from yams import app
 
 
 def L():
-    return sqlite3.connect(yams.DB_LOCAL)
+    return sqlite3.connect(app.DB_LOCAL)
 
 
 def R():
-    return sqlite3.connect(yams.DB_REMOTE)
+    return sqlite3.connect(app.DB_REMOTE)
 
 
 def init_tables():

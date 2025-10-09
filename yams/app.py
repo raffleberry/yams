@@ -3,10 +3,15 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from models import Config
+
+class Config(BaseModel):
+    MusicDir: str = f"{Path.home() / 'Music'}"
+    Ip: str = "127.0.0.1"
+    Port: int = 5550
+    LogLevel: str = "error"
+
 
 # use app.<name> to access config
-APP_DIR = Path(__file__).parent
 CONFIG_DIR = Path.home() / ".yams"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 DB_LOCAL = CONFIG_DIR / "yams.sqlite"

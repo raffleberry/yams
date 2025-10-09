@@ -10,26 +10,21 @@ if [ -f ".env" ]; then
 fi
 
 INSTALL_DIR=`eval echo $INSTALL_DIR`
-BUILD_CMD="uv run pyinstaller --add-data ui:ui --icon ui/favicon.ico --name yams main.py"
 set -x
 
 if [ "$1" = "run" ]; then
   echo "Unimplemented"
 elif [ "$1" = "dev" ]; then
   export DEV=1
-  uv run fastapi dev
+  uv run fastapi dev yams/main.py
 elif [ "$1" = "install" ]; then
-  mkdir -p $INSTALL_DIR
-  $BUILD_CMD
-  cp -r dist/yams $INSTALL_DIR
-
+  uv tool install .
 elif [ "$1" = "uninstall" ]; then
-  rm $INSTALL_DIR/yams
+  uv tool remove yams
 elif [ "$1" = "build" ]; then
   $BUILD_CMD
 elif [ "$1" = "clean" ]; then
-  rm -rf build/ dist/ main.spec __pycache__
-  uv run pyinstaller --clean
+  echo "Unimplemented"
 else
   set +x
   echo "Shiver me timbers!!.. Invalid arrghh - $1"

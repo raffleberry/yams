@@ -9,14 +9,21 @@ Yet Another Music Server
 
 ## Development
 
-```
-./bake dev
+```sh
+./bake dev # uv run fastapi dev yams/main.py
 ```
 
-## Build
+## Build/Install
 
-```
-# set install directory in .env file
-./bake install
+```sh
+git clone https://github.com/raffleberry/yams.git
+./bake install # uv tool install .
+# OR
+uv tool install git+https://github.com/raffleberry/yams
+# OR
+pip install git+https://github.com/raffleberry/yams
+# OR
+uv tool install git+https://github.com/raffleberry/yams@CommitId # recommended
+
 ```
 

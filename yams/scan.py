@@ -2,10 +2,8 @@ import datetime
 from pathlib import Path
 from typing import Dict
 
-import db
-import meta
-import yams
-from logg import log
+from yams import app, db, meta
+from yams.logg import log
 
 IS_SCANNING = False
 
@@ -96,7 +94,7 @@ def insert_last_scan(last_scan) -> Dict:
             "INSERT OR REPLACE INTO last_scan(Time, Path, InDisk, InDb, MissingFiles, NewFiles, Err) VALUES (?,?,?,?,?,?,?);",
             (
                 datetime.datetime.now(),
-                yams.config.MusicDir,
+                app.config.MusicDir,
                 last_scan["in_disk"],
                 last_scan["in_db"],
                 last_scan["missing_files"],
@@ -114,14 +112,14 @@ def scan_db() -> set:
         cur.execute("SELECT Path FROM files;")
         rows = cur.fetchall()
         return set(
-            row[0] for row in rows if str(row[0]).startswith(yams.config.MusicDir)
+            row[0] for row in rows if str(row[0]).startswith(app.config.MusicDir)
         )
 
 
 def scan_disk():
     files = set()
-    log.info(f"Scanning: {Path(yams.config.MusicDir)}")
-    for file in Path(yams.config.MusicDir).rglob("*"):
+    log.info(f"Scanning: {Path(app.config.MusicDir)}")
+    for file in Path(app.config.MusicDir).rglob("*"):
         if file.is_file() and is_media(file.name):
             files.add(str(file))
     return files

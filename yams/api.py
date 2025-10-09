@@ -4,10 +4,7 @@ from pathlib import Path
 from fastapi import APIRouter, BackgroundTasks, Response
 from fastapi.responses import FileResponse, JSONResponse
 
-import db
-import models
-import scan
-import yams
+from yams import app, db, models, scan
 
 router = APIRouter()
 
@@ -28,7 +25,7 @@ async def all():
 			files
 		WHERE
 			Path
-		GLOB '{yams.config.MusicDir}*' GROUP BY Title, Artists, Album ORDER BY RANDOM() LIMIT {limit};
+		GLOB '{app.config.MusicDir}*' GROUP BY Title, Artists, Album ORDER BY RANDOM() LIMIT {limit};
         """)
         rows = cur.fetchall()
         for row in rows:
@@ -80,7 +77,7 @@ async def search(query="", offset: int = 0):
     FROM
         files
     WHERE
-        Path GLOB '{yams.config.MusicDir}*'
+        Path GLOB '{app.config.MusicDir}*'
     AND
         (
             Artists LIKE ?
@@ -192,7 +189,7 @@ async def artists_all():
         cur.execute(
             f"""
             SELECT Artists FROM files
-            WHERE Path GLOB '{yams.config.MusicDir}*' group by Artists;
+            WHERE Path GLOB '{app.config.MusicDir}*' group by Artists;
         """,
         )
         files = []
@@ -212,7 +209,7 @@ async def artists_get(artists: str):
 		Artists, Album, Genre,
 		Year, Track, Length,
 		Bitrate, Samplerate, Channels
-	FROM files WHERE Path GLOB '{yams.config.MusicDir}*'
+	FROM files WHERE Path GLOB '{app.config.MusicDir}*'
     """
     arts = []
     args = ()
@@ -264,7 +261,7 @@ async def albums_all(offset: int = 0):
     q = f"""
     SELECT Path, Album, AlbumArtist, Year, COUNT(DISTINCT Title) as Songs
     FROM files
-    WHERE Path GLOB '{yams.config.MusicDir}*'
+    WHERE Path GLOB '{app.config.MusicDir}*'
     GROUP BY Album, Year ORDER BY Songs DESC LIMIT {limit} OFFSET ?;
     """
 
@@ -297,7 +294,7 @@ async def albums_get(album: str):
         Artists, Album, Genre,
         Year, Track, Length,
         Bitrate, Samplerate, Channels
-    FROM files WHERE Path GLOB '{yams.config.MusicDir}*'
+    FROM files WHERE Path GLOB '{app.config.MusicDir}*'
     AND Album = ? GROUP BY Title, Artists ORDER BY Track ASC;
     """
 
