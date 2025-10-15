@@ -6,7 +6,6 @@ import { onBeforeUnmount, onMounted, ref } from "../vue.js";
 
 export const historyPlaylist = ref([]);
 const nextOffset = ref(-1);
-// var calledOnce = false
 
 const fetchMusic = async (offset = 0) => {
     let url = `/api/history?offset=${offset}`;

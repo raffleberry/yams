@@ -79,8 +79,6 @@ const app = createApp({
 
     setup() {
 
-        const { fetchFav, fetchAll } = usePlaylistStore();
-
         onMounted(() => {
             setupMediaSession(playPause, playPause, nextTrack, previousTrack);
         });

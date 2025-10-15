@@ -6,9 +6,9 @@ import { PAGE, currentPage, formatDuration, getArtwork, highlight, scrollPositio
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "../vue.js";
 
 const songsPlaylist = ref([]);
-var shuffleList = []
+let shuffleList = []
 
-var calledOnce = false;
+let calledOnce = false;
 const nextSearchOffset = ref(-1);
 const searchTerm = ref('');
 

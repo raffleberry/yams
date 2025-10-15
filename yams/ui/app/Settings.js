@@ -1,6 +1,6 @@
 import { onMounted, ref } from "./vue.js";
 
-var execOnce = false;
+let execOnce = false;
 const scanStatus = ref('Unavailable')
 
 

@@ -18,10 +18,10 @@ export const setTracklist = (trackList) => {
 const audio = new Audio()
 
 /* playback history logic ::: START*/
-var lastTime = 0
-var playbackTime = 0
-var playbackPosted = false
-var playbackPosting = false
+let lastTime = 0
+let playbackTime = 0
+let playbackPosted = false
+let playbackPosting = false
 const playbackTimeThreshold = 30
 
 
@@ -159,7 +159,6 @@ const Player = {
     const waveformCanvas = useTemplateRef("waveformCanvas");
 
     let waveformData = []; // stores precomputed peaks
-    let waveformCtx = null;
 
     watch(audioBlob, generateWaveform)
 
