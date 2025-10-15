@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# TODO: support windows builds/installs
-#       copy dlls
-
 # nsfu
 cd "$(dirname "$0")"
 if [ -f ".env" ]; then
@@ -16,7 +13,7 @@ if [ "$1" = "run" ]; then
   echo "Unimplemented"
 elif [ "$1" = "dev" ]; then
   export DEV=1
-  uv run fastapi dev yams/main.py
+  uv run yams
 elif [ "$1" = "install" ]; then
   uv tool install .
 elif [ "$1" = "uninstall" ]; then

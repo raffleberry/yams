@@ -1,13 +1,12 @@
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel
-
-from yams import db
-from yams.logg import log
+from yams import db, log
 
 
-class Music(BaseModel):
+@dataclass
+class Music:
     Path: str = ""
     Title: str = ""
     Size: int = 0
@@ -82,6 +81,7 @@ class Music(BaseModel):
             log.error(e, "failed while updating meta")
 
 
+@dataclass
 class History(Music):
     Time: datetime = datetime.now()
 
@@ -89,10 +89,11 @@ class History(Music):
 PlaylistType = Enum("PlaylistType", [("LIST", "LIST"), ("QUERY", "QUERY")])
 
 
-class Playlist(BaseModel):
-    Id: int = 0
+@dataclass
+class Playlist:
     Name: str
-    Description: str = ""
     Type: PlaylistType
+    Id: int = 0
+    Description: str = ""
     Query: str = ""
     Count: int = 0

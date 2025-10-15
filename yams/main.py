@@ -5,7 +5,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
-from yams import api, app, scan, ui
+from yams import api, app, log, scan, ui
 
 
 @asynccontextmanager
@@ -33,6 +33,8 @@ async def frontend_handler(path: str):
 
 def main():
     print(f"Yams - http://{app.config.Ip}:{app.config.Port}/")
+    log.info(f"Using config: {app.config}")
+
     uvicorn.run(
         fapi,
         host=app.config.Ip,
