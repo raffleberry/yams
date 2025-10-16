@@ -1,7 +1,7 @@
 import { Navigation } from "./components/Navigation.js";
 import { NowPlaying } from "./components/NowPlaying.js";
 import { Player } from "./Player.js";
-import { isMobile, onNowPlaying } from "./utils.js";
+import { isMobile, showNowPlaying } from "./utils.js";
 import { RouterView } from "./vue.js";
 
 
@@ -17,7 +17,7 @@ const PageRouter = {
   setup() {
 
     return {
-      onNowPlaying,
+      showNowPlaying,
       isMobile
     }
 
@@ -27,16 +27,18 @@ const PageRouter = {
     <div class="container-fluid vh-100 d-flex flex-column overflow-hidden">
       <Navigation></Navigation>
       <div class="flex-grow-1 d-flex flex-row mt-3 overflow-auto">
-        <div :class="[onNowPlaying ? 'hide-on-mobile': '', 'col', 'overflow-auto','rounded-3', 'border', 'p-2' ]">
+        <div class="col overflow-auto rounded-3 border p-2"
+          :class="{ 'd-none': showNowPlaying && isMobile, 'flex-grow-1': !isMobile }">
           <RouterView></RouterView>
         </div>
         <NowPlaying
-          :class="[onNowPlaying ? '': 'hide-on-mobile', 'col-md-4', 'overflow-auto','rounded-3', 'border', 'p-2', 'overflow-x-hidden']">
+          class="col-md-4 overflow-auto rounded-3 border p-2 overflow-x-hidden"
+          :class="{  'd-none': !showNowPlaying && isMobile, 'flex-grow-1': isMobile }">
         </NowPlaying>
       </div>
-
-      <Player></Player>
-
+      <div v-if="isMobile">
+        <Player></Player>
+      </div>
     </div>
 `
 }

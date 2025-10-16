@@ -1,4 +1,4 @@
-import { currentPage, isMobile, onNowPlaying, PAGE, theme } from "../utils.js";
+import { currentPage, isMobile, PAGE, showNowPlaying, theme } from "../utils.js";
 
 
 const Navigation = {
@@ -21,7 +21,7 @@ const Navigation = {
       theme,
       toggleTheme,
       PAGE,
-      onNowPlaying,
+      showNowPlaying,
       isMobile
     }
   },
@@ -38,8 +38,8 @@ const Navigation = {
       </div>
 
       <div class="d-flex flex-grow-1 flex-row-reverse">
-        <button v-if="isMobile" class="btn btn-link" @click="onNowPlaying = !onNowPlaying" aria-label="onNowPlaying">
-            <i :class="['bi', onNowPlaying ? 'bi-arrow-bar-right' : 'bi-arrow-bar-left' ]" style="font-size: 1.25rem;"></i>
+        <button v-if="isMobile" class="btn btn-link" @click="showNowPlaying = !showNowPlaying" aria-label="showNowPlaying">
+            <i :class="['bi', showNowPlaying ? 'bi-arrow-bar-right' : 'bi-arrow-bar-left' ]" style="font-size: 1.25rem;"></i>
         </button>
         <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#modalSettings" aria-label="Settings">
           <i class="bi bi-gear-fill" style="font-size: 1.25rem;"></i>

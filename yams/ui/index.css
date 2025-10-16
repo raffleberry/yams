@@ -57,22 +57,55 @@
     /* pointer cursor on hover */
 }
 
-.show-on-mobile {
-    display: none;
+.ellipsis-2 {
+    display: -webkit-box;
+    display: box;
+    -webkit-box-orient: vertical;
+    box-orient: vertical;
+
+    -webkit-line-clamp: 2;
+    /* Safari, Chrome, etc. */
+    line-clamp: 2;
+    /* Future standard */
+
+    overflow: hidden;
 }
 
-@media (max-width: 767px) {
-    .show-on-mobile {
-        display: block;
+.invisible {
+    visibility: hidden;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
     }
 }
 
-.hide-on-mobile {
-    display: block;
+@keyframes pulseActive {
+    0% {
+        background-color: var(--bs-primary);
+    }
+
+    50% {
+        background-color: var(--bs-primary-bg-subtle);
+    }
+
+    100% {
+        background-color: var(--bs-primary);
+    }
 }
 
-@media (max-width: 768px) {
-    .hide-on-mobile {
-        display: none;
-    }
+.list-group-item.active.playing {
+    position: relative;
+    color: #fff;
+    background: linear-gradient(110deg,
+            var(--bs-primary) 25%,
+            #854fca 50%,
+            var(--bs-primary) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 10s linear infinite;
 }

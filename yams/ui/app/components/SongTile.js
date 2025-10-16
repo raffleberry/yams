@@ -74,8 +74,6 @@ const SongsTile = {
             return cnt
         })
 
-        const hover = ref(false)
-
         const songTileRef = useTemplateRef("songTile")
         const menu = document.querySelector('#songsTileCtxMenu')
         let touchTimeout;
@@ -131,7 +129,7 @@ const SongsTile = {
             isPlaying,
 
             isFavourite,
-            hover,
+
 
             updateFavourite,
             formatDuration,
@@ -144,7 +142,7 @@ const SongsTile = {
     },
     template: `
     <li ref="songTile" class="list-group-item d-flex justify-content-between align-items-start list-group-item-action"
-        @mouseover="hover = true" @mouseleave="hover = false">
+        >
         <div class="d-flex align-items-center">
             <img :src="getArtwork(track.Path)" alt="Artwork" class="rounded border border-3 me-3" style="width: 100px; height: 100px;"
                 data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(track.Path)">

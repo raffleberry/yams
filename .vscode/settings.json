@@ -5,6 +5,8 @@
         "source.organizeImports": "always",
     },
     "editor.autoIndent": "full",
+    "editor.indentSize": "tabSize",
+    "editor.detectIndentation": false,
     "editor.tabSize": 4,
     "python-envs.pythonProjects": []
 }
