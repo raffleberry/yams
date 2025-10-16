@@ -1,3 +1,5 @@
+import logging
+import os
 from contextlib import asynccontextmanager
 from importlib import resources
 
@@ -5,7 +7,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
-from yams import api, app, log, scan, ui
+from yams import api, app, log, loglevels, scan, ui
 
 
 @asynccontextmanager
@@ -32,6 +34,11 @@ async def frontend_handler(path: str):
 
 
 def main():
+    if os.getenv("DEV", False):
+        log.setLevel(loglevels["debug"])
+    else:
+        log.setLevel(loglevels[app.config.LogLevel])
+
     print(f"Yams - http://{app.config.Ip}:{app.config.Port}/")
     log.info(f"Using config: {app.config}")
 

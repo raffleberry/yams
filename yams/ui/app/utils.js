@@ -92,7 +92,7 @@ export const inPlaylist = (playlist, track) => {
     return playlist.Tracks.findIndex(t => isSameTrack(t, track)) !== -1
 }
 
-const mediaQuery = window.matchMedia('(max-width: 767px)')
+const mediaQuery = window.matchMedia('(max-width: 1000px)')
 export const isMobile = ref(mediaQuery.matches)
 const updateIsMobile = (event) => { isMobile.value = event.matches }
 mediaQuery.addEventListener('change', updateIsMobile)
@@ -100,7 +100,6 @@ mediaQuery.addEventListener('change', updateIsMobile)
 export const theme = ref(localStorage.getItem("theme") || "light");
 watch(theme, () => {
     document.documentElement.setAttribute("data-bs-theme", theme.value);
-    console.log(`saving theme ${theme.value}`)
     localStorage.setItem("theme", theme.value);
 }, { immediate: true });
 

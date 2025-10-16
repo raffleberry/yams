@@ -144,8 +144,6 @@ export const togglePlaybackMode = () => {
     playbackMode.value = playbackMode.value === 'autoPlayNext' ? 'repeatCurrent' : 'autoPlayNext';
 };
 
-export const currentVolume = ref(1);
-
 const Player = {
     props: {
 
@@ -153,10 +151,6 @@ const Player = {
     setup() {
 
         const currentTime = ref(0);
-
-        const currentVolume = ref(0.5);
-
-        audio.volume = currentVolume.value
 
         const seek = (event) => {
             const progressBar = event.currentTarget;
@@ -188,11 +182,6 @@ const Player = {
                 }
             }
             lastTime = c;
-
-            if (waveformData.length > 0 && audio.duration > 0) {
-                const ratio = audio.currentTime / audio.duration;
-                drawWaveform(ratio);
-            }
         }
 
         audio.onplay = () => {
@@ -223,12 +212,10 @@ const Player = {
 
         return {
             PAGE,
-            audioBlob,
             currentTrack,
             currentTime,
             playing,
             playbackMode,
-            currentVolume,
             progress,
             formatDuration,
             seek,
