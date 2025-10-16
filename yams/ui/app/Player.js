@@ -5,9 +5,7 @@ import { computed, ref } from "./vue.js";
 
 export const currentTracklistId = ref("");
 
-/**readonly */
 export const trackQueue = ref([])
-/**readonly */
 export const trackIndex = ref(-1)
 
 export const setTracklist = (trackList) => {
@@ -15,6 +13,10 @@ export const setTracklist = (trackList) => {
     trackQueue.value = trackList.filter(t => t.Path)
 }
 
+export const insertInQueue = (index, track) => {
+    trackIndex.value = -1
+    trackQueue.value.push(track)
+}
 
 const audio = new Audio()
 
