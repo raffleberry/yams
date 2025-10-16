@@ -56,3 +56,23 @@
     cursor: pointer;
     /* pointer cursor on hover */
 }
+
+.show-on-mobile {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .show-on-mobile {
+        display: block;
+    }
+}
+
+.hide-on-mobile {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .hide-on-mobile {
+        display: none;
+    }
+}

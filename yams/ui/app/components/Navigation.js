@@ -1,19 +1,16 @@
-import { currentPage, PAGE } from "../utils.js";
-import { ref, watch } from "../vue.js";
+import { currentPage, isMobile, onNowPlaying, PAGE, theme } from "../utils.js";
+
 
 const Navigation = {
   props: {
+
   },
   components: {
 
   },
   setup: (props) => {
-    const theme = ref(localStorage.getItem("theme") || "light");
 
-    watch(theme, () => {
-      document.documentElement.setAttribute("data-bs-theme", theme.value);
-      localStorage.setItem("theme", theme.value);
-    }, { immediate: true });
+
 
     const toggleTheme = () => {
       theme.value = theme.value === "light" ? "dark" : "light";
@@ -24,10 +21,12 @@ const Navigation = {
       theme,
       toggleTheme,
       PAGE,
+      onNowPlaying,
+      isMobile
     }
   },
   template: `
-    <div class="nav nav-tabs sticky-top d-flex justify-content-between bg-body" >
+    <div class="nav nav-tabs d-flex justify-content-between bg-body" >
       <div class="d-flex flex-row flex-wrap">
         <li class="nav-item"><router-link :class="{'nav-link': true, active: c === PAGE.SONGS }" to="/">Songs</router-link></li>
         <li class="nav-item"><router-link :class="{'nav-link': true, active: c === PAGE.ALBUMS || c === PAGE.ALBUM }" to="/albums">Albums</router-link></li>
@@ -38,12 +37,15 @@ const Navigation = {
         <li class="nav-item"><router-link :class="{'nav-link': true, active: c === PAGE.HISTORY }" to="/history">History</router-link></li>
       </div>
 
-      <div class="d-flex flex-row">
-        <button class="btn btn-link" @click="toggleTheme" aria-label="darkMode">
-          <i :class="{'bi bi-brightness-high-fill': theme !== 'light', 'bi bi-moon-fill': theme !== 'dark'}" style="font-size: 1.25rem;"></i>
+      <div class="d-flex flex-grow-1 flex-row-reverse">
+        <button v-if="isMobile" class="btn btn-link" @click="onNowPlaying = !onNowPlaying" aria-label="onNowPlaying">
+            <i :class="['bi', onNowPlaying ? 'bi-arrow-bar-right' : 'bi-arrow-bar-left' ]" style="font-size: 1.25rem;"></i>
         </button>
         <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#modalSettings" aria-label="Settings">
           <i class="bi bi-gear-fill" style="font-size: 1.25rem;"></i>
+        </button>
+        <button class="btn btn-link" @click="toggleTheme" aria-label="darkMode">
+          <i :class="{'bi bi-brightness-high-fill': theme !== 'light', 'bi bi-moon-fill': theme !== 'dark'}" style="font-size: 1.25rem;"></i>
         </button>
       </div>
 

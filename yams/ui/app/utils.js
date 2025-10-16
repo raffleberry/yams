@@ -1,4 +1,4 @@
-import { ref } from "./vue.js";
+import { ref, watch } from "./vue.js";
 
 export const setupMediaSession = (playTrack, pauseTrack, nextTrack, previousTrack) => {
     if ('mediaSession' in navigator) {
@@ -91,3 +91,18 @@ export const inPlaylist = (playlist, track) => {
     if (playlist.Type !== "LIST") return 0
     return playlist.Tracks.findIndex(t => isSameTrack(t, track)) !== -1
 }
+
+export const isMobile = ref(window.innerWidth < 768)
+window.addEventListener('resize', () => {
+    isMobile.value = window.innerWidth < 768
+})
+
+export const theme = ref(localStorage.getItem("theme") || "light");
+
+watch(theme, () => {
+    document.documentElement.setAttribute("data-bs-theme", theme.value);
+    console.log(`saving theme ${theme.value}`)
+    localStorage.setItem("theme", theme.value);
+}, { immediate: true });
+
+export const onNowPlaying = ref(false)

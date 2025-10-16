@@ -113,12 +113,15 @@ const Songs = {
         }
     },
     template: `
-    <div class="my-3 d-flex flex-column">
+    <div class="d-flex flex-column">
         <div class="mb-3 d-flex">
             <button class="btn btn-link" @click="searchTerm = ''; fetchAndSetShuffle();">
                 <i class="bi bi-shuffle" style="font-size: 1.25rem;"></i>
             </button>
             <input type="text" class="form-control" v-model="searchTerm">
+            <button class="btn btn-link">
+                <i class="bi bi-search" style="font-size: 1.25rem;"></i>
+            </button>
         </div>
         <ul class="list-group">
             <SongsTile v-for="(track, index) in songsPlaylist" :key="index+track.Path" :track="track" :play="() => play(index)" :searchTerm="searchTerm">

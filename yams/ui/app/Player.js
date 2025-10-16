@@ -310,7 +310,7 @@ const Player = {
   },
 
   template: `
-    <div v-if="currentTrack.Path" class="fixed-bottom d-flex bg-dark text-white p-3 d-flex align-items-center">
+    <div v-if="currentTrack.Path" class="d-flex p-3 d-flex align-items-center">
       <div class="me-3">
         <img :src="getArtwork(currentTrack.Path)" alt="Artwork" class="rounded" style="width: 150px; height: 150px;"
           data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = getArtwork(currentTrack.Path)">
@@ -343,23 +343,23 @@ const Player = {
         </div>
         <div class="d-flex flex-wrap align-items-center justify-content-center ms-3" style="flex: 0 0 auto; gap: 10px;">
           <div>
-            <button class="btn btn-dark btn-lg"
+            <button class="btn btn-lg"
               data-bs-toggle="modal" data-bs-target="#modalProps" @click="fetchProps">
               <i class="bi bi-three-dots"></i>
             </button>
-            <button class="btn btn-dark btn-lg" @click="togglePlaybackMode">
+            <button class="btn btn-lg" @click="togglePlaybackMode">
               <i class="bi"
                 :class="{'bi-repeat': playbackMode === 'autoPlayNext', 'bi-repeat-1': playbackMode !== 'autoPlayNext' }"></i>
             </button>
           </div>
           <div>
-            <button class="btn btn-dark btn-lg" @click="previousTrack">
+            <button class="btn btn-lg" @click="previousTrack">
               <i class="bi bi-caret-left"></i>
             </button>
-            <button class="btn btn-dark btn-lg" @click="playPause">
+            <button class="btn btn-lg" @click="playPause">
               <i class="bi" :class="{ 'bi-play': !playing, 'bi-pause': playing }"></i>
             </button>
-            <button class="btn btn-dark btn-lg" @click="nextTrack">
+            <button class="btn btn-lg" @click="nextTrack">
               <i class="bi bi-caret-right"></i>
             </button>
           </div>

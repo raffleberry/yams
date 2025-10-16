@@ -1,17 +1,16 @@
-import { Navigation } from "./components/Navigation.js";
+import { NowPlaying } from "./components/NowPlaying.js";
 import { SongsTileCtxMenu } from "./components/SongTileCtxMenu.js";
 import { modalArtworkUrl } from "./modals.js";
 import { ModalAddToPlaylist } from "./modals/AddToPlaylist.js";
 import { ModalCreatePlaylist } from "./modals/CreatePlaylist.js";
-import { currentTrack, isPlaying, nextTrack, Player, playPause, previousTrack } from "./Player.js";
+import { PageRouter } from "./PageRouter.js";
+import { currentTrack, isPlaying, nextTrack, playPause, previousTrack } from "./Player.js";
 import { PropsModal } from "./Props.js";
 import { Settings } from "./Settings.js";
-import { usePlaylistStore } from "./stores/playlist.js";
 import { Albums } from "./tabs/Albums.js";
 import { Artists } from "./tabs/Artists.js";
 import { Folders } from "./tabs/Folders.js";
 import { History } from "./tabs/History.js";
-import { NowPlaying } from "./tabs/NowPlaying.js";
 import { Playlists } from "./tabs/Playlists.js";
 import { Songs } from "./tabs/Songs.js";
 import { Years } from "./tabs/Years.js";
@@ -66,13 +65,12 @@ watch(pageTitle, () => {
 
 const app = createApp({
     components: {
-        Player,
         Settings,
         PropsModal,
 
         ModalAddToPlaylist,
         ModalCreatePlaylist,
-        Navigation,
+        PageRouter,
 
         SongsTileCtxMenu
     },
