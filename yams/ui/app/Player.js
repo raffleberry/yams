@@ -110,6 +110,12 @@ export const playTrack = async (index, track) => {
 };
 
 export const previousTrack = () => {
+
+    if (audio.currentTime > 30) {
+        audio.currentTime = 0
+        return
+    }
+
     let currentIndex = trackIndex.value;
     let newIndex = 0
     if (currentIndex !== -1) {

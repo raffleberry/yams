@@ -119,18 +119,21 @@ const SongsTile = {
             songTileRef.value.addEventListener('touchmove', () => clearTimeout(touchTimeout));
         })
 
+        const hover = ref(false)
+
+        const showPlayPause = computed(() => {
+            return (currentTrack.value.Path === track.value.Path) || hover.value
+        })
+
 
         return {
 
             PAGE,
-
             cTrack: currentTrack,
             playPause,
             isPlaying,
-
             isFavourite,
-
-
+            hover,
             updateFavourite,
             formatDuration,
             highlight,
@@ -138,10 +141,12 @@ const SongsTile = {
             selectTrack,
             inPlaylistCnt,
             modalArtworkUrl,
+            showPlayPause,
         }
     },
     template: `
-    <li ref="songTile" class="list-group-item d-flex justify-content-between align-items-start list-group-item-action"
+    <li ref="songTile" class="list-group-item d-flex justify-content-between align-items-center list-group-item-action"
+        @mouseover="hover = true" @mouseleave="hover = false"
         >
         <div class="d-flex align-items-center">
             <img :src="getArtwork(track.Path)" alt="Artwork" class="rounded border border-3 me-3" style="width: 100px; height: 100px;"
@@ -189,15 +194,23 @@ const SongsTile = {
                 <small>{{ formatDuration(track.Length) }} | {{ track.Bitrate }}KBps </small>
                 <br>
 
-                <button :class="['btn', 'btn-sm', cTrack.Path === track.Path ? 'btn-success':'btn-primary']"
-                    :title="track.Path" :disabled="!track.Path"
-                    @click="cTrack.Path !== track.Path ? play() : playPause()">
-                    {{ cTrack.Path !== track.Path ? 'Play' : ( isPlaying ? 'Pause' : 'Play' ) }}
-                </button>
-
-                <span class="ms-2"></span> {{ track.PlayCount }} plays
+                <span class="ms-2">{{ track.PlayCount }} plays</span>
             </div>
         </div>
+
+        <button :class="['btn', 'btn-link', cTrack.Path === track.Path ? 'btn-success':'btn-primary', showPlayPause ? '': 'invisible' ]"
+                :title="track.Path" :disabled="!track.Path"
+                @click="cTrack.Path !== track.Path ? play() : playPause()">
+            <i class="bi bi-play-fill"
+                v-if="cTrack.Path !== track.Path || !isPlaying"
+                style="font-size: 2rem;"
+                ></i>
+            <i class="bi bi-pause-fill"
+                v-if="cTrack.Path === track.Path && isPlaying"
+                style="font-size: 2rem;"
+                ></i>
+        </button>
+
     </li>
     `
 }
