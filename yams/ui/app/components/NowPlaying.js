@@ -1,5 +1,5 @@
 import { modalArtworkUrl } from "../modals.js";
-import { currentTrack, isPlaying, nextTrack, playbackMode, Player, playPause, playTrack, previousTrack, togglePlaybackMode, trackQueue } from "../Player.js";
+import { currentTrack, isPlaying, nextTrack, playbackMode, Player, playPause, playTrack, previousTrack, togglePlaybackMode, trackIndex, trackQueue } from "../Player.js";
 import { fetchProps } from "../Props.js";
 import { formatDuration, getArtwork, isMobile } from "../utils.js";
 import { computed, ref } from "../vue.js";
@@ -19,7 +19,8 @@ const QueueItem = {
     setup: (props) => {
         const hover = ref(false)
         const playingThis = computed(() => {
-            return currentTrack.value.Path === props.track.Path
+            return currentTrack.value.Path === props.track.Path &&
+                props.index === trackIndex.value
         })
         return {
             t: props.track,
