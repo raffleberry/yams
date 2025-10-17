@@ -1,6 +1,6 @@
 import { modalArtworkUrl } from "./modals.js";
 import { fetchProps } from "./Props.js";
-import { formatDuration, getArtwork, getSrc, PAGE, setMediaSessionMetadata } from "./utils.js";
+import { formatDuration, getArtwork, getSrc, isMobile, PAGE, setMediaSessionMetadata } from "./utils.js";
 import { computed, ref } from "./vue.js";
 
 export const currentTracklistId = ref("");
@@ -233,34 +233,47 @@ const Player = {
             togglePlaybackMode,
             artworkUrl,
             modalArtworkUrl,
-            fetchProps
+            fetchProps,
+            isMobile
         }
 
     },
 
     template: `
     <div class="d-flex m-2" style="height: 200px;">
-        <img :src="artworkUrl" alt="Artwork" class="rounded" style="height: 200px; width: auto;"
+        <img v-if="!isMobile" :src="artworkUrl" alt="Artwork" class="rounded object-fit-cover"
+            style="width: 180px; height: auto;"
             data-bs-toggle="modal" data-bs-target="#modalArtwork" @click="modalArtworkUrl = artworkUrl" />
-        <div class="d-flex flex-column mx-2 flex-grow-1 justify-content-between">
-            <h4 class="fw-bold ellipsis-2"> {{currentTrack.Title}} </h4>
-            <p class="text-body-secondary ellipsis-2">{{currentTrack.Artists}}</p>
+        <div class="flex-column mx-2 flex-grow-1 justify-content-between">
+            <p :class="[ isMobile ? 'text-center' : 'text-start' ]"
+              class="lead fw-bold ellipsis-2">
+                {{currentTrack.Title}}
+            </p>
+            <p :class="[ isMobile ? 'text-center' : 'text-start' ]"
+              class="text-body-secondary ellipsis-2">
+                {{currentTrack.Artists}}
+            </p>
 
-            <div class="d-flex flex-row justify-content-start align-self-center">
-                <button class="btn btn-lg" @click="playPause">
-                    <i class="bi" :class="{ 'bi-play': !playing, 'bi-pause': playing }" style="font-size: 1.25rem;"></i>
+            <div :class="[ isMobile ? 'justify-content-center' : 'justify-content-start' ]"
+                class="d-flex flex-row align-self-center">
+                <button class="btn btn-lg" data-bs-toggle="modal" data-bs-target="#modalProps" @click="fetchProps">
+                    <i class="bi bi-three-dots" style="font-size: 1.25rem;"></i>
                 </button>
+
                 <button class="btn btn-lg" @click="previousTrack">
                     <i class="bi bi-skip-start" style="font-size: 1.25rem;"></i>
                 </button>
+
+                <button class="btn btn-lg" @click="playPause">
+                    <i class="bi" :class="{ 'bi-play': !playing, 'bi-pause': playing }" style="font-size: 1.25rem;"></i>
+                </button>
+
                 <button class="btn btn-lg" @click="nextTrack">
                     <i class="bi bi-skip-end" style="font-size: 1.25rem;"></i>
                 </button>
+
                 <button class="btn btn-lg" @click="togglePlaybackMode">
                     <i class="bi" :class="{'bi-repeat': playbackMode === 'autoPlayNext', 'bi-repeat-1': playbackMode !== 'autoPlayNext' }" style="font-size: 1.25rem;"></i>
-                </button>
-                <button class="btn btn-lg" data-bs-toggle="modal" data-bs-target="#modalProps" @click="fetchProps">
-                    <i class="bi bi-three-dots" style="font-size: 1.25rem;"></i>
                 </button>
             </div>
             

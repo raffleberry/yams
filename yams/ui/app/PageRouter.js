@@ -32,9 +32,9 @@ const PageRouter = {
           <RouterView></RouterView>
         </div>
         <NowPlaying
-          class="col-md-4 overflow-auto rounded-3 border p-2 overflow-x-hidden"
+          class="col-5 overflow-auto rounded-3 border p-2 overflow-x-hidden"
           :class="{  'd-none': !showNowPlaying && isMobile, 'flex-grow-1': isMobile }"
-          style="min-width: 512px;">
+          >
         </NowPlaying>
       </div>
       <div v-if="isMobile">
