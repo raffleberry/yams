@@ -34,8 +34,10 @@ async def frontend_handler(path: str):
 
 
 def main():
-    if os.getenv("DEV", False):
+    if app.DEV:
         log.setLevel(loglevels["debug"])
+        app.config.LogLevel = "debug"
+        log.debug("Dev mode enabled")
     else:
         log.setLevel(loglevels[app.config.LogLevel])
 

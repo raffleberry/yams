@@ -1,10 +1,14 @@
+import json
 import sqlite3
 from pathlib import Path
+from urllib import request
+from urllib.parse import urlencode
 
-from fastapi import APIRouter, BackgroundTasks, Response
+from fastapi import APIRouter, BackgroundTasks, Response, requests
 from fastapi.responses import FileResponse, JSONResponse
 
-from yams import app, db, models, scan
+import yams
+from yams import app, db, log, models, scan
 
 router = APIRouter()
 
@@ -665,6 +669,62 @@ async def props(path: str):
             res["Size"] = f"{row[3] / 1024 / 1024:.2f} MB"
 
         return res
+
+
+@router.get("/lyrics")
+async def lyrics(track_name: str, artist_name: str, duration: int):
+    base_url = "https://lrclib.net/api/get"
+    query_params = {
+        "track_name": track_name,
+        "artist_name": artist_name,
+        "duration": duration,
+    }
+
+    encoded_params = urlencode(query_params)
+
+    with db.Lrc() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT Response from lrc WHERE  QueryParams = ?;",
+            (encoded_params,),
+        )
+        res = cur.fetchone()
+
+        if res:
+            log.debug("Found in LRC_DB: %s", encoded_params)
+            return Response(content=res[0], media_type="text/plain")
+
+    full_url = f"{base_url}?{encoded_params}"
+
+    log.debug("lrc Full URL: %s", full_url)
+
+    req = request.Request(full_url)
+    req.add_header(
+        "User-Agent", f"yams/{app.VERSION} (https://github.com/raffleberry/yams)"
+    )
+    try:
+        with request.urlopen(req) as response:
+            resText = response.read().decode("utf-8")
+            jsonData = json.loads(resText)
+            lrcText = jsonData["syncedLyrics"]
+            if lrcText:
+                with db.Lrc() as conn:
+                    log.debug("Saving in LRC_DB: %s", encoded_params)
+                    cur = conn.cursor()
+                    cur.execute(
+                        "INSERT INTO lrc (QueryParams, Response) VALUES (?, ?);",
+                        (
+                            encoded_params,
+                            lrcText,
+                        ),
+                    )
+                    conn.commit()
+            else:
+                log.debug("Lyrics not found, not saving")
+            return Response(content=lrcText, media_type="text/plain")
+    except Exception as e:
+        log.info(f"Error getting lyrics: {e}")
+        return ""
 
 
 @router.get("/triggerScan")

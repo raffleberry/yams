@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
 
@@ -97,3 +97,14 @@ class Playlist:
     Description: str = ""
     Query: str = ""
     Count: int = 0
+
+
+@dataclass
+class LyricReq:
+    track_name: str
+    artist_name: str
+    duration: int
+    album_name: str = ""
+
+    def as_dict(self):
+        return asdict(self)

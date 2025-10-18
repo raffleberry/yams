@@ -61,7 +61,7 @@ def get(path: str) -> Music:
 
         genre = m.get("©gen")
         if genre is not None and len(genre) > 0:
-            d.Genre = genre[0]
+            d.Genre = ", ".join(genre)
 
         year = m.get("©day")
         if year is not None and len(year) > 0:
@@ -102,7 +102,7 @@ def get(path: str) -> Music:
 
         genre = m.get("genre")
         if genre is not None and len(genre) > 0:
-            d.Genre = genre[0]
+            d.Genre = ", ".join(genre)
 
         year = m.get("date")
         if year is not None and len(year) > 0:

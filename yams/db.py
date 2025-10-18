@@ -11,6 +11,10 @@ def R():
     return sqlite3.connect(app.DB_REMOTE)
 
 
+def Lrc():
+    return sqlite3.connect(app.DB_LRC)
+
+
 def init_tables():
     local_tables = [
         """
@@ -114,6 +118,18 @@ CREATE TABLE IF NOT EXISTS favourites (
         cur = conn.cursor()
         for table in remote_tables:
             cur.execute(table)
+        conn.commit()
+
+    with Lrc() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS lrc (
+                QueryParams TEXT PRIMARY KEY,
+                Response TEXT
+            );
+            """
+        )
         conn.commit()
 
 

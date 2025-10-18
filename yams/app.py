@@ -1,4 +1,6 @@
+import importlib.metadata
 import json
+import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -9,8 +11,10 @@ CONFIG_DIR = Path.home() / ".yams"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 DB_LOCAL = CONFIG_DIR / "yams.sqlite"
 DB_REMOTE = CONFIG_DIR / "yams_remote.sqlite"
+DB_LRC = CONFIG_DIR / "yams_lrc.sqlite"
 ROOT_DIR = Path.cwd()
-
+DEV = bool(os.getenv("DEV", False))
+VERSION = "DEV" if DEV else importlib.metadata.version("yams")
 CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
 

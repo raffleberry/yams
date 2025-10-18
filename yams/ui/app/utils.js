@@ -104,3 +104,9 @@ watch(theme, () => {
 }, { immediate: true });
 
 export const showNowPlaying = ref(false)
+
+export const enableLyrics = ref(localStorage.getItem("enableLyrics") == "true")
+
+watch(enableLyrics, () => {
+    localStorage.setItem("enableLyrics", enableLyrics.value);
+}, { immediate: true })

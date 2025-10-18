@@ -1,3 +1,4 @@
+import { enableLyrics } from "./utils.js";
 import { onMounted, ref } from "./vue.js";
 
 let execOnce = false;
@@ -5,50 +6,51 @@ const scanStatus = ref('Unavailable')
 
 
 const checkStatus = async () => {
-  let isScanning = true
-  try {
-    let url = '/api/isScanning'
-    isScanning = await (await fetch(url)).json()
-    if (isScanning) {
-      scanStatus.value = 'Scanning'
-      setTimeout(checkStatus, 5000)
-    } else {
-      scanStatus.value = 'Scan'
+    let isScanning = true
+    try {
+        let url = '/api/isScanning'
+        isScanning = await (await fetch(url)).json()
+        if (isScanning) {
+            scanStatus.value = 'Scanning'
+            setTimeout(checkStatus, 5000)
+        } else {
+            scanStatus.value = 'Scan'
+        }
+    } catch (error) {
+        console.error(error)
     }
-  } catch (error) {
-    console.error(error)
-  }
 
 }
 
 const triggerScan = async () => {
-  let url = '/api/triggerScan'
-  try {
-    let res = await fetch(url)
-    if (res.status === 503) {
-      alert("Scan is already running")
+    let url = '/api/triggerScan'
+    try {
+        let res = await fetch(url)
+        if (res.status === 503) {
+            alert("Scan is already running")
+        }
+    } catch (error) {
+        console.error(error)
+        alert("Failed to trigger scan")
     }
-  } catch (error) {
-    console.error(error)
-    alert("Failed to trigger scan")
-  }
-  checkStatus()
+    checkStatus()
 }
 
 const Settings = {
-  setup() {
-    onMounted(async () => {
-      if (!execOnce) {
-        execOnce = true
-        checkStatus()
-      }
-    })
-    return {
-      scanStatus,
-      triggerScan
-    }
-  },
-  template: `
+    setup() {
+        onMounted(async () => {
+            if (!execOnce) {
+                execOnce = true
+                checkStatus()
+            }
+        })
+        return {
+            scanStatus,
+            triggerScan,
+            enableLyrics
+        }
+    },
+    template: `
     <div id="modalSettings" class="modal fade" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -76,12 +78,12 @@ const Settings = {
                 <div class="col-12">
                   <h6 class="text-muted">Other Settings</h6>
                   <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="setting1">
-                    <label class="form-check-label" for="setting1">Option 1</label>
+                    <input v-model="enableLyrics" class="form-check-input" type="checkbox" id="enableLyrics">
+                    <label class="form-check-label" for="enableLyrics">Enable Lyrics</label>
                   </div>
                   <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="setting2">
-                    <label class="form-check-label" for="setting2">Option 2</label>
+                    <input class="form-check-input" type="checkbox" id="showWaveForm">
+                    <label class="form-check-label" for="showWaveForm">Waveform Timeline</label>
                   </div>
                   <!-- Add more options as needed -->
                 </div>

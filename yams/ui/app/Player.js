@@ -18,7 +18,7 @@ export const insertInQueue = (index, track) => {
     trackQueue.value.push(track)
 }
 
-const audio = new Audio()
+export const audio = new Audio()
 
 /* playback history logic ::: START*/
 let lastTime = 0

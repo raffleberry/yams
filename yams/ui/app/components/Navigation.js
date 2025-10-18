@@ -2,30 +2,28 @@ import { currentPage, isMobile, PAGE, showNowPlaying, theme } from "../utils.js"
 
 
 const Navigation = {
-  props: {
+    props: {
 
-  },
-  components: {
+    },
+    components: {
 
-  },
-  setup: (props) => {
+    },
+    setup: (props) => {
 
+        const toggleTheme = () => {
+            theme.value = theme.value === "light" ? "dark" : "light";
+        };
 
-
-    const toggleTheme = () => {
-      theme.value = theme.value === "light" ? "dark" : "light";
-    };
-
-    return {
-      c: currentPage,
-      theme,
-      toggleTheme,
-      PAGE,
-      showNowPlaying,
-      isMobile
-    }
-  },
-  template: `
+        return {
+            c: currentPage,
+            theme,
+            toggleTheme,
+            PAGE,
+            showNowPlaying,
+            isMobile
+        }
+    },
+    template: `
     <div class="nav nav-tabs d-flex justify-content-between bg-body" >
       <div class="d-flex flex-row flex-wrap">
         <li class="nav-item"><router-link :class="{'nav-link': true, active: c === PAGE.SONGS }" to="/">Songs</router-link></li>
