@@ -1,10 +1,11 @@
 import importlib.metadata
 import json
+import logging
 import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from yams import log
+import aiohttp
 
 # use app.<name> to access config
 CONFIG_DIR = Path.home() / ".yams"
@@ -18,12 +19,39 @@ VERSION = "DEV" if DEV else importlib.metadata.version("yams")
 CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
 
+def _setupLogger(name, log_file=None, level=logging.ERROR):
+    if DEV:
+        level = logging.DEBUG
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(level)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+    if log_file:
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(level)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    return logger
+
+
+log = _setupLogger("udm")
+
+
 @dataclass
 class Config:
     MusicDir: str = f"{Path.home() / 'Music'}"
     Ip: str = "127.0.0.1"
     Port: int = 5550
-    LogLevel: str = "error"
 
     @classmethod
     def load(cls):
@@ -47,3 +75,12 @@ class Config:
 
 
 config = Config.load()
+
+_ahttp = None
+
+
+async def ahttp():
+    global _ahttp
+    if _ahttp is None:
+        _ahttp = aiohttp.ClientSession()
+    return _ahttp

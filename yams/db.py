@@ -120,16 +120,23 @@ CREATE TABLE IF NOT EXISTS favourites (
             cur.execute(table)
         conn.commit()
 
+    lyrics_tables = [
+        """
+        CREATE TABLE IF NOT EXISTS lyrics (
+            Title TEXT,
+            Artists TEXT,
+            Album TEXT,
+            Lyrics TEXT,
+            SyncedLyrics TEXT,
+            Instrumental INTEGER,
+            PRIMARY KEY (Title, Artists, Album)
+        );
+        """,
+    ]
     with Lrc() as conn:
         cur = conn.cursor()
-        cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS lrc (
-                QueryParams TEXT PRIMARY KEY,
-                Response TEXT
-            );
-            """
-        )
+        for table in lyrics_tables:
+            cur.execute(table)
         conn.commit()
 
 
