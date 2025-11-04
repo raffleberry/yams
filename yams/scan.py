@@ -2,7 +2,8 @@ import datetime
 from pathlib import Path
 from typing import Dict
 
-from yams import app, db, log, meta
+from yams import app, db, meta
+from yams.app import log
 
 IS_SCANNING = False
 

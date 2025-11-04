@@ -1,14 +1,15 @@
 import json
 import sqlite3
 from pathlib import Path
+from signal import raise_signal
 from urllib import request
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, BackgroundTasks, Response, requests
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Response
 from fastapi.responses import FileResponse, JSONResponse
 
-import yams
-from yams import app, db, log, models, scan
+from yams import app, db, models, scan
+from yams.app import ahttp, log
 
 router = APIRouter()
 
@@ -672,59 +673,90 @@ async def props(path: str):
 
 
 @router.get("/lyrics")
-async def lyrics(track_name: str, artist_name: str, duration: int):
+async def lyrics(path: str):
     base_url = "https://lrclib.net/api/get"
-    query_params = {
-        "track_name": track_name,
-        "artist_name": artist_name,
-        "duration": duration,
-    }
 
-    encoded_params = urlencode(query_params)
+    with db.L() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT Title, Artists, AlbumArtist, Album, Length from files where Path=?;",
+            (path,),
+        )
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(status_code=400, detail="File not found")
+
+        m = models.Music(
+            Title=row[0],
+            Artists=row[1],
+            AlbumArtist=row[2],
+            Album=row[3],
+            Length=row[4],
+        )
 
     with db.Lrc() as conn:
         cur = conn.cursor()
         cur.execute(
-            "SELECT Response from lrc WHERE  QueryParams = ?;",
-            (encoded_params,),
+            "SELECT Lyrics, SyncedLyrics, Instrumental FROM lyrics WHERE Title=? AND Artists=? AND Album=?;",
+            (m.Title, m.Artists, m.Album),
         )
         res = cur.fetchone()
 
         if res:
-            log.debug("Found in LRC_DB: %s", encoded_params)
-            return Response(content=res[0], media_type="text/plain")
+            log.debug("Found in LRC_DB")
+            return models.Lyrics(
+                Title=m.Title,
+                Artists=m.Artists,
+                Album=m.Album,
+                Lyrics=res[0],
+                SyncedLyrics=res[1],
+                Instrumental=res[2],
+            ).as_dict()
 
-    full_url = f"{base_url}?{encoded_params}"
+    query_params = {
+        "track_name": m.Title,
+        "artist_name": m.AlbumArtist,
+        "duration": m.Length,
+    }
 
-    log.debug("lrc Full URL: %s", full_url)
+    session = await ahttp()
+    async with session.get(url=base_url, params=query_params) as response:
+        if response.status != 200:
+            raise HTTPException(status_code=response.status)
+        res = await response.json()
 
-    req = request.Request(full_url)
-    req.add_header(
-        "User-Agent", f"yams/{app.VERSION} (https://github.com/raffleberry/yams)"
-    )
-    try:
-        with request.urlopen(req) as response:
-            resText = response.read().decode("utf-8")
-            jsonData = json.loads(resText)
-            lrcText = jsonData["syncedLyrics"]
-            if lrcText:
-                with db.Lrc() as conn:
-                    log.debug("Saving in LRC_DB: %s", encoded_params)
-                    cur = conn.cursor()
-                    cur.execute(
-                        "INSERT INTO lrc (QueryParams, Response) VALUES (?, ?);",
-                        (
-                            encoded_params,
-                            lrcText,
-                        ),
-                    )
-                    conn.commit()
-            else:
-                log.debug("Lyrics not found, not saving")
-            return Response(content=lrcText, media_type="text/plain")
-    except Exception as e:
-        log.info(f"Error getting lyrics: {e}")
-        return ""
+        plainLyrics = res["plainLyrics"]
+        if not plainLyrics:
+            plainLyrics = ""
+        syncedLyrics = res["syncedLyrics"]
+        if not syncedLyrics:
+            syncedLyrics = ""
+
+        lyr = models.Lyrics(
+            Title=m.Title,
+            Artists=m.Artists,
+            Album=m.Album,
+            Lyrics=plainLyrics,
+            SyncedLyrics=syncedLyrics,
+            Instrumental=1 if res["instrumental"] else 0,
+        )
+
+    with db.Lrc() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT OR REPLACE INTO lyrics (Title, Artists, Album, Lyrics, SyncedLyrics, Instrumental) VALUES (?, ?, ?, ?, ?, ?);",
+            (
+                lyr.Title,
+                lyr.Artists,
+                lyr.Album,
+                lyr.Lyrics,
+                lyr.SyncedLyrics,
+                lyr.Instrumental,
+            ),
+        )
+        conn.commit()
+
+    return lyr.as_dict()
 
 
 @router.get("/triggerScan")

@@ -7,7 +7,8 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
-from yams import api, app, log, loglevels, scan, ui
+from yams import api, app, scan, ui
+from yams.app import log
 
 
 @asynccontextmanager
@@ -34,13 +35,6 @@ async def frontend_handler(path: str):
 
 
 def main():
-    if app.DEV:
-        log.setLevel(loglevels["debug"])
-        app.config.LogLevel = "debug"
-        log.debug("Dev mode enabled")
-    else:
-        log.setLevel(loglevels[app.config.LogLevel])
-
     print(f"Yams - http://{app.config.Ip}:{app.config.Port}/")
     log.info(f"Using config: {app.config}")
 
@@ -48,7 +42,7 @@ def main():
         fapi,
         host=app.config.Ip,
         port=app.config.Port,
-        log_level=app.config.LogLevel,
+        log_level=logging.INFO if app.DEV else logging.ERROR,
     )
 
 

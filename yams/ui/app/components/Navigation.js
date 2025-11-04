@@ -1,4 +1,5 @@
 import { currentPage, isMobile, PAGE, showNowPlaying, theme } from "../utils.js";
+import { ref } from "../vue.js";
 
 
 const Navigation = {
@@ -14,12 +15,25 @@ const Navigation = {
             theme.value = theme.value === "light" ? "dark" : "light";
         };
 
+        const isFullscreen = ref(false)
+
+        const toggleFullscreen = async () => {
+            if (document.fullscreenElement) {
+                await document.exitFullscreen();
+            } else {
+                await document.documentElement.requestFullscreen();
+            }
+            isFullscreen.value = document.fullscreenElement !== null
+        }
+
         return {
             c: currentPage,
             theme,
             toggleTheme,
             PAGE,
             showNowPlaying,
+            toggleFullscreen,
+            isFullscreen,
             isMobile
         }
     },
@@ -39,6 +53,9 @@ const Navigation = {
         <button v-if="isMobile" class="btn btn-link" @click="showNowPlaying = !showNowPlaying" aria-label="showNowPlaying">
             <i :class="['bi', showNowPlaying ? 'bi-arrow-bar-right' : 'bi-arrow-bar-left' ]" style="font-size: 1.25rem;"></i>
         </button>
+        <button v-if="isMobile" class="btn btn-link" @click="toggleFullscreen" aria-label="fullscreenToggle">
+            <i :class="[ isFullscreen ? 'bi-fullscreen-exit' : 'bi-arrows-fullscreen' ]" style="font-size: 1.25rem;"></i>
+        </button>
         <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#modalSettings" aria-label="Settings">
           <i class="bi bi-gear-fill" style="font-size: 1.25rem;"></i>
         </button>
@@ -51,3 +68,4 @@ const Navigation = {
     `
 }
 export { Navigation };
+

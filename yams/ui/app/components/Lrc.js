@@ -1,5 +1,5 @@
 import { audio, currentTrack } from "../Player.js";
-import { onMounted, ref, watch } from "../vue.js";
+import { onBeforeUnmount, onMounted, ref, watch } from "../vue.js";
 
 const msg = ref("")
 
@@ -12,48 +12,60 @@ function parseLRC(lrc) {
     }).filter(Boolean);
 }
 
-async function loadLyrics(track) {
-    try {
-        const searchParams = {
-            track_name: track.Title,
-            artist_name: track.Artists,
-            duration: track.Length
-        }
-        const queryString = new URLSearchParams(searchParams).toString();
-        const url = `/api/lyrics?${queryString}`
-        const res = await fetch(url, {
-            method: 'GET',
-        });
-        const text = await res.text();
-        return parseLRC(text);
-    } catch (error) {
-        console.error(error)
-        msg.value = "Error loading lyrics"
-    }
-}
 
-const lyrics = ref([])
-const lyricIndex = ref(-1)
+const sLyrics = ref([])
+const lyrics = ref("")
+const slyricsIndex = ref(-1)
+const instrumental = ref(false)
 const loading = ref(false)
 let loadedLyric = ""
 
-const fetchAndSetLyrics = () => {
+async function loadLyrics(path) {
     loading.value = true;
+    msg.value = ""
+    slyricsIndex.value = -1
+    sLyrics.value = []
+    lyrics.value = ""
+
+    let statusCode = 200
+    try {
+        const url = `/api/lyrics?path=${encodeURIComponent(path)}`
+        const res = await fetch(url, {
+            method: 'GET',
+        });
+        statusCode = res.status
+        if (statusCode === 400) {
+            msg.value = "File Not Found / Bad Path"
+        } else if (statusCode !== 200) {
+            msg.value = `Error loading lyrics - ${statusCode}`
+        } else {
+            const json = await res.json();
+            lyrics.value = json["Lyrics"]
+            sLyrics.value = parseLRC(json["SyncedLyrics"])
+            instrumental.value = json["Instrumental"] === 1 ? true : false
+            if (sLyrics.value.length === 0 && lyrics.value.length === 0) {
+                msg.value = "No lyrics found"
+            }
+            loadedLyric = currentTrack.value.Path
+        }
+        // TODO render LRC
+    } catch (error) {
+        console.error(error)
+        msg.value = `Error loading lyrics - ${statusCode}`
+    } finally {
+        loading.value = false
+    }
+}
+
+// <div v-else-if class="align-self-center">
+
+// </div>
+const fetchAndSetLyrics = () => {
     if (currentTrack.value.Path === "") return
     if (currentTrack.value.Path === loadedLyric) {
-        loading.value = false
         return
     }
-    (async () => {
-        msg.value = ""
-        lyricIndex.value = -1
-        lyrics.value = await loadLyrics(currentTrack.value)
-        if (lyrics.value.length === 0 && msg.value.length === 0) {
-            msg.value = "No lyrics found"
-        }
-        loadedLyric = currentTrack.value.Path
-        loading.value = false
-    })()
+    loadLyrics(currentTrack.value.Path)
 }
 
 const Lrc = {
@@ -70,19 +82,27 @@ const Lrc = {
         })
 
         const ok = (index) => {
-            return index >= 0 && index < lyrics.value.length
+            return index >= 0 && index < sLyrics.value.length
         }
 
-        audio.addEventListener("timeupdate", () => {
+        const watchAudio = () => {
             if (msg.value) return
-            const curIndex = lyrics.value.findLastIndex(line => line.time <= audio.currentTime)
-            lyricIndex.value = curIndex
+            const curIndex = sLyrics.value.findLastIndex(line => line.time <= audio.currentTime)
+            slyricsIndex.value = curIndex
+        }
+
+        audio.addEventListener("timeupdate", watchAudio)
+
+        onBeforeUnmount(() => {
+            audio.removeEventListener("timeupdate", watchAudio)
         })
 
+
         return {
-            lyricIndex,
+            slyricsIndex,
             currentTrack,
             msg,
+            sLyrics,
             lyrics,
             loading,
             ok
@@ -90,22 +110,28 @@ const Lrc = {
     },
 
     template: `
-    <div class="d-flex justify-content-center" v-if="currentTrack.Path" style="min-height: 5em">
+    <div class="d-flex justify-content-center overflow-auto" v-if="currentTrack.Path" style="min-height: 5em; max-height: 10em;">
         <div v-if="loading" class="spinner-grow align-self-center" style="width: 3rem; height: 3rem;" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
         <div v-else-if="msg" class="align-self-center text-warning" > {{ msg }} </div>
-        <div v-else class="align-self-center">
+        <div v-else-if="sLyrics.length !== 0" class="align-self-center">
             <div class="text-center text-secondary">
-                &nbsp{{ ok(lyricIndex-1) ? lyrics[lyricIndex-1].lyric : " " }}
+                &nbsp{{ ok(slyricsIndex-1) ? sLyrics[slyricsIndex-1].lyric : " " }}
             </div>
             <div class="text-center"
                 style="font-size: 1.25em; font-weight: bold">
-                &nbsp{{ ok(lyricIndex) ? lyrics[lyricIndex].lyric : " " }}
+                &nbsp{{ ok(slyricsIndex) ? sLyrics[slyricsIndex].lyric : " " }}
             </div>
             <div class="text-center text-secondary" >
-                &nbsp{{ ok(lyricIndex+1) ? lyrics[lyricIndex+1].lyric : " " }}
+                &nbsp{{ ok(slyricsIndex+1) ? sLyrics[slyricsIndex+1].lyric : " " }}
             </div>
+        </div>
+        <div v-else-if="lyrics.length !== 0" style="white-space: pre-line;" >
+            {{ lyrics }}
+        </div>
+        <div v-else class="align-self-center text-secondary" >
+            I'm not supposed to be here.
         </div>
     </div>
     `
@@ -114,3 +140,4 @@ const Lrc = {
 
 
 export { Lrc };
+

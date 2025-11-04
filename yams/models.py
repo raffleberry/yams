@@ -2,7 +2,8 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
 
-from yams import db, log
+from yams import db
+from yams.app import log
 
 
 @dataclass
@@ -100,11 +101,13 @@ class Playlist:
 
 
 @dataclass
-class LyricReq:
-    track_name: str
-    artist_name: str
-    duration: int
-    album_name: str = ""
+class Lyrics:
+    Title: str
+    Artists: str
+    Album: str
+    Lyrics: str = ""
+    SyncedLyrics: str = ""
+    Instrumental: int = 0
 
     def as_dict(self):
         return asdict(self)
