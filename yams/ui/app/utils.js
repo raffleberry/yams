@@ -112,7 +112,7 @@ watch(enableLyrics, () => {
 }, { immediate: true })
 
 
-function generateRandomString(length) {
+export function generateRandomString(length) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
