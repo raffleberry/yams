@@ -10,7 +10,7 @@ IS_SCANNING = False
 
 def is_media(file_name: str) -> bool:
     file_name = file_name.lower()
-    exts = ["mp4", "mkv", "mp3", "m4a", "flac"]
+    exts = ["mp3", "m4a", "flac"]
     for ext in exts:
         if file_name.endswith(ext):
             return True
