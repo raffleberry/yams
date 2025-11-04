@@ -697,7 +697,7 @@ async def lyrics(path: str):
     with db.Lrc() as conn:
         cur = conn.cursor()
         cur.execute(
-            "SELECT Lyrics, SyncedLyrics, Instrumental FROM lrc WHERE Title=? AND Artists=? AND Album=?;",
+            "SELECT Lyrics, SyncedLyrics, Instrumental FROM lyrics WHERE Title=? AND Artists=? AND Album=?;",
             (m.Title, m.Artists, m.Album),
         )
         res = cur.fetchone()
@@ -724,12 +724,20 @@ async def lyrics(path: str):
         if response.status != 200:
             raise HTTPException(status_code=response.status)
         res = await response.json()
+
+        plainLyrics = res["plainLyrics"]
+        if not plainLyrics:
+            plainLyrics = ""
+        syncedLyrics = res["syncedLyrics"]
+        if not syncedLyrics:
+            syncedLyrics = ""
+
         lyr = models.Lyrics(
             Title=m.Title,
             Artists=m.Artists,
             Album=m.Album,
-            Lyrics=res["plainLyrics"],
-            SyncedLyrics=res["syncedLyrics"],
+            Lyrics=plainLyrics,
+            SyncedLyrics=syncedLyrics,
             Instrumental=1 if res["instrumental"] else 0,
         )
 

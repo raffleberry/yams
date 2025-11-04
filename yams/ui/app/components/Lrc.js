@@ -1,5 +1,5 @@
 import { audio, currentTrack } from "../Player.js";
-import { onMounted, ref, watch } from "../vue.js";
+import { onBeforeUnmount, onMounted, ref, watch } from "../vue.js";
 
 const msg = ref("")
 
@@ -21,8 +21,12 @@ const loading = ref(false)
 let loadedLyric = ""
 
 async function loadLyrics(path) {
+    loading.value = true;
     msg.value = ""
     slyricsIndex.value = -1
+    sLyrics.value = []
+    lyrics.value = ""
+
     let statusCode = 200
     try {
         const url = `/api/lyrics?path=${encodeURIComponent(path)}`
@@ -53,9 +57,10 @@ async function loadLyrics(path) {
     }
 }
 
+// <div v-else-if class="align-self-center">
 
+// </div>
 const fetchAndSetLyrics = () => {
-    loading.value = true;
     if (currentTrack.value.Path === "") return
     if (currentTrack.value.Path === loadedLyric) {
         return
@@ -80,39 +85,53 @@ const Lrc = {
             return index >= 0 && index < sLyrics.value.length
         }
 
-        audio.addEventListener("timeupdate", () => {
+        const watchAudio = () => {
             if (msg.value) return
             const curIndex = sLyrics.value.findLastIndex(line => line.time <= audio.currentTime)
             slyricsIndex.value = curIndex
+        }
+
+        audio.addEventListener("timeupdate", watchAudio)
+
+        onBeforeUnmount(() => {
+            audio.removeEventListener("timeupdate", watchAudio)
         })
 
+
         return {
-            lyricIndex: slyricsIndex,
+            slyricsIndex,
             currentTrack,
             msg,
             sLyrics,
+            lyrics,
             loading,
             ok
         }
     },
 
     template: `
-    <div class="d-flex justify-content-center" v-if="currentTrack.Path" style="min-height: 5em">
+    <div class="d-flex justify-content-center overflow-auto" v-if="currentTrack.Path" style="min-height: 5em; max-height: 10em;">
         <div v-if="loading" class="spinner-grow align-self-center" style="width: 3rem; height: 3rem;" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
         <div v-else-if="msg" class="align-self-center text-warning" > {{ msg }} </div>
-        <div v-else class="align-self-center">
+        <div v-else-if="sLyrics.length !== 0" class="align-self-center">
             <div class="text-center text-secondary">
-                &nbsp{{ ok(lyricIndex-1) ? sLyrics[lyricIndex-1].lyric : " " }}
+                &nbsp{{ ok(slyricsIndex-1) ? sLyrics[slyricsIndex-1].lyric : " " }}
             </div>
             <div class="text-center"
                 style="font-size: 1.25em; font-weight: bold">
-                &nbsp{{ ok(lyricIndex) ? sLyrics[lyricIndex].lyric : " " }}
+                &nbsp{{ ok(slyricsIndex) ? sLyrics[slyricsIndex].lyric : " " }}
             </div>
             <div class="text-center text-secondary" >
-                &nbsp{{ ok(lyricIndex+1) ? sLyrics[lyricIndex+1].lyric : " " }}
+                &nbsp{{ ok(slyricsIndex+1) ? sLyrics[slyricsIndex+1].lyric : " " }}
             </div>
+        </div>
+        <div v-else-if="lyrics.length !== 0" style="white-space: pre-line;" >
+            {{ lyrics }}
+        </div>
+        <div v-else class="align-self-center text-secondary" >
+            I'm not supposed to be here.
         </div>
     </div>
     `
@@ -121,3 +140,4 @@ const Lrc = {
 
 
 export { Lrc };
+
