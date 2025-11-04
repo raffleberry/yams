@@ -2,7 +2,7 @@ import importlib.metadata
 import json
 import logging
 import os
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 
 import aiohttp
@@ -17,6 +17,7 @@ ROOT_DIR = Path.cwd()
 DEV = bool(os.getenv("DEV", False))
 VERSION = "DEV" if DEV else importlib.metadata.version("yams")
 CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+FASTAPI_LOG_LEVEL = logging.INFO
 
 
 def _setupLogger(name, log_file=None, level=logging.ERROR):
@@ -44,7 +45,7 @@ def _setupLogger(name, log_file=None, level=logging.ERROR):
     return logger
 
 
-log = _setupLogger("udm")
+log = _setupLogger("yams")
 
 
 @dataclass
@@ -64,8 +65,9 @@ class Config:
                 f"Unable to load Config File error:{e}",
             )
             log.warning("Using default values")
-
-        c = cls(**data)
+        expectedFields = {f.name for f in fields(cls)}
+        cleanedData = {k: v for k, v in data.items() if k in expectedFields}
+        c = cls(**cleanedData)
         c.save()
         return c
 
