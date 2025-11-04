@@ -2,7 +2,7 @@ import { currentTracklistId, playTrack, setTracklist } from "../Player.js";
 import { SongsTile } from "../components/SongTile.js";
 import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
-import { PAGE, currentPage, formatDuration, getArtwork, highlight, scrollPositions } from "../utils.js";
+import { PAGE, currentPage, formatDuration, generateRandomString, getArtwork, highlight, scrollPositions } from "../utils.js";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "../vue.js";
 
 const songsPlaylist = ref([]);
@@ -60,7 +60,7 @@ const Songs = {
     },
     setup: () => {
         const trackListId = computed(() =>
-            `${PAGE.SONGS}_${songsPlaylist.value.length}_${crypto.randomUUID()}`
+            `${PAGE.SONGS}_${songsPlaylist.value.length}_${generateRandomString(10)}`
         );
         const play = (index) => {
             if (currentTracklistId.value !== trackListId.value) {
@@ -133,3 +133,4 @@ const Songs = {
     `
 }
 export { Songs };
+
