@@ -391,8 +391,8 @@ async def playlists_new(req: web.Request):
 
 @routes.put("/playlists")
 async def playlists_edit(req: web.Request):
-    jsonBody = await req.json()
-    p = models.Playlist(**jsonBody)
+    json_dict = await req.json()
+    p = models.Playlist.from_dict(json_dict)
     with db.R() as conn:
         cur = conn.cursor()
         cur.execute(
@@ -406,7 +406,7 @@ async def playlists_edit(req: web.Request):
         )
         p.Id = cur.lastrowid if cur.lastrowid is not None else -1
         conn.commit()
-    return web.json_response(p)
+    return web.json_response(p.json_dict())
 
 
 @routes.delete("/playlists")
@@ -454,11 +454,11 @@ async def playlists_all(req: web.Request):
                 Id=row[0],
                 Name=row[1],
                 Description=row[2],
-                Type=row[3],
+                Type=models.PlaylistType(row[3]),
                 Query=row[4],
                 Count=getPlaylistCount(row[0]),
             )
-            playlists.append(p)
+            playlists.append(p.json_dict())
 
     return web.json_response({"Data": playlists})
 
