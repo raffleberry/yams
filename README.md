@@ -11,7 +11,7 @@ Yet Another Music Server
 ## Development
 
 ```sh
-./bake dev # uv run fastapi dev yams/main.py
+./bake dev # export DEV=1; uv run yams/main.py
 ```
 
 ## Build/Install

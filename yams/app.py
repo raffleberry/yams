@@ -17,18 +17,20 @@ ROOT_DIR = Path.cwd()
 DEV = bool(os.getenv("DEV", False))
 VERSION = "DEV" if DEV else importlib.metadata.version("yams")
 CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-FASTAPI_LOG_LEVEL = logging.INFO
 
 
-def _setupLogger(name, log_file=None, level=logging.ERROR):
+def getLogger(name, log_file=None, level=logging.ERROR):
     if DEV:
         level = logging.DEBUG
+
+    if logging.root.manager.loggerDict.get(name, None) is not None:
+        return logging.getLogger(name)
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
 
     formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        "%(asctime)s - %(threadName)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     console_handler = logging.StreamHandler()
@@ -45,7 +47,7 @@ def _setupLogger(name, log_file=None, level=logging.ERROR):
     return logger
 
 
-log = _setupLogger("yams")
+log = getLogger("yams")
 
 
 @dataclass

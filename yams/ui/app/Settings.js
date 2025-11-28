@@ -28,10 +28,14 @@ const triggerScan = async () => {
         let res = await fetch(url)
         if (res.status === 503) {
             alert("Scan is already running")
+        } else if (res.status === 202) {
+            console.log("Scan started")
+        } else {
+            throw new Error(`Failed to trigger scan ${res.status} - ${res.statusText}`)
         }
     } catch (error) {
         console.error(error)
-        alert("Failed to trigger scan")
+        alert(`Failed to trigger scan: ${error}`)
     }
     checkStatus()
 }

@@ -1,48 +1,41 @@
-import logging
-import os
-from contextlib import asynccontextmanager
 from importlib import resources
 
-import uvicorn
-from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from aiohttp import web
 
-from yams import api, app, scan, ui
+from yams import app, routes, scan, ui
 from yams.app import log
 
+scan.start_scanning()
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # startup
-    scan.scan()
-    yield
-    # shutdown
+frontend_routes = web.RouteTableDef()
 
 
-fapi = FastAPI(lifespan=lifespan)
-
-fapi.include_router(api.router, prefix="/api")
-
-
-@fapi.get("/{path:path}")
-async def frontend_handler(path: str):
+@frontend_routes.get(r"/{path:.*}")
+async def frontend_handler(req: web.Request):
+    path = req.path.strip("/")
+    log.info(f"Frontend: {path}")
     root = resources.files(ui)
     fp = root / path
     if not fp.is_file() or fp.is_dir():
         fp = root / "index.html"
     with resources.as_file(fp) as file:
-        return FileResponse(file)
+        return web.FileResponse(file)
+
+
+api = web.Application(logger=log)
+api.add_subapp("/api", routes.api)
+api.add_routes(frontend_routes)
 
 
 def main():
     print(f"Yams - http://{app.config.Ip}:{app.config.Port}/")
     log.info(f"Using config: {app.config}")
 
-    uvicorn.run(
-        fapi,
+    web.run_app(
+        app=api,
         host=app.config.Ip,
         port=app.config.Port,
-        log_level=logging.INFO if app.DEV else logging.ERROR,
+        access_log=log,
     )
 
 

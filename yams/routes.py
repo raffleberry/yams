@@ -1,21 +1,35 @@
-import json
 import sqlite3
+from dataclasses import asdict
 from pathlib import Path
-from signal import raise_signal
-from urllib import request
-from urllib.parse import urlencode
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Response
-from fastapi.responses import FileResponse, JSONResponse
+from aiohttp import web
 
 from yams import app, db, models, scan
-from yams.app import ahttp, log
 
-router = APIRouter()
+routes = web.RouteTableDef()
+
+log = app.getLogger("api")
+
+api = web.Application(logger=log, debug=app.DEV)
 
 
-@router.get("/all")
-async def all():
+@web.middleware
+async def error_middleware(request, handler):
+    try:
+        response = await handler(request)
+        return response
+    except web.HTTPException as e:
+        return web.json_response({"error": e.reason}, status=e.status)
+
+    except Exception as e:
+        app.log
+        return web.json_response(
+            {"error": "Internal Server Error", "details": str(e)}, status=500
+        )
+
+
+@routes.get("/all")
+async def all(req: web.Request):
     limit = 10
     files = []
     with db.L() as conn:
@@ -49,29 +63,37 @@ async def all():
                 Channels=row[11],
             )
             m.addAux()
-            files.append(m)
-    return {"Data": files, "Next": -1}
+            files.append(m.json_dict())
+    return web.json_response({"Data": files, "Next": -1})
 
 
-@router.get("/artwork")
-async def artwork(path=None):
+@routes.get("/artwork")
+async def artwork(req: web.Request):
+    path = req.query.get("path")
     if path is not None:
         with db.L() as conn:
             cur = conn.cursor()
             cur.execute("Select Artwork from files where Path=?;", (path,))
             row = cur.fetchone()
             if row:
-                return Response(content=row[0])
+                return web.Response(body=row[0])
+
+    return web.Response(status=404)
 
 
-@router.get("/files")
-async def files(path=None):
+@routes.get("/files")
+async def files(req: web.Request):
+    path = req.query.get("path")
     if path is not None and Path(path).is_file():
-        return FileResponse(path)
+        return web.FileResponse(path)
+    return web.Response(status=404)
 
 
-@router.get("/search")
-async def search(query="", offset: int = 0):
+@routes.get("/search")
+async def search(req: web.Request):
+    query = req.query.get("query")
+    offsetStr = req.query.get("offset")
+    offset = 0 if offsetStr is None else int(offsetStr)
     limit = 10
     query = f"%{query}%"
     q = f"""SELECT
@@ -113,19 +135,23 @@ async def search(query="", offset: int = 0):
                 Channels=row[11],
             )
             m.addAux()
-            files.append(m)
-        return {
-            "Data": files,
-            "Next": -1 if len(files) < limit else offset + limit,
-        }
+            files.append(m.json_dict())
+        return web.json_response(
+            {
+                "Data": files,
+                "Next": -1 if len(files) < limit else offset + limit,
+            }
+        )
 
 
-@router.get("/history")
-async def history_get(offset: int = 0):
+@routes.get("/history")
+async def history_get(req: web.Request):
+    offsetStr = req.query.get("offset")
+    offset = 0 if offsetStr is None else int(offsetStr)
     limit = 10
     q = """
         SELECT
-			datetime(Time, 'localtime'), Title, 
+			datetime(Time, 'localtime'), Title,
 			Artists, Album, Genre,
 			Year, Track, Length
 		FROM
@@ -150,15 +176,19 @@ async def history_get(offset: int = 0):
                 Length=row[7],
             )
             h.updateMeta()
-            files.append(h)
-        return {
-            "Data": files,
-            "Next": -1 if len(files) < limit else offset + limit,
-        }
+            files.append(h.json_dict())
+        return web.json_response(
+            {
+                "Data": files,
+                "Next": -1 if len(files) < limit else offset + limit,
+            }
+        )
 
 
-@router.post("/history")
-async def history_add(h: models.History):
+@routes.post("/history")
+async def history_add(req: web.Request):
+    jsonBody = await req.json()
+    h: models.History = models.History(**jsonBody)
     with db.R() as conn:
         cur = conn.cursor()
         cur.execute(
@@ -180,15 +210,17 @@ async def history_add(h: models.History):
             ),
         )
         conn.commit()
-    return {
-        "Message": "Playback history updated",
-        "Title": h.Title,
-        "Artists": h.Artists,
-    }
+    return web.json_response(
+        {
+            "Message": "Playback history updated",
+            "Title": h.Title,
+            "Artists": h.Artists,
+        }
+    )
 
 
-@router.get("/artists")
-async def artists_all():
+@routes.get("/artists")
+async def artists_all(req: web.Request):
     with db.L() as conn:
         cur = conn.cursor()
         cur.execute(
@@ -200,15 +232,18 @@ async def artists_all():
         files = []
         rows = cur.fetchall()
         for row in rows:
-            files.append(models.Music(Artists=row[0]))
+            files.append(models.Music(Artists=row[0]).json_dict())
 
-        return {
-            "Data": files,
-        }
+        return web.json_response(
+            {
+                "Data": files,
+            }
+        )
 
 
-@router.get("/artists/{artists}")
-async def artists_get(artists: str):
+@routes.get("/artists/{artists}")
+async def artists_get(req: web.Request):
+    artists = req.match_info["artists"]
     q = f"""SELECT
 		Path, Title, Size,
 		Artists, Album, Genre,
@@ -253,16 +288,16 @@ async def artists_get(artists: str):
                 continue
 
             m.addAux()
-            files.append(m)
+            files.append(m.json_dict())
 
-        return {
-            "Data": files,
-        }
+        return web.json_response({"Data": files})
 
 
-@router.get("/albums")
-async def albums_all(offset: int = 0):
+@routes.get("/albums")
+async def albums_all(req: web.Request):
     limit = 10
+    offsetStr = req.query.get("offset")
+    offset = 0 if offsetStr is None else int(offsetStr)
     q = f"""
     SELECT Path, Album, AlbumArtist, Year, COUNT(DISTINCT Title) as Songs
     FROM files
@@ -285,14 +320,17 @@ async def albums_all(offset: int = 0):
                 "Songs": row[4],
             }
             files.append(m)
-    return {
-        "Data": files,
-        "Next": -1 if len(files) < limit else offset + limit,
-    }
+    return web.json_response(
+        {
+            "Data": files,
+            "Next": -1 if len(files) < limit else offset + limit,
+        }
+    )
 
 
-@router.get("/albums/{album}")
-async def albums_get(album: str):
+@routes.get("/albums/{album}")
+async def albums_get(req: web.Request):
+    album = req.match_info["album"]
     q = f"""
     SELECT
         Path, Title, Size,
@@ -325,15 +363,15 @@ async def albums_get(album: str):
                 Channels=row[11],
             )
             m.addAux()
-            files.append(m)
+            files.append(m.json_dict())
 
-    return {
-        "Data": files,
-    }
+    return web.json_response({"Data": files})
 
 
-@router.post("/playlists")
-async def playlists_new(p: models.Playlist):
+@routes.post("/playlists")
+async def playlists_new(req: web.Request):
+    jsonBody = await req.json()
+    p = models.Playlist.from_dict(jsonBody)
     with db.R() as conn:
         cur = conn.cursor()
         cur.execute(
@@ -348,11 +386,13 @@ async def playlists_new(p: models.Playlist):
         )
         p.Id = cur.lastrowid if cur.lastrowid is not None else -1
         conn.commit()
-    return p
+    return web.json_response(p.json_dict())
 
 
-@router.put("/playlists")
-async def playlists_edit(p: models.Playlist):
+@routes.put("/playlists")
+async def playlists_edit(req: web.Request):
+    jsonBody = await req.json()
+    p = models.Playlist(**jsonBody)
     with db.R() as conn:
         cur = conn.cursor()
         cur.execute(
@@ -366,11 +406,18 @@ async def playlists_edit(p: models.Playlist):
         )
         p.Id = cur.lastrowid if cur.lastrowid is not None else -1
         conn.commit()
-    return p
+    return web.json_response(p)
 
 
-@router.delete("/playlists")
-async def playlists_del(id: int):
+@routes.delete("/playlists")
+async def playlists_del(req: web.Request):
+    idStr = req.query.get("id")
+
+    if idStr is None:
+        return web.Response(status=400)
+
+    id = int(idStr)
+
     del_count = 0
     with db.R() as conn:
         cur = conn.cursor()
@@ -378,7 +425,7 @@ async def playlists_del(id: int):
         cur.execute("SELECT Type FROM playlists WHERE Id = ?;", (id,))
         row = cur.fetchone()
         if row is None:
-            raise Exception("Playlist not found")
+            return web.json_response({"Message": "Playlist not found"}, status=404)
 
         t = models.PlaylistType(row[0])
 
@@ -391,14 +438,11 @@ async def playlists_del(id: int):
             del_count = res.rowcount
         conn.commit()
 
-    return {
-        "Message": "Playlist deleted",
-        "Count": del_count,
-    }
+    return web.json_response({"Message": "Playlist deleted", "Count": del_count})
 
 
-@router.get("/playlists")
-async def playlists_all():
+@routes.get("/playlists")
+async def playlists_all(req: web.Request):
     playlists = []
 
     with db.R() as conn:
@@ -415,13 +459,15 @@ async def playlists_all():
                 Count=getPlaylistCount(row[0]),
             )
             playlists.append(p)
-    return {
-        "Data": playlists,
-    }
+
+    return web.json_response({"Data": playlists})
 
 
-@router.get("/favourites")
-async def favourites_get(offset: int = 0):
+@routes.get("/favourites")
+async def favourites_get(req: web.Request):
+    offsetStr = req.query.get("offset")
+    offset = 0 if offsetStr is None else int(offsetStr)
+
     limit = 10
     files = []
     with db.R() as conn:
@@ -446,16 +492,21 @@ async def favourites_get(offset: int = 0):
             )
             m.addAux()
             m.updateMeta()
-            files.append(m)
+            files.append(m.json_dict())
 
-    return {
-        "Data": files,
-        "Next": -1 if len(files) < limit else offset + limit,
-    }
+    return web.json_response(
+        {
+            "Data": files,
+            "Next": -1 if len(files) < limit else offset + limit,
+        }
+    )
 
 
-@router.post("/favourites")
-async def favourites_add(m: models.Music):
+@routes.post("/favourites")
+async def favourites_add(req: web.Request):
+    jsonBody = await req.json()
+    m = models.Music(**jsonBody)
+
     with db.R() as conn:
         cur = conn.cursor()
         cur.execute(
@@ -475,15 +526,20 @@ async def favourites_add(m: models.Music):
             ),
         )
         conn.commit()
-    return {
-        "Message": "Added to favourites",
-        "Title": m.Title,
-        "Artists": m.Artists,
-    }
+
+    return web.json_response(
+        {
+            "Message": "Added to favourites",
+            "Title": m.Title,
+            "Artists": m.Artists,
+        }
+    )
 
 
-@router.delete("/favourites")
-async def favourites_del(m: models.Music):
+@routes.delete("/favourites")
+async def favourites_del(req: web.Request):
+    jsonBody = await req.json()
+    m = models.Music(**jsonBody)
     with db.R() as conn:
         cur = conn.cursor()
         cur.execute(
@@ -497,15 +553,27 @@ async def favourites_del(m: models.Music):
             ),
         )
         conn.commit()
-    return {
-        "Message": "Removed from favourites",
-        "Title": m.Title,
-        "Artists": m.Artists,
-    }
+    return web.json_response(
+        {
+            "Message": "Removed from favourites",
+            "Title": m.Title,
+            "Artists": m.Artists,
+        }
+    )
 
 
-@router.get("/playlists/{id}")
-async def playlists_get(id: int, offset: int = 0):
+@routes.get("/playlists/{id}")
+async def playlists_get(req: web.Request):
+    offsetStr = req.query.get("offset")
+    offset = 0 if offsetStr is None else int(offsetStr)
+
+    idStr = req.match_info.get("id")
+
+    if idStr is None:
+        return web.HTTPBadRequest(reason="Invalid playlist id")
+
+    id = int(idStr)
+
     limit = 10
     files = []
     with db.R() as conn:
@@ -517,7 +585,7 @@ async def playlists_get(id: int, offset: int = 0):
         )
         row = cur.fetchone()
         if row is None:
-            raise Exception("Playlist not found")
+            return web.HTTPNotFound(reason="Playlist not found")
         p = models.Playlist(
             Id=row[0],
             Name="",
@@ -550,7 +618,7 @@ async def playlists_get(id: int, offset: int = 0):
                 )
                 m.addAux()
                 m.updateMeta()
-                files.append(m)
+                files.append(m.json_dict())
         elif p.Type == models.PlaylistType.QUERY:
             colsRequired = ["Title", "Artists", "Album", "Year"]
             for col in colsRequired:
@@ -568,22 +636,34 @@ async def playlists_get(id: int, offset: int = 0):
 
                 m.updateMeta()
                 m.addAux()
-                files.append(m)
+                files.append(m.json_dict())
 
-    return {
-        "Data": files,
-        "Next": -1 if len(files) < limit else offset + limit,
-    }
+    return web.json_response(
+        {
+            "Data": files,
+            "Next": -1 if len(files) < limit else offset + limit,
+        }
+    )
 
 
-@router.post("/playlists/{id}")
-async def playlists_add_to(id: int, m: models.Music):
+@routes.post("/playlists/{id}")
+async def playlists_add_to(req: web.Request):
+    idStr = req.match_info.get("id")
+
+    if idStr is None:
+        return web.HTTPBadRequest(reason="Invalid playlist id")
+
+    id = int(idStr)
+
+    jsonBody = await req.json()
+    m = models.Music(**jsonBody)
+
     with db.R() as conn:
         cur = conn.cursor()
         cur.execute("SELECT Id FROM playlists WHERE Id = ?;", (id,))
         row = cur.fetchone()
         if row is None:
-            raise Exception("Playlist not found")
+            return web.HTTPNotFound(reason="Playlist not found")
         cur.execute(
             """INSERT INTO playlists_songs (
 		PlaylistId, Title,
@@ -605,15 +685,27 @@ async def playlists_add_to(id: int, m: models.Music):
         )
         conn.commit()
 
-    return {
-        "Message": "Added to playlist",
-        "Title": m.Title,
-        "Artists": m.Artists,
-    }
+    return web.json_response(
+        {
+            "Message": "Added to playlist",
+            "Title": m.Title,
+            "Artists": m.Artists,
+        }
+    )
 
 
-@router.delete("/playlists/{id}")
-async def playlists_del_from(id: int, m: models.Music):
+@routes.delete("/playlists/{id}")
+async def playlists_del_from(req: web.Request):
+    idStr = req.match_info.get("id")
+
+    if idStr is None:
+        return web.HTTPBadRequest(reason="Invalid playlist id")
+
+    id = int(idStr)
+
+    jsonBody = await req.json()
+    m = models.Music(**jsonBody)
+
     with db.R() as conn:
         cur = conn.cursor()
         cur.execute("SELECT Id FROM playlists WHERE Id = ?;", (id,))
@@ -634,11 +726,13 @@ async def playlists_del_from(id: int, m: models.Music):
         )
         conn.commit()
 
-    return {
-        "Message": "Removed from playlist",
-        "Title": m.Title,
-        "Artists": m.Artists,
-    }
+    return web.json_response(
+        {
+            "Message": "Removed from playlist",
+            "Title": m.Title,
+            "Artists": m.Artists,
+        }
+    )
 
 
 def getPlaylistCount(id):
@@ -654,8 +748,9 @@ def getPlaylistCount(id):
         return row[0]
 
 
-@router.get("/props")
-async def props(path: str):
+@routes.get("/props")
+async def props(req: web.Request):
+    path = req.query.get("path")
     with db.L() as conn:
         cur = conn.cursor()
         cur.execute(
@@ -669,11 +764,12 @@ async def props(path: str):
             res["Comment"] = row[2]
             res["Size"] = f"{row[3] / 1024 / 1024:.2f} MB"
 
-        return res
+        return web.json_response(res)
 
 
-@router.get("/lyrics")
-async def lyrics(path: str):
+@routes.get("/lyrics")
+async def lyrics(req: web.Request):
+    path = req.query.get("path")
     base_url = "https://lrclib.net/api/get"
 
     with db.L() as conn:
@@ -684,7 +780,7 @@ async def lyrics(path: str):
         )
         row = cur.fetchone()
         if not row:
-            raise HTTPException(status_code=400, detail="File not found")
+            return web.HTTPNotFound(reason="File not found")
 
         m = models.Music(
             Title=row[0],
@@ -703,15 +799,17 @@ async def lyrics(path: str):
         res = cur.fetchone()
 
         if res:
-            log.debug("Found in LRC_DB")
-            return models.Lyrics(
-                Title=m.Title,
-                Artists=m.Artists,
-                Album=m.Album,
-                Lyrics=res[0],
-                SyncedLyrics=res[1],
-                Instrumental=res[2],
-            ).as_dict()
+            app.log.debug("Found in LRC_DB")
+            return web.json_response(
+                models.Lyrics(
+                    Title=m.Title,
+                    Artists=m.Artists,
+                    Album=m.Album,
+                    Lyrics=res[0],
+                    SyncedLyrics=res[1],
+                    Instrumental=res[2],
+                ).as_dict()
+            )
 
     query_params = {
         "track_name": m.Title,
@@ -719,10 +817,12 @@ async def lyrics(path: str):
         "duration": m.Length,
     }
 
-    session = await ahttp()
+    session = await app.ahttp()
     async with session.get(url=base_url, params=query_params) as response:
         if response.status != 200:
-            raise HTTPException(status_code=response.status)
+            return web.HTTPServiceUnavailable(
+                reason=f"Lyrics api error: {response.status} - {response.reason}"
+            )
         res = await response.json()
 
         plainLyrics = res["plainLyrics"]
@@ -756,21 +856,28 @@ async def lyrics(path: str):
         )
         conn.commit()
 
-    return lyr.as_dict()
+    return web.json_response(lyr.as_dict())
 
 
-@router.get("/triggerScan")
-async def trigger_scan(background_tasks: BackgroundTasks):
-    if scan.IS_SCANNING:
-        return {"Message": "Scan already in progress"}
+@routes.get("/triggerScan")
+async def trigger_scan(req: web.Request):
+    if scan.scan_lock.locked():
+        return web.json_response({"Message": "Already Scanning"}, status=503)
 
-    background_tasks.add_task(scan.scan)
+    scan.start_scanning()
 
-    return {
-        "Message": "Scan started",
-    }
+    return web.json_response(
+        {
+            "Message": "Started scanning",
+        },
+        status=202,
+    )
 
 
-@router.get("/isScanning")
-async def is_scanning():
-    return JSONResponse(scan.IS_SCANNING)
+@routes.get("/isScanning")
+async def is_scanning(req: web.Request):
+    return web.json_response(scan.scan_lock.locked())
+
+
+api.add_routes(routes)
+api.middlewares.append(error_middleware)

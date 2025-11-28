@@ -1,11 +1,14 @@
 import datetime
+import threading
 from pathlib import Path
 from typing import Dict
 
 from yams import app, db, meta
 from yams.app import log
 
-IS_SCANNING = False
+t: threading.Thread = threading.Thread()
+
+scan_lock = threading.Lock()
 
 
 def is_media(file_name: str) -> bool:
@@ -125,47 +128,52 @@ def scan_disk():
     return files
 
 
-# TODO Make Threadsafe
+def start_scanning():
+    global t
+    if scan_lock.locked():
+        return
+    t = threading.Thread(target=scan, daemon=False)
+    t.start()
+
+
 def scan():
-    last_scan = {
-        "in_disk": 0,
-        "in_db": 0,
-        "missing_files": 0,
-        "new_files": 0,
-        "err": "",
-    }
+    with scan_lock:
+        last_scan = {
+            "in_disk": 0,
+            "in_db": 0,
+            "missing_files": 0,
+            "new_files": 0,
+            "err": "",
+        }
 
-    global IS_SCANNING
-    IS_SCANNING = True
-    log.info("Started scanning")
-    try:
-        db = scan_db()
-        disk = scan_disk()
-        not_in_disk = []
-        not_in_db = []
+        log.info("Started scanning")
+        try:
+            db = scan_db()
+            disk = scan_disk()
+            not_in_disk = []
+            not_in_db = []
 
-        for file in db:
-            if file not in disk:
-                not_in_disk.append(file)
+            for file in db:
+                if file not in disk:
+                    not_in_disk.append(file)
 
-        for file in disk:
-            if file not in db:
-                not_in_db.append(file)
+            for file in disk:
+                if file not in db:
+                    not_in_db.append(file)
 
-        last_scan["in_disk"] = len(disk)
-        last_scan["in_db"] = len(db)
-        last_scan["missing_files"] = len(not_in_disk)
-        last_scan["new_files"] = len(not_in_db)
+            last_scan["in_disk"] = len(disk)
+            last_scan["in_db"] = len(db)
+            last_scan["missing_files"] = len(not_in_disk)
+            last_scan["new_files"] = len(not_in_db)
 
-        log.info(f"Found {len(not_in_db)} new files")
+            log.info(f"Found {len(not_in_db)} new files")
 
-        add_db(not_in_db)
-        clean_db(not_in_disk)
+            add_db(not_in_db)
+            clean_db(not_in_disk)
 
-        log.info("Done scanning")
-    except Exception as e:
-        log.error(e, exc_info=True)
-        last_scan["err"] = str(e)
-    finally:
-        IS_SCANNING = False
-        insert_last_scan(last_scan)
+            log.info("Done scanning")
+        except Exception as e:
+            log.error(e, exc_info=True)
+            last_scan["err"] = str(e)
+        finally:
+            insert_last_scan(last_scan)

@@ -1,6 +1,7 @@
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from yams import db
 from yams.app import log
@@ -30,6 +31,11 @@ class Music:
 
     # on demand
     Artwork: bytes = b""
+
+    def json_dict(self):
+        d = asdict(self)
+        del d["Artwork"]
+        return d
 
     def addAux(self):
         with db.R() as conn:
@@ -86,6 +92,11 @@ class Music:
 class History(Music):
     Time: datetime = datetime.now()
 
+    def json_dict(self):
+        d = asdict(self)
+        del d["Artwork"]
+        return d
+
 
 PlaylistType = Enum("PlaylistType", [("LIST", "LIST"), ("QUERY", "QUERY")])
 
@@ -98,6 +109,17 @@ class Playlist:
     Description: str = ""
     Query: str = ""
     Count: int = 0
+
+    @classmethod
+    def from_dict(cls, d: dict):
+        p = cls(**d)
+        p.Type = PlaylistType(p.Type)
+        return p
+
+    def json_dict(self):
+        d = asdict(self)
+        d["Type"] = self.Type.value
+        return d
 
 
 @dataclass
