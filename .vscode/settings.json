@@ -4,6 +4,7 @@
         "source.removeUnusedImports": "always",
         "source.organizeImports": "always",
     },
+    "editor.inlayHints.enabled": "offUnlessPressed",
     "editor.autoIndent": "full",
     "editor.indentSize": "tabSize",
     "editor.detectIndentation": false,

@@ -1,21 +1,19 @@
 import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
 import { currentTracklistId, playTrack, setTracklist } from "../Player.js";
-import { currentPage, formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
+import { apiGetHistory, getArtwork } from "../api.js";
+import { currentPage, formatDuration, PAGE, scrollPositions } from "../utils.js";
 import { onBeforeUnmount, onMounted, ref } from "../vue.js";
 
 export const historyPlaylist = ref([]);
 const nextOffset = ref(-1);
 
 const fetchMusic = async (offset = 0) => {
-    let url = `/api/history?offset=${offset}`;
-
     if (offset === 0) {
         historyPlaylist.value = [];
     }
     try {
-        const response = await fetch(url);
-        const result = await response.json();
+        const result = await apiGetHistory(offset);
         if (result) {
             historyPlaylist.value = [...historyPlaylist.value, ...result.Data];
             nextOffset.value = result.Next;

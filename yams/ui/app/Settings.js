@@ -1,3 +1,4 @@
+import { apiIsScanning, apiTriggerScan } from "./api.js";
 import { enableLyrics } from "./utils.js";
 import { onMounted, ref } from "./vue.js";
 
@@ -8,8 +9,7 @@ const scanStatus = ref('Unavailable')
 const checkStatus = async () => {
     let isScanning = true
     try {
-        let url = '/api/isScanning'
-        isScanning = await (await fetch(url)).json()
+        isScanning = await apiIsScanning()
         if (isScanning) {
             scanStatus.value = 'Scanning'
             setTimeout(checkStatus, 5000)
@@ -23,9 +23,8 @@ const checkStatus = async () => {
 }
 
 const triggerScan = async () => {
-    let url = '/api/triggerScan'
     try {
-        let res = await fetch(url)
+        let res = await apiTriggerScan()
         if (res.status === 503) {
             alert("Scan is already running")
         } else if (res.status === 202) {

@@ -3,7 +3,8 @@ import { SongsTile } from "../components/SongTile.js";
 import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
 import { currentTracklistId, playTrack, setTracklist } from "../Player.js";
-import { currentPage, formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
+import { apiGetAlbums, apiGetAlbumSongs, getArtwork } from "../api.js";
+import { currentPage, formatDuration, PAGE, scrollPositions } from "../utils.js";
 import { onBeforeUnmount, onMounted, ref, useRoute, watch } from "../vue.js";
 
 export const albumsPlaylist = ref([]);
@@ -14,11 +15,8 @@ const nextOffset = ref(0);
 
 const fetchSongs = async (albums) => {
 
-    let url = `/api/albums/${encodeURIComponent(albums)}`;
-
     try {
-        const response = await fetch(url);
-        const result = await response.json();
+        const result = await apiGetAlbumSongs(albums);
         if (result) {
             albumsPlaylist.value = result.Data
         } else {
@@ -30,10 +28,8 @@ const fetchSongs = async (albums) => {
 }
 
 const fetchAlbums = async () => {
-    let url = `/api/albums?offset=${nextOffset.value}`;
     try {
-        const response = await fetch(url);
-        const result = await response.json();
+        const result = await apiGetAlbums(nextOffset.value);
         if (result) {
             allAlbums.value = [...allAlbums.value, ...result.Data]
             nextOffset.value = result.Next

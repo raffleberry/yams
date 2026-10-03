@@ -3,7 +3,8 @@ import { SongsTile } from "../components/SongTile.js";
 import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
 import { currentTracklistId, playTrack, setTracklist } from "../Player.js";
-import { currentPage, formatDuration, getArtwork, PAGE, scrollPositions } from "../utils.js";
+import { apiGetArtists, apiGetArtistSongs, getArtwork } from "../api.js";
+import { currentPage, formatDuration, PAGE, scrollPositions } from "../utils.js";
 import { onBeforeUnmount, onMounted, ref, useRoute, watch } from "../vue.js";
 
 export const artistsPlaylist = ref([]);
@@ -14,10 +15,8 @@ const fetchAllArtists = async () => {
 
     if (allArtists.value.length > 0) return;
 
-    let url = `/api/artists`;
     try {
-        const response = await fetch(url);
-        const result = await response.json();
+        const result = await apiGetArtists();
         if (result) {
             allArtists.value = result.Data
         } else {
@@ -30,10 +29,8 @@ const fetchAllArtists = async () => {
 
 const fetchSongs = async (artists) => {
 
-    let url = `/api/artists/${encodeURIComponent(artists)}`;
     try {
-        const response = await fetch(url);
-        const result = await response.json();
+        const result = await apiGetArtistSongs(artists);
         if (result) {
             artistsPlaylist.value = result.Data
         } else {

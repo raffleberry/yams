@@ -1,8 +1,9 @@
 import { currentTracklistId, playTrack, setTracklist } from "../Player.js";
+import { apiGetShuffle, apiSearchMusic, getArtwork } from "../api.js";
 import { SongsTile } from "../components/SongTile.js";
 import { updatePageTitle } from "../main.js";
 import { modalArtworkUrl } from "../modals.js";
-import { PAGE, currentPage, formatDuration, generateRandomString, getArtwork, highlight, scrollPositions } from "../utils.js";
+import { PAGE, currentPage, formatDuration, generateRandomString, highlight, scrollPositions } from "../utils.js";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "../vue.js";
 
 const songsPlaylist = ref([]);
@@ -13,10 +14,8 @@ const nextSearchOffset = ref(-1);
 const searchTerm = ref('');
 
 const fetchShuffle = async () => {
-    let url = `/api/all`;
     try {
-        const response = await fetch(url);
-        const result = await response.json();
+        const result = await apiGetShuffle();
         if (result) {
             shuffleList = result.Data
         } else {
@@ -36,13 +35,11 @@ const fetchAndSetShuffle = async () => {
 }
 
 const searchMusic = async (offset = 0) => {
-    let url = `/api/search?query=${searchTerm.value}&offset=${offset}`
     if (offset === 0) {
         songsPlaylist.value = [];
     }
     try {
-        const response = await fetch(url);
-        const result = await response.json();
+        const result = await apiSearchMusic(searchTerm.value, offset);
         if (result) {
             songsPlaylist.value = [...songsPlaylist.value, ...result.Data];
             nextSearchOffset.value = result.Next;

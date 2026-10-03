@@ -2,7 +2,8 @@ import { modalArtworkUrl } from "../modals.js";
 import { selectedTrack as mTrack } from "../modals/common.js";
 import { currentTrack, isPlaying, playPause } from "../Player.js";
 import { usePlaylistStore } from "../stores/playlist.js";
-import { formatDuration, getArtwork, highlight, inPlaylist, PAGE } from "../utils.js";
+import { getArtwork } from "../api.js";
+import { formatDuration, highlight, inPlaylist, PAGE } from "../utils.js";
 import { computed, onMounted, ref, storeToRefs, useTemplateRef } from "../vue.js";
 
 const { computePosition, offset, flip, shift } = window.FloatingUIDOM;

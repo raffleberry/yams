@@ -1,3 +1,4 @@
+import { getArtwork } from "./api.js";
 import { ref, watch } from "./vue.js";
 
 export const setupMediaSession = (playTrack, pauseTrack, nextTrack, previousTrack) => {
@@ -43,19 +44,6 @@ export const PAGE = {
 export const currentPage = ref(PAGE.SONGS)
 
 export const scrollPositions = ref({ Songs: 0, Playlists: 0, Albums: 0, Artists: 0, Folders: 0, Years: 0, History: 0, NowPlaying: 0 });
-
-export const getArtwork = (path) => {
-    return `/api/artwork?path=${encodeURIComponent(path)}`
-}
-
-export const getProps = (path) => {
-    return `/api/props?path=${encodeURIComponent(path)}`
-}
-
-
-export const getSrc = (path) => {
-    return `/api/files?path=${encodeURIComponent(path)}`
-}
 
 export const highlight = (text, highlight) => {
     if (!highlight) return text;

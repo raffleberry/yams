@@ -1,3 +1,4 @@
+import { base } from "../api.js";
 import { usePlaylistStore } from "../stores/playlist.js";
 import { computed } from "../vue.js";
 
@@ -28,7 +29,7 @@ const OnPlaylistBtn = {
         const onClick = () => {
             for (let i = 0; i < store.playlists.length; i++) {
                 if (store.playlists[i].Tracks.includes(props.track)) {
-                    window.location.href = `/playlists/${store.playlists[i].Id}`;
+                    window.location.href = `${base}/playlists/${store.playlists[i].Id}`;
                     return;
                 }
             }

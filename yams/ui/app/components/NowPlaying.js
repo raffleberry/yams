@@ -1,7 +1,8 @@
 import { modalArtworkUrl } from "../modals.js";
 import { currentTrack, isPlaying, nextTrack, playbackMode, Player, playPause, playTrack, previousTrack, togglePlaybackMode, trackIndex, trackQueue } from "../Player.js";
 import { fetchProps } from "../Props.js";
-import { formatDuration, getArtwork, isMobile } from "../utils.js";
+import { getArtwork } from "../api.js";
+import { formatDuration, isMobile } from "../utils.js";
 import { computed, ref } from "../vue.js";
 
 const QueueItem = {

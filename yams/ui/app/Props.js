@@ -1,5 +1,5 @@
+import { apiGetProps } from "./api.js";
 import { currentTrack } from "./Player.js";
-import { getProps } from "./utils.js";
 import { ref } from "./vue.js";
 
 export const propsModalData = ref({})
@@ -7,10 +7,8 @@ export const propsModalData = ref({})
 const propsList = ["Genre", "Size", "Comment", "Lyrics"]
 
 export const fetchProps = async () => {
-    let url = getProps(currentTrack.value.Path)
     try {
-        const res = await fetch(url)
-        const resJson = await res.json()
+        const resJson = await apiGetProps(currentTrack.value.Path)
         const jsonKeys = Object.keys(resJson)
         const filteredJson = {}
         for (const prop of propsList) {

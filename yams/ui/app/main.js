@@ -1,5 +1,6 @@
 import { NowPlaying } from "./components/NowPlaying.js";
 import { SongsTileCtxMenu } from "./components/SongTileCtxMenu.js";
+import { base } from "./base.js";
 import { modalArtworkUrl } from "./modals.js";
 import { ModalAddToPlaylist } from "./modals/AddToPlaylist.js";
 import { ModalCreatePlaylist } from "./modals/CreatePlaylist.js";
@@ -44,7 +45,7 @@ const routes = [
 ];
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHistory(base),
     routes
 });
 

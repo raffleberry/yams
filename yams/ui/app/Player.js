@@ -1,6 +1,7 @@
+import { apiFetchAudioBlob, apiPostHistory, DEFAULT_ICON, getArtwork } from "./api.js";
 import { modalArtworkUrl } from "./modals.js";
 import { fetchProps } from "./Props.js";
-import { formatDuration, getArtwork, getSrc, isMobile, PAGE, setMediaSessionMetadata } from "./utils.js";
+import { formatDuration, isMobile, PAGE, setMediaSessionMetadata } from "./utils.js";
 import { computed, ref } from "./vue.js";
 
 export const currentTracklistId = ref("");
@@ -42,17 +43,9 @@ const postPlaybackHistory = async (track) => {
         return
     }
     playbackPosting = true
-    let url = '/api/history'
     try {
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(track)
-        })
+        const resJson = await apiPostHistory(track)
 
-        const resJson = await res.json()
         console.log("History recorded: ", resJson)
         playbackPosted = true
     } catch (error) {
@@ -96,11 +89,9 @@ export const playTrack = async (index, track) => {
     }
     currentTrack.value = track
     setupPlaybackTimeCapture()
-    const url = getSrc(track.Path)
     try {
         URL.revokeObjectURL(audio.src)
-        const res = await fetch(url)
-        const blob = await res.blob()
+        const blob = await apiFetchAudioBlob(track.Path)
         audioBlob.value = blob
         audio.src = URL.createObjectURL(blob)
         setMediaSessionMetadata(track)
@@ -215,7 +206,7 @@ const Player = {
             if (currentTrack.value.Path) {
                 return getArtwork(currentTrack.value.Path)
             }
-            return '/android-chrome-192x192.png'
+            return DEFAULT_ICON()
         })
 
         return {

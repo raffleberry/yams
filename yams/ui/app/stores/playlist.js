@@ -1,3 +1,14 @@
+import {
+    apiAddFavourite,
+    apiAddToPlaylist,
+    apiCreatePlaylist,
+    apiDeletePlaylist,
+    apiGetFavourites,
+    apiGetPlaylists,
+    apiGetPlaylistTracks,
+    apiRemoveFavourite,
+    apiRemoveFromPlaylist,
+} from "../api.js";
 import { defineStore, ref } from "../vue.js";
 
 
@@ -20,11 +31,8 @@ export const usePlaylistStore = defineStore('playlist', () => {
 
     const fetchFav = async () => {
         try {
-            const res = await fetch('/api/favourites')
-            if (res.status == 200) {
-                const json = await res.json()
-                favs.value = json.Data
-            }
+            const json = await apiGetFavourites()
+            favs.value = json.Data
         } catch (error) {
             console.error('Error fetching favourites:', error);
         }
@@ -32,11 +40,7 @@ export const usePlaylistStore = defineStore('playlist', () => {
 
     const fetchTracks = async (id) => {
         try {
-            const res = await fetch(`/api/playlists/${id}`)
-            if (res.status != 200) {
-                throw new Error(`Failed to fetch playlist ${id}'s tracks`)
-            }
-            const json = await res.json()
+            const json = await apiGetPlaylistTracks(id)
             return { res: json.Data, err: null }
         } catch (error) {
             console.error('Error fetching playlist:', error);
@@ -47,11 +51,7 @@ export const usePlaylistStore = defineStore('playlist', () => {
     const fetchAll = async () => {
         try {
             loading.value = true
-            const res = await fetch('/api/playlists')
-            if (res.status != 200) {
-                throw new Error('Failed to fetch playlists')
-            }
-            const json = await res.json()
+            const json = await apiGetPlaylists()
             const data = {}
             for (const playlist of json.Data) {
                 data[playlist.Id] = playlist
@@ -75,17 +75,7 @@ export const usePlaylistStore = defineStore('playlist', () => {
 
     const addFav = async (track) => {
         try {
-            const res = await fetch('/api/favourites', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(track)
-            })
-
-            if (res.status != 200) {
-                throw new Error('Failed to add track to favourites')
-            }
+            await apiAddFavourite(track)
 
             favs.value.push(track)
         } catch (error) {
@@ -95,17 +85,7 @@ export const usePlaylistStore = defineStore('playlist', () => {
 
     const remFav = async (track) => {
         try {
-            const res = await fetch('/api/favourites', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(track)
-            })
-
-            if (res.status != 200) {
-                throw new Error('Failed to remove track from favourites')
-            }
+            await apiRemoveFavourite(track)
 
             favs.value.splice(favs.value.indexOf(track), 1)
         } catch (error) {
@@ -115,29 +95,8 @@ export const usePlaylistStore = defineStore('playlist', () => {
 
     const create = async (name, desc, typ, query) => {
         try {
-            const res = await fetch('/api/playlists', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    Name: name,
-                    Description: desc,
-                    Type: typ,
-                    Query: query
-                })
-            })
-
-            const json = await res.json()
-
-            if (res.status != 200) {
-                throw new Error('Failed to create playlist')
-            }
+            const json = await apiCreatePlaylist(name, desc, typ, query)
             const id = json.Id
-            if (id === -1) {
-                console.error(json)
-                throw new Error("Playlist creation failed")
-            }
             playlists.value[id] = json
             playlists.value[id].Tracks = []
             return null
@@ -149,13 +108,7 @@ export const usePlaylistStore = defineStore('playlist', () => {
 
     const del = async (id) => {
         try {
-            const res = await fetch(`/api/playlists?id=${id}`, {
-                method: 'DELETE',
-            })
-
-            if (res.status != 200) {
-                throw new Error('Failed to DELETE playlist')
-            }
+            await apiDeletePlaylist(id)
             let d = {
                 ...playlists.value
             }
@@ -170,17 +123,7 @@ export const usePlaylistStore = defineStore('playlist', () => {
 
     const add = async (id, track) => {
         try {
-            const res = await fetch(`/api/playlists/${id}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(track)
-            })
-
-            if (res.status != 200) {
-                throw new Error('Failed to add track to playlist')
-            }
+            await apiAddToPlaylist(id, track)
 
             if (!playlists.value[id]) {
                 await fetchTracks(id)
@@ -194,17 +137,7 @@ export const usePlaylistStore = defineStore('playlist', () => {
 
     const rem = async (id, track) => {
         try {
-            const res = await fetch(`/api/playlists/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(track)
-            })
-
-            if (res.status != 200) {
-                throw new Error('Failed to remove track from playlist')
-            }
+            await apiRemoveFromPlaylist(id, track)
 
             if (!playlists.value[id]) {
                 await fetchTracks(id)
@@ -228,4 +161,3 @@ export const usePlaylistStore = defineStore('playlist', () => {
     }
 
 })
-

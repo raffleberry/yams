@@ -1,3 +1,4 @@
+import { apiGetLyrics } from "../api.js";
 import { audio, currentTrack } from "../Player.js";
 import { onBeforeUnmount, onMounted, ref, watch } from "../vue.js";
 
@@ -29,10 +30,7 @@ async function loadLyrics(path) {
 
     let statusCode = 200
     try {
-        const url = `/api/lyrics?path=${encodeURIComponent(path)}`
-        const res = await fetch(url, {
-            method: 'GET',
-        });
+        const res = await apiGetLyrics(path)
         statusCode = res.status
         if (statusCode === 400) {
             msg.value = "File Not Found / Bad Path"
