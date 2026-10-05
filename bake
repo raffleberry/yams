@@ -10,23 +10,22 @@ INSTALL_DIR=`eval echo $INSTALL_DIR`
 set -x
 
 if [ "$1" = "run" ]; then
-  echo "Unimplemented"
+  go run .
 elif [ "$1" = "dev" ]; then
   export DEV=1
-  uv run yams
+  go run .
 elif [ "$1" = "install" ]; then
-  uv tool install .
+  go install .
 elif [ "$1" = "uninstall" ]; then
-  uv tool remove yams
+  rm -f "$(go env GOPATH)/bin/yams"
 elif [ "$1" = "build" ]; then
-  $BUILD_CMD
+  ${BUILD_CMD:-go build -o yams .}
+elif [ "$1" = "test" ]; then
+  go test ./...
 elif [ "$1" = "clean" ]; then
-  echo "Unimplemented"
+  rm -f yams
 else
   set +x
   echo "Shiver me timbers!!.. Invalid arrghh - $1"
   exit 1
 fi
-
-
-

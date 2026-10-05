@@ -11,20 +11,30 @@ Yet Another Music Server
 ## Development
 
 ```sh
-./bake dev # export DEV=1; uv run yams/main.py
+./bake dev # DEV=1 go run .
+./bake test # go test ./...
+```
+
+Config lives in `~/.yams/config.json`:
+
+```json
+{
+    "MusicDir": "/home/user/Music",
+    "Ip": "127.0.0.1",
+    "Port": 5550
+}
 ```
 
 ## Build/Install
 
 ```sh
 git clone https://github.com/raffleberry/yams.git
-./bake install # uv tool install .
-# OR
-uv tool install git+https://github.com/raffleberry/yams
-# OR
-pip install git+https://github.com/raffleberry/yams
-# OR
-uv tool install git+https://github.com/raffleberry/yams@CommitId # recommended
-
+./bake build # go build -o yams .
+./bake install # go install .
 ```
 
+Serve behind a sub-path with `-prefix`:
+
+```sh
+yams -prefix=/yams
+```
