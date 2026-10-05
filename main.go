@@ -30,14 +30,12 @@ func defaultConfig() Config {
 }
 
 func configDir() string {
-	base, err := os.UserConfigDir()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
-
-	r := filepath.Join(base, "yams")
-	err = os.MkdirAll(r, 0o755)
-	if err != nil {
+	r := filepath.Join(home, ".yams")
+	if err := os.MkdirAll(r, 0o755); err != nil {
 		panic(err)
 	}
 	return r
@@ -45,10 +43,9 @@ func configDir() string {
 
 func loadConfig() Config {
 	cfg := defaultConfig()
-	os.MkdirAll(configDir(), 0o755)
 	data, err := os.ReadFile(filepath.Join(configDir(), "config.json"))
 	if err != nil {
-		log.Printf("yams: no config file, using defaults")
+		log.Printf("yams: no config file (%v), using defaults", err)
 	} else if err := json.Unmarshal(data, &cfg); err != nil {
 		log.Printf("yams: bad config file, using defaults: %v", err)
 	}
