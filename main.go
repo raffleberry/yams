@@ -15,6 +15,8 @@ import (
 const version = "0.3.0"
 
 type Config struct {
+	Dir      string `json:"-"`
+	File     string `json:"-"`
 	MusicDir string `json:"MusicDir"`
 	Ip       string `json:"Ip"`
 	Port     int    `json:"Port"`
@@ -29,21 +31,21 @@ func defaultConfig() Config {
 	}
 }
 
-func configDir() string {
-	home, err := os.UserHomeDir()
+func loadConfig() Config {
+	cfg := defaultConfig()
+
+	d, err := os.UserConfigDir()
 	if err != nil {
 		panic(err)
 	}
-	r := filepath.Join(home, ".yams")
-	if err := os.MkdirAll(r, 0o755); err != nil {
+
+	cfg.Dir = filepath.Join(d, "yams")
+	if err := os.MkdirAll(cfg.Dir, 0o755); err != nil {
 		panic(err)
 	}
-	return r
-}
+	cfg.File = filepath.Join(cfg.Dir, "config.json")
 
-func loadConfig() Config {
-	cfg := defaultConfig()
-	data, err := os.ReadFile(filepath.Join(configDir(), "config.json"))
+	data, err := os.ReadFile(cfg.File)
 	if err != nil {
 		log.Printf("yams: no config file (%v), using defaults", err)
 	} else if err := json.Unmarshal(data, &cfg); err != nil {
@@ -53,7 +55,7 @@ func loadConfig() Config {
 	if err != nil {
 		panic(err)
 	}
-	err = os.WriteFile(filepath.Join(configDir(), "config.json"), out, 0o644)
+	err = os.WriteFile(cfg.File, out, 0o644)
 	if err != nil {
 		panic(err)
 	}
@@ -77,7 +79,7 @@ func main() {
 	prefix := normalizePrefix(*prefixFlag)
 
 	cfg := loadConfig()
-	store, err := OpenStore(configDir())
+	store, err := OpenStore(cfg.Dir)
 	if err != nil {
 		log.Fatalf("yams: open store: %v", err)
 	}
@@ -91,15 +93,7 @@ func main() {
 		Client:  &http.Client{Timeout: 15 * time.Second},
 	}, prefix, func() string { return cfg.MusicDir })
 
-	handler := http.Handler(srv.Handler())
-	if prefix != "" {
-		root := http.NewServeMux()
-		root.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-			http.Redirect(w, r, prefix+"/", http.StatusFound)
-		})
-		root.Handle(prefix+"/", http.StripPrefix(prefix, srv.Handler()))
-		handler = root
-	}
+	handler := http.StripPrefix(prefix, srv.Handler())
 
 	addr := cfg.Ip + ":" + strconv.Itoa(cfg.Port)
 	log.Printf("yams %s config=%+v prefix=%q", version, cfg, prefix)

@@ -18,9 +18,9 @@ type Store struct {
 	Lrc    *sql.DB
 }
 
-func OpenStore(dir string) (*Store, error) {
+func OpenStore(cfgDir string) (*Store, error) {
 	open := func(name string) (*sql.DB, error) {
-		db, err := sql.Open("sqlite", filepath.Join(dir, name))
+		db, err := sql.Open("sqlite", filepath.Join(cfgDir, name))
 		if err != nil {
 			return nil, err
 		}

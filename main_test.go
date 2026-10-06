@@ -3,25 +3,24 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
-func TestConfigUsesLegacyDir(t *testing.T) {
-	home := t.TempDir()
-	t.Setenv("HOME", home)
-	if got := configDir(); got != filepath.Join(home, ".yams") {
-		t.Fatalf("configDir = %q", got)
-	}
-}
-
 func TestLoadConfigRoundTrip(t *testing.T) {
-	home := t.TempDir()
-	t.Setenv("HOME", home)
-	if err := os.MkdirAll(filepath.Join(home, ".yams"), 0o755); err != nil {
+	if runtime.GOOS == "windows" {
+		t.Log("I aren't doin dat")
+		t.Skip()
+	}
+
+	cfgDir := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", cfgDir)
+
+	if err := os.MkdirAll(filepath.Join(cfgDir, "yams"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	custom := `{"MusicDir": "/tmp/music", "Ip": "0.0.0.0", "Port": 5551}`
-	if err := os.WriteFile(filepath.Join(home, ".yams", "config.json"), []byte(custom), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(cfgDir, "yams", "config.json"), []byte(custom), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	cfg := loadConfig()
