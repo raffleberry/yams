@@ -1,0 +1,455 @@
+@import "tailwindcss";
+
+/*
+ * YAMS design tokens.
+ *
+ * Dark is the default and is tuned as the primary experience: near-black
+ * surfaces, artwork as the hero, and an ambient accent sampled from the
+ * current cover art (see useAmbientArt).
+ */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink-950: oklch(0.145 0.012 265);
+  --color-ink-900: oklch(0.185 0.014 265);
+  --color-ink-850: oklch(0.215 0.016 265);
+  --color-ink-800: oklch(0.25 0.018 265);
+  --color-ink-700: oklch(0.33 0.02 265);
+  --color-ink-600: oklch(0.45 0.022 265);
+  --color-ink-400: oklch(0.66 0.02 265);
+  --color-ink-300: oklch(0.79 0.015 265);
+  --color-ink-200: oklch(0.88 0.012 265);
+  --color-ink-100: oklch(0.945 0.008 265);
+
+  --color-accent-400: oklch(0.72 0.17 265);
+  --color-accent-500: oklch(0.63 0.2 268);
+  --color-accent-600: oklch(0.55 0.21 270);
+}
+
+/* Dark theme (default) -------------------------------------------------- */
+:root {
+  --surface-0: oklch(0.145 0.012 265);
+  --surface-1: oklch(0.185 0.014 265);
+  --surface-2: oklch(0.225 0.016 265);
+  --surface-3: oklch(0.27 0.018 265);
+  --border: oklch(0.3 0.02 265 / 0.7);
+  --text: oklch(0.97 0.005 265);
+  --text-muted: oklch(0.68 0.02 265);
+  --text-faint: oklch(0.52 0.02 265);
+  --shadow: 0 24px 60px -20px oklch(0 0 0 / 0.7);
+  color-scheme: dark;
+}
+
+/* Light theme ----------------------------------------------------------- */
+html.light {
+  --surface-0: oklch(0.985 0.003 265);
+  --surface-1: oklch(1 0 0);
+  --surface-2: oklch(0.965 0.004 265);
+  --surface-3: oklch(0.93 0.006 265);
+  --border: oklch(0.88 0.008 265);
+  --text: oklch(0.24 0.015 265);
+  --text-muted: oklch(0.48 0.015 265);
+  --text-faint: oklch(0.62 0.012 265);
+  --shadow: 0 20px 50px -24px oklch(0.4 0.05 265 / 0.4);
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html,
+  body,
+  #app {
+    height: 100%;
+  }
+
+  body {
+    background: var(--surface-0);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior: none;
+  }
+
+  ::selection {
+    background: oklch(0.63 0.2 268 / 0.35);
+  }
+
+  /* Slim, theme-aware scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-3) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--surface-3);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--text-faint);
+    background-clip: content-box;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent-500);
+    outline-offset: 2px;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* iOS Safari zooms the viewport when focusing an input under 16px */
+  @media (max-width: 768px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px;
+    }
+  }
+}
+
+/*
+ * Theme tokens as utilities (not plain classes) so state variants work:
+ * `hover:surface-2`, `active:surface-3`, etc. must resolve to real utilities.
+ */
+@utility surface-0 {
+  background-color: var(--surface-0);
+}
+@utility surface-1 {
+  background-color: var(--surface-1);
+}
+@utility surface-2 {
+  background-color: var(--surface-2);
+}
+@utility surface-3 {
+  background-color: var(--surface-3);
+}
+@utility text-main {
+  color: var(--text);
+}
+@utility text-muted-token {
+  color: var(--text-muted);
+}
+@utility text-faint {
+  color: var(--text-faint);
+}
+/* Filled foreground surface: the primary round transport buttons invert
+   against --surface-0 in both themes. */
+@utility bg-main {
+  background-color: var(--text);
+}
+@utility hairline {
+  border-color: var(--border);
+}
+
+@layer components {
+
+  /* Keyboard hint chip. */
+  .kbd {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.35rem;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, currentColor 8%, transparent);
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* Frosted panels used by the player bar and sticky headers. */
+  .glass {
+    background: color-mix(in oklab, var(--surface-1) 82%, transparent);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+  }
+
+  .card-hover {
+    transition:
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 180ms ease,
+      box-shadow 220ms ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Ambient wash behind headers, tinted by the current cover art. */
+  .ambient {
+    background:
+      radial-gradient(120% 90% at 50% -20%, var(--ambient, transparent) 0%, transparent 62%),
+      var(--surface-0);
+    transition: background 700ms ease;
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--surface-2) 25%,
+      var(--surface-3) 37%,
+      var(--surface-2) 63%
+    );
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  /* Square icon button with a subtle hover wash. */
+  .icon-btn {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    color: var(--text-muted);
+    transition:
+      background-color 150ms ease,
+      color 150ms ease,
+      transform 150ms ease;
+  }
+
+  .icon-btn:hover:not(:disabled) {
+    background: color-mix(in oklab, currentColor 12%, transparent);
+    color: var(--text);
+  }
+
+  .icon-btn:active:not(:disabled) {
+    transform: scale(0.92);
+  }
+
+  .icon-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Primary call-to-action button. */
+  .btn-primary-token {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.55rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    background: var(--color-accent-600);
+    color: white;
+    transition:
+      background-color 150ms ease,
+      transform 150ms ease,
+      opacity 150ms ease;
+  }
+
+  .btn-primary-token:hover:not(:disabled) {
+    background: var(--color-accent-500);
+  }
+
+  .btn-primary-token:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  .btn-primary-token:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Secondary / outline button. */
+  .btn-ghost-token {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.55rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    color: var(--text);
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease;
+  }
+
+  .btn-ghost-token:hover:not(:disabled) {
+    background: color-mix(in oklab, currentColor 8%, transparent);
+  }
+
+  .btn-ghost-token:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 0.8rem;
+    height: 0.8rem;
+    border: 2px solid color-mix(in oklab, currentColor 30%, transparent);
+    border-top-color: currentColor;
+    border-radius: 9999px;
+    animation: spin 700ms linear infinite;
+  }
+
+  .spinner-lg {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-width: 3px;
+  }
+
+  /*
+   * Full-screen mobile sheet (Now Playing).
+   *
+   * The background is deliberately not fully transparent: a near-opaque base
+   * keeps text readable while still letting the blur register, so the app
+   * behind reads as frosted instead of showing through.
+   */
+  .sheet-backdrop {
+    background: color-mix(in oklab, var(--surface-0) 94%, transparent);
+    backdrop-filter: blur(28px) saturate(150%);
+    -webkit-backdrop-filter: blur(28px) saturate(150%);
+  }
+
+  /*
+   * Entrance animation for the sheet body. Deliberately on a child rather
+   * than the container: a transform on the container would create its own
+   * backdrop root and make the blur flicker for the length of the animation.
+   */
+  .sheet-body {
+    animation: sheet-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Vue transition helpers ------------------------------------------------ */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 160ms ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.sheet-enter-active,
+.sheet-leave-active {
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 200ms ease;
+}
+.sheet-enter-from,
+.sheet-leave-to {
+  transform: translateY(16px);
+  opacity: 0;
+}
+
+/* Queue drawer sliding in from the right edge. */
+.drawer-enter-active,
+.drawer-leave-active {
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.drawer-enter-from,
+.drawer-leave-to {
+  transform: translateX(100%);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+@keyframes equalize {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.equalizer-bar {
+  animation: equalize 900ms ease-in-out infinite;
+  transform-origin: bottom;
+}
+.equalizer-bar:nth-child(2) {
+  animation-delay: 150ms;
+}
+.equalizer-bar:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Utilities ------------------------------------------------------------- */
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}

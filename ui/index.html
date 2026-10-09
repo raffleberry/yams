@@ -1,62 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+      The Go server rewrites this <base href> to include the -prefix sub-path,
+      so all relative asset URLs resolve correctly behind a reverse proxy.
+    -->
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0b0f" />
+    <meta name="description" content="YAMS — Yet Another Music Server" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>YAMS</title>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Music</title>
-  <link rel="stylesheet" href="/libs/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/libs/css/bootstrap-icons.min.css">
-  <script defer src="/libs/js/bootstrap.bundle.min.js"></script>
-  <script defer src="/libs/js/vue.global.prod.js"></script>
-  <script defer src="/libs/js/vue-router.global.prod.js"></script>
-  <script defer src="/libs/js/vue-demi.iife.js"></script>
-  <script defer src="/libs/js/pinia.iife.prod.js"></script>
-  <script defer src="/libs/js/floating-ui-core@1.7.3.js"></script>
-  <script defer src="/libs/js/floating-ui-dom@1.7.4.js"></script>
-  <link rel="stylesheet" href="/index.css">
-</head>
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="manifest" href="./site.webmanifest" />
 
-<body>
-
-  <div id="app">
-    <page-router></page-router>
-
-    <!-- Artwork Modal -->
-    <div id="modalArtwork" class="modal fade" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Artwork</h5>
-            <button type="button" class="btn-close" data-bs-toggle="modal" data-bs-target="#modalArtwork"></button>
-          </div>
-          <div class="modal-body text-center">
-            <img :src="modalArtworkUrl" alt="Artwork" class="img-fluid rounded border border-3">
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modals -->
-    <modal-add-to-playlist></modal-add-to-playlist>
-    <modal-create-playlist></modal-create-playlist>
-
-    <!-- Settings Modal -->
-    <settings></settings>
-
-    <!-- Props Modal -->
-    <props-modal></props-modal>
-
-    <songs-tile-ctx-menu></songs-tile-ctx-menu>
-
-    <button type="button" class="btn btn-primary position-fixed bottom-0 end-0 m-3" id="scrollTopButton"
-      style="display: none;">
-      <i class="bi bi-arrow-up-circle-fill"></i>
-    </button>
-
-  </div>
-  <script src="/index.js"></script>
-  <script src="/app/main.js" type="module"></script>
-</body>
-
+    <link rel="preconnect" href="/" />
+    <script>
+      // Apply the stored theme before first paint to avoid a flash.
+      (function () {
+        try {
+          var stored = localStorage.getItem("yams:theme");
+          var dark = stored
+            ? stored === "dark"
+            : window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.classList.toggle("dark", dark);
+          document.documentElement.classList.toggle("light", !dark);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>
