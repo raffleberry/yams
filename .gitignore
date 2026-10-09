@@ -7,6 +7,12 @@ build/
 *.out
 /vendor/
 
+# Frontend
+ui/node_modules/
+# Build output. Required by `go:embed`, but not committed — run `just ui`
+# (or any recipe that depends on it) before building or testing the Go code.
+ui/dist/
+
 # Environments
 .env
 .envrc
