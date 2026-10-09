@@ -1,5 +1,10 @@
 <script setup lang="ts">
+import { usePlayerStore } from "@/stores/player";
+import { useUiStore } from "@/stores/ui";
 import Icon from "./Icon.vue";
+
+const ui = useUiStore();
+const player = usePlayerStore();
 
 const items = [
   { to: "/", icon: "music", label: "Songs" },
@@ -32,23 +37,67 @@ const items = [
       v-for="item in items"
       :key="item.to"
       :to="item.to"
-      class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-token transition-colors hover:text-main"
+      class="flex items-center gap-3 rounded-lg px-3 py-2 text-[15px] font-medium text-muted-token transition-colors hover:text-main"
       active-class="!text-accent-400 bg-accent-500/12"
     >
       <Icon :name="item.icon" :size="18" />
       <span>{{ item.label }}</span>
     </RouterLink>
 
-    <div class="mt-auto space-y-1 px-1">
-      <p class="px-2 pb-1 text-[10px] font-semibold uppercase tracking-widest text-faint">
-        Shortcuts
-      </p>
-      <p class="px-2 text-[11px] leading-relaxed text-faint">
-        <kbd class="kbd">Space</kbd> play/pause
-        <kbd class="kbd ml-1">←→</kbd> seek
-        <kbd class="kbd ml-1">⇧←→</kbd> track
-        <kbd class="kbd ml-1">/</kbd> search
-      </p>
+    <div class="mt-auto space-y-3 px-1">
+      <!-- Former top-bar controls live here on desktop -->
+      <div class="flex items-center gap-0.5 px-1">
+        <button
+          type="button"
+          class="icon-btn"
+          aria-label="Settings"
+          title="Settings"
+          @click="ui.openModal('settings')"
+        >
+          <Icon name="settings" :size="18" />
+        </button>
+        <button
+          type="button"
+          class="icon-btn"
+          :aria-label="ui.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'"
+          :title="ui.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'"
+          @click="ui.toggleTheme()"
+        >
+          <Icon :name="ui.theme === 'dark' ? 'sun' : 'moon'" :size="18" />
+        </button>
+        <button
+          v-if="player.hasTrack"
+          type="button"
+          class="icon-btn"
+          aria-label="Track details"
+          title="Track details"
+          @click="ui.openModal('details')"
+        >
+          <Icon name="info" :size="18" />
+        </button>
+        <div class="flex-1" />
+        <button
+          type="button"
+          class="icon-btn"
+          :aria-label="ui.queueOpen ? 'Hide now playing panel' : 'Show now playing panel'"
+          :title="ui.queueOpen ? 'Hide now playing panel' : 'Show now playing panel'"
+          @click="ui.setQueueOpen(!ui.queueOpen)"
+        >
+          <Icon :name="ui.queueOpen ? 'shrink' : 'expand'" :size="18" />
+        </button>
+      </div>
+
+      <div>
+        <p class="px-2 pb-1 text-[10px] font-semibold uppercase tracking-widest text-faint">
+          Shortcuts
+        </p>
+        <p class="px-2 text-[11px] leading-relaxed text-faint">
+          <kbd class="kbd">Space</kbd> play/pause
+          <kbd class="kbd ml-1">←→</kbd> seek
+          <kbd class="kbd ml-1">⇧←→</kbd> track
+          <kbd class="kbd ml-1">/</kbd> search
+        </p>
+      </div>
     </div>
   </nav>
 </template>

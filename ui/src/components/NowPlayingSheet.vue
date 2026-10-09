@@ -83,7 +83,7 @@ watch(
             <p class="text-[10px] font-semibold uppercase tracking-widest text-faint">
               Now playing
             </p>
-            <p class="max-w-[14rem] truncate text-xs text-muted-token">
+            <p class="max-w-[14rem] truncate text-sm text-muted-token">
               {{ player.track.Album || "—" }}
             </p>
           </div>
@@ -117,13 +117,13 @@ watch(
               />
 
               <div class="mt-2 text-center lg:text-left">
-                <h2 class="line-clamp-2 text-2xl font-bold tracking-tight text-main">
+                <h2 class="line-clamp-2 text-3xl font-bold tracking-tight text-main">
                   {{ player.track.Title || "Unknown" }}
                 </h2>
-                <p class="mt-1 truncate text-sm text-muted-token">
+                <p class="mt-1 truncate text-base text-muted-token">
                   {{ player.track.Artists || "Unknown artist" }}
                 </p>
-                <p v-if="player.track.Album" class="truncate text-xs text-faint">
+                <p v-if="player.track.Album" class="truncate text-sm text-faint">
                   {{ player.track.Album }}
                   <span v-if="player.track.Year"> · {{ player.track.Year }}</span>
                 </p>
@@ -137,7 +137,7 @@ watch(
                   class="text-accent-400"
                   @seek="player.seekToFraction($event)"
                 />
-                <div class="mt-1.5 flex justify-between text-[11px] tabular-nums text-faint">
+                <div class="mt-1.5 flex justify-between text-xs tabular-nums text-faint">
                   <span>{{ formatDuration(player.currentTime) }}</span>
                   <span>{{ formatDuration(player.duration || player.track.Length) }}</span>
                 </div>
@@ -145,7 +145,7 @@ watch(
 
               <p
                 v-if="player.status === 'error'"
-                class="mt-3 text-center text-xs text-rose-400 lg:text-left"
+                class="mt-3 text-center text-sm text-rose-400 lg:text-left"
               >
                 {{ player.error }}
                 <button class="underline underline-offset-2" @click="player.retry()">
@@ -218,6 +218,7 @@ watch(
                   :value="player.muted ? 0 : player.volume * 100"
                   :max="100"
                   class="flex-1 text-main"
+                  unit=""
                   @seek="player.setVolume($event)"
                 />
               </div>
@@ -245,13 +246,13 @@ watch(
               <!-- Queue -->
               <div class="mt-5">
                 <div class="mb-2 flex items-center justify-between">
-                  <h3 class="text-sm font-semibold text-muted-token">
-                    Queue <span class="text-xs text-faint">{{ player.queue.length }}</span>
+                  <h3 class="text-base font-semibold text-muted-token">
+                    Queue <span class="text-sm text-faint">{{ player.queue.length }}</span>
                   </h3>
                   <button
                     v-if="player.queue.length"
                     type="button"
-                    class="text-xs text-faint hover:text-main"
+                    class="text-sm text-faint hover:text-main"
                     @click="player.clearQueue()"
                   >
                     Clear
@@ -269,16 +270,16 @@ watch(
                     <ArtworkThumb :path="song.Path" :size="36" class="shrink-0" />
                     <span class="min-w-0 flex-1">
                       <span
-                        class="block truncate text-[13px] font-medium"
+                        class="block truncate text-[15px] font-medium"
                         :class="player.isActive(song, i) ? 'text-accent-400' : 'text-main'"
                       >
                         {{ song.Title }}
                       </span>
-                      <span class="block truncate text-xs text-muted-token">
+                      <span class="block truncate text-sm text-muted-token">
                         {{ song.Artists }}
                       </span>
                     </span>
-                    <span class="shrink-0 text-xs tabular-nums text-faint">
+                    <span class="shrink-0 text-sm tabular-nums text-faint">
                       {{ formatDuration(song.Length) }}
                     </span>
                   </button>

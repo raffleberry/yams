@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useLibraryStore } from "@/stores/library";
 import { usePlayerStore } from "@/stores/player";
 import { useUiStore } from "@/stores/ui";
 import type { Song } from "@/types";
+import ArtworkThumb from "./ArtworkThumb.vue";
 import Icon from "./Icon.vue";
 
-/** Right-click / long-press menu for a track row. */
+/**
+ * Track options sheet: slides up from the bottom on mobile, docks on the
+ * right side on desktop. The open/close contract (ui.contextMenu) is
+ * unchanged, so every existing ⋯ button and right-click keeps working.
+ */
 const ui = useUiStore();
 const player = usePlayerStore();
 const library = useLibraryStore();
 const router = useRouter();
-
-const el = ref<HTMLElement | null>(null);
-const pos = ref({ x: 0, y: 0 });
 
 interface Target {
   song: Song;
@@ -27,34 +29,6 @@ const song = computed(() => target.value?.song ?? null);
 const isFavourite = computed(() => (song.value ? library.isFavourite(song.value) : false));
 const playlistCount = computed(() => (song.value ? library.membership(song.value) : 0));
 
-function place() {
-  const node = el.value;
-  if (!node) return;
-  const rect = node.getBoundingClientRect();
-  // Flip to the other side of the cursor when we'd overflow the viewport.
-  let x = pos.value.x;
-  let y = pos.value.y;
-  if (x + rect.width > window.innerWidth - 8) {
-    x = Math.max(8, pos.value.x - rect.width);
-  }
-  if (y + rect.height > window.innerHeight - 8) {
-    y = Math.max(8, window.innerHeight - rect.height - 8);
-  }
-  node.style.left = `${x}px`;
-  node.style.top = `${y}px`;
-}
-
-watch(
-  () => ui.contextMenu,
-  async (menu) => {
-    if (!menu) return;
-    pos.value = { x: menu.x, y: menu.y };
-    await nextTick();
-    place();
-  },
-  { immediate: true },
-);
-
 function close() {
   ui.closeContextMenu();
 }
@@ -65,7 +39,7 @@ function run(action: () => void) {
 }
 
 const items = computed(() => {
-  const list: { key: string; label: string; icon: string; danger?: boolean }[] = [];
+  const list: { key: string; label: string; hint?: string; icon: string; danger?: boolean }[] = [];
 
   list.push({
     key: "play",
@@ -85,7 +59,12 @@ const items = computed(() => {
     label: isFavourite.value ? "Remove from favourites" : "Add to favourites",
     icon: "heart",
   });
-  list.push({ key: "playlist", label: "Add to playlist…", icon: "playlist" });
+  list.push({
+    key: "playlist",
+    label: "Add to playlist…",
+    hint: playlistCount.value ? String(playlistCount.value) : undefined,
+    icon: "playlist",
+  });
   list.push({ key: "divider", label: "", icon: "" });
   if (song.value) {
     list.push({ key: "artist", label: `Go to ${song.value.Artists || "artist"}`, icon: "artist" });
@@ -135,28 +114,18 @@ function onClick(key: string) {
   }
 }
 
-function onDocClick(e: MouseEvent) {
-  if (!ui.contextMenu) return;
-  if (el.value?.contains(e.target as Node)) return;
-  close();
-}
-
 function onKey(e: KeyboardEvent) {
   if (e.key === "Escape") close();
 }
 
 onMounted(() => {
-  document.addEventListener("click", onDocClick, true);
   document.addEventListener("keydown", onKey);
   window.addEventListener("resize", close);
-  window.addEventListener("scroll", close, true);
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener("click", onDocClick, true);
   document.removeEventListener("keydown", onKey);
   window.removeEventListener("resize", close);
-  window.removeEventListener("scroll", close, true);
 });
 </script>
 
@@ -165,35 +134,67 @@ onBeforeUnmount(() => {
     <Transition name="fade">
       <div
         v-if="ui.contextMenu && song"
-        ref="el"
-        class="fixed z-[60] w-56 overflow-hidden rounded-xl border hairline surface-1 py-1 shadow-2xl"
-        role="menu"
+        class="fixed inset-0 z-[60] bg-black/50"
+        @click="close"
+      />
+    </Transition>
+    <Transition name="menu-sheet">
+      <aside
+        v-if="ui.contextMenu && song"
+        class="surface-1 fixed z-[60] flex flex-col overflow-hidden border hairline shadow-2xl inset-x-0 bottom-0 max-h-[85dvh] rounded-t-3xl pb-[env(safe-area-inset-bottom)] md:inset-x-auto md:bottom-0 md:right-0 md:top-0 md:max-h-none md:h-full md:w-96 md:max-w-[92vw] md:rounded-none md:border-l md:pb-0"
+        role="dialog"
+        aria-label="Track options"
       >
-        <button
-          v-for="item in items"
-          :key="item.key"
-          type="button"
-          role="menuitem"
-          class="flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-[13px] transition-colors hover:surface-3 disabled:opacity-50"
-          :class="item.danger ? 'text-rose-400' : 'text-main'"
-          :disabled="item.key === 'divider'"
-          @click="onClick(item.key)"
-        >
-          <template v-if="item.key === 'divider'">
-            <hr class="my-1 border-t hairline" />
-          </template>
-          <template v-else>
-            <Icon :name="item.icon" :size="15" class="text-faint" />
-            <span class="truncate">{{ item.label }}</span>
-            <span
-              v-if="item.key === 'playlist' && playlistCount"
-              class="ml-auto text-xs text-faint"
+        <!-- Grab handle (mobile) -->
+        <div class="grid shrink-0 place-items-center pt-2.5 md:hidden" aria-hidden="true">
+          <span class="h-1 w-10 rounded-full surface-3" />
+        </div>
+
+        <!-- Track header -->
+        <div class="flex shrink-0 items-center gap-3 px-5 pb-3 pt-3">
+          <ArtworkThumb :path="song.Path" :alt="song.Album || song.Title" :size="56" class="size-14 shrink-0" />
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-lg font-semibold text-main">{{ song.Title || "Unknown" }}</p>
+            <p class="truncate text-sm text-muted-token">{{ song.Artists || "Unknown artist" }}</p>
+            <p v-if="song.Album" class="truncate text-sm text-faint">
+              {{ song.Album }}
+              <span v-if="song.Year"> · {{ song.Year }}</span>
+            </p>
+          </div>
+          <button type="button" class="icon-btn shrink-0" aria-label="Close options" @click="close">
+            <Icon name="close" :size="18" />
+          </button>
+        </div>
+
+        <!-- Actions -->
+        <div class="min-h-0 flex-1 overflow-y-auto px-2 pb-4">
+          <template v-for="item in items" :key="item.key">
+            <hr v-if="item.key === 'divider'" class="mx-3 my-2 border-t hairline" />
+            <button
+              v-else
+              type="button"
+              role="menuitem"
+              class="flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-left text-base font-medium transition-colors active:surface-2 sm:hover:surface-2"
+              :class="item.danger ? 'text-rose-400' : 'text-main'"
+              @click="onClick(item.key)"
             >
-              {{ playlistCount }}
-            </span>
+              <Icon
+                :name="item.icon"
+                :size="19"
+                :class="item.danger ? 'text-rose-400' : item.key === 'fav' && isFavourite ? 'text-rose-400' : 'text-faint'"
+              />
+              <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
+              <span v-if="item.hint" class="text-sm text-faint">{{ item.hint }}</span>
+              <Icon
+                v-if="item.key === 'fav' && isFavourite"
+                name="check"
+                :size="17"
+                class="shrink-0 text-rose-400"
+              />
+            </button>
           </template>
-        </button>
-      </div>
+        </div>
+      </aside>
     </Transition>
   </Teleport>
 </template>

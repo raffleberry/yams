@@ -17,8 +17,8 @@ defineProps<{
     />
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div class="min-w-0">
-        <h1 class="text-2xl font-bold tracking-tight text-main sm:text-3xl">{{ title }}</h1>
-        <p v-if="subtitle" class="mt-1 truncate text-sm text-muted-token">{{ subtitle }}</p>
+        <h1 class="text-3xl font-bold tracking-tight text-main sm:text-4xl">{{ title }}</h1>
+        <p v-if="subtitle" class="mt-1 truncate text-base text-muted-token">{{ subtitle }}</p>
       </div>
       <div class="flex shrink-0 items-center gap-2">
         <slot name="actions" />

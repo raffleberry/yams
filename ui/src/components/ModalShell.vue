@@ -42,8 +42,8 @@ onBeforeUnmount(() => {
       >
         <header class="flex items-start justify-between gap-4 border-b hairline px-5 py-4">
           <div>
-            <h2 class="text-base font-semibold text-main">{{ props.title }}</h2>
-            <p v-if="props.description" class="mt-0.5 text-xs text-muted-token">
+            <h2 class="text-lg font-semibold text-main">{{ props.title }}</h2>
+            <p v-if="props.description" class="mt-0.5 text-sm text-muted-token">
               {{ props.description }}
             </p>
           </div>

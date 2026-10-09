@@ -8,8 +8,10 @@ const props = withDefaults(
     buffered?: number;
     size?: "sm" | "md";
     disabled?: boolean;
+    /** Suffix for the hover tooltip (seconds for scrubbers, empty for volume). */
+    unit?: string;
   }>(),
-  { buffered: 0, size: "md", disabled: false },
+  { buffered: 0, size: "md", disabled: false, unit: "s" },
 );
 
 const emit = defineEmits<{ seek: [fraction: number] }>();
@@ -113,7 +115,7 @@ function onKey(e: KeyboardEvent) {
     :aria-disabled="disabled || max <= 0"
     aria-label="Seek"
     class="group relative flex w-full touch-none items-center"
-    :class="disabled ? 'cursor-default opacity-60' : 'cursor-pointer'"
+    :class="[disabled ? 'cursor-default opacity-60' : 'cursor-pointer', size === 'md' ? 'h-2.5' : '']"
     @pointerdown="onPointerDown"
     @pointermove="onPointerMove"
     @pointerup="onPointerUp"
@@ -144,7 +146,7 @@ function onKey(e: KeyboardEvent) {
       class="pointer-events-none absolute -top-7 -translate-x-1/2 rounded-md px-1.5 py-0.5 text-[11px] tabular-nums surface-3 text-main shadow"
       :style="{ left: `${hoverFraction * 100}%` }"
     >
-      {{ Math.floor(hoverFraction * max) }}s
+      {{ Math.floor(hoverFraction * max) }}{{ unit }}
     </div>
   </div>
 </template>

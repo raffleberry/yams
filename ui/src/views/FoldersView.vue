@@ -76,7 +76,7 @@ onMounted(() => void load(""));
     </PageHeader>
 
     <!-- Breadcrumbs -->
-    <nav v-if="trail.length" class="flex flex-wrap items-center gap-1 px-4 pb-4 text-sm sm:px-6">
+    <nav v-if="trail.length" class="flex flex-wrap items-center gap-1 px-4 pb-4 text-base sm:px-6">
       <button type="button" class="text-accent-400 hover:underline" @click="load('')">
         Folders
       </button>
@@ -104,8 +104,8 @@ onMounted(() => void load(""));
         <div class="mx-auto mb-4 grid size-14 place-items-center rounded-2xl surface-2 text-faint">
           <Icon name="folder" :size="24" />
         </div>
-        <p class="text-sm font-medium text-main">No sub-folders here</p>
-        <p class="mt-1 text-xs text-muted-token">
+        <p class="text-base font-medium text-main">No sub-folders here</p>
+        <p class="mt-1 text-sm text-muted-token">
           Songs are still playable from the Songs tab.
         </p>
       </div>
@@ -124,8 +124,8 @@ onMounted(() => void load(""));
           <Icon name="folder" :size="20" />
         </div>
         <div class="min-w-0 flex-1">
-          <p class="truncate text-sm font-semibold text-main">{{ folder.Name }}</p>
-          <p class="text-xs text-muted-token">{{ folder.Songs }} songs</p>
+          <p class="truncate text-base font-semibold text-main">{{ folder.Name }}</p>
+          <p class="text-sm text-muted-token">{{ folder.Songs }} songs</p>
         </div>
         <Icon name="chevronRight" :size="18" class="shrink-0 text-faint" />
       </button>

@@ -164,7 +164,7 @@ onMounted(() => void loadShuffle());
           type="search"
           placeholder="Search songs, artists, albums…"
           aria-label="Search"
-          class="w-full rounded-full border hairline surface-2 py-2.5 pl-11 pr-10 text-sm outline-none transition-colors placeholder:text-faint focus:border-accent-500"
+          class="w-full rounded-full border hairline surface-2 py-2.5 pl-11 pr-10 text-base outline-none transition-colors placeholder:text-faint focus:border-accent-500"
         />
         <button
           v-if="term"
@@ -187,10 +187,10 @@ onMounted(() => void loadShuffle());
         <div class="mx-auto mb-4 grid size-14 place-items-center rounded-2xl surface-2 text-faint">
           <Icon :name="isSearch ? 'search' : 'music'" :size="24" />
         </div>
-        <p class="text-sm font-medium text-main">
+        <p class="text-base font-medium text-main">
           {{ isSearch ? "No results" : "Nothing to play yet" }}
         </p>
-        <p class="mt-1 text-xs text-muted-token">
+        <p class="mt-1 text-sm text-muted-token">
           {{
             isSearch
               ? "Try a different artist, album or title."

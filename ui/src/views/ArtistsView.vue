@@ -130,7 +130,7 @@ const albumsOf = computed(() => {
           v-for="album in albumsOf"
           :key="album"
           :to="{ name: 'album', params: { names: album } }"
-          class="rounded-full surface-2 px-3 py-1.5 text-xs text-muted-token transition-colors hover:text-main"
+          class="rounded-full surface-2 px-3 py-1.5 text-sm text-muted-token transition-colors hover:text-main"
         >
           {{ album }}
         </RouterLink>
@@ -140,7 +140,7 @@ const albumsOf = computed(() => {
     <SkeletonList v-if="loadingTracks" :count="8" />
 
     <div v-else-if="!tracks.length" class="grid place-items-center px-6 py-20 text-center">
-      <p class="text-sm text-muted-token">No tracks found for this artist.</p>
+      <p class="text-base text-muted-token">No tracks found for this artist.</p>
     </div>
 
     <div v-else class="px-2 sm:px-3">
@@ -177,7 +177,7 @@ const albumsOf = computed(() => {
           type="search"
           placeholder="Filter artists…"
           aria-label="Filter artists"
-          class="w-full rounded-full border hairline surface-2 py-2.5 pl-11 pr-4 text-sm outline-none transition-colors placeholder:text-faint focus:border-accent-500"
+          class="w-full rounded-full border hairline surface-2 py-2.5 pl-11 pr-4 text-base outline-none transition-colors placeholder:text-faint focus:border-accent-500"
         />
       </div>
     </div>
@@ -188,7 +188,7 @@ const albumsOf = computed(() => {
       v-else-if="!filtered.length"
       class="grid place-items-center px-6 py-20 text-center"
     >
-      <p class="text-sm text-muted-token">No artists found.</p>
+      <p class="text-base text-muted-token">No artists found.</p>
     </div>
 
     <div v-else class="grid grid-cols-2 gap-4 px-4 pb-8 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 sm:px-6">
@@ -204,7 +204,7 @@ const albumsOf = computed(() => {
         >
           {{ initials(artist) }}
         </div>
-        <p class="mt-2.5 line-clamp-2 w-full text-sm font-medium text-main">{{ artist }}</p>
+        <p class="mt-2.5 line-clamp-2 w-full text-base font-medium text-main">{{ artist }}</p>
       </RouterLink>
     </div>
   </div>

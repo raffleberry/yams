@@ -29,7 +29,6 @@ const routes = [
   { path: "/years", name: "years", component: () => import("@/views/YearsView.vue") },
   { path: "/years/:year", name: "year", component: () => import("@/views/YearsView.vue") },
   { path: "/history", name: "history", component: () => import("@/views/HistoryView.vue") },
-  { path: "/more", name: "more", component: () => import("@/views/MoreView.vue") },
 
   { path: "/:pathMatch(.*)*", redirect: "/" },
 ];

@@ -53,24 +53,24 @@ const facts = computed(() => {
       <span class="spinner spinner-lg text-faint" />
     </div>
 
-    <p v-else-if="error" class="py-8 text-center text-sm text-rose-400">{{ error }}</p>
+    <p v-else-if="error" class="py-8 text-center text-base text-rose-400">{{ error }}</p>
 
     <div v-else class="space-y-5">
       <div class="flex items-center gap-4">
         <ArtworkThumb :path="track.Path" :size="104" rounded="rounded-xl" class="shadow-lg" />
         <div class="min-w-0">
-          <h3 class="truncate text-lg font-bold text-main">{{ track.Title || "Unknown" }}</h3>
-          <p class="truncate text-sm text-muted-token">
+          <h3 class="truncate text-xl font-bold text-main">{{ track.Title || "Unknown" }}</h3>
+          <p class="truncate text-base text-muted-token">
             {{ splitArtists(track.Artists).join(", ") || "Unknown artist" }}
           </p>
-          <p v-if="track.Album" class="truncate text-xs text-faint">
+          <p v-if="track.Album" class="truncate text-sm text-faint">
             {{ track.Album }}<span v-if="track.Year"> · {{ track.Year }}</span>
           </p>
         </div>
       </div>
 
       <dl class="divide-y hairline">
-        <div v-for="[key, value] in facts" :key="key" class="flex gap-4 py-2 text-sm">
+        <div v-for="[key, value] in facts" :key="key" class="flex gap-4 py-2 text-base">
           <dt class="w-28 shrink-0 text-muted-token">{{ key }}</dt>
           <dd class="min-w-0 flex-1 break-words text-main">{{ value }}</dd>
         </div>
@@ -78,12 +78,12 @@ const facts = computed(() => {
 
       <div v-if="props.Comment" class="space-y-1">
         <h4 class="text-xs font-semibold uppercase tracking-widest text-faint">Comment</h4>
-        <p class="whitespace-pre-line text-sm text-muted-token">{{ props.Comment }}</p>
+        <p class="whitespace-pre-line text-base text-muted-token">{{ props.Comment }}</p>
       </div>
 
       <div v-if="props.Lyrics" class="space-y-1">
         <h4 class="text-xs font-semibold uppercase tracking-widest text-faint">Lyrics</h4>
-        <p class="max-h-48 overflow-y-auto whitespace-pre-line text-sm text-muted-token">
+        <p class="max-h-48 overflow-y-auto whitespace-pre-line text-base text-muted-token">
           {{ props.Lyrics }}
         </p>
       </div>

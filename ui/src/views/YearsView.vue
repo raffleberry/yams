@@ -107,7 +107,7 @@ onMounted(() => void loadYears());
     <SkeletonList v-if="loadingTracks" :count="8" />
 
     <div v-else-if="!tracks.length" class="grid place-items-center px-6 py-20 text-center">
-      <p class="text-sm text-muted-token">No tracks from this year.</p>
+      <p class="text-base text-muted-token">No tracks from this year.</p>
     </div>
 
     <div v-else class="px-2 sm:px-3">
@@ -133,7 +133,7 @@ onMounted(() => void loadYears());
     <SkeletonList v-if="loading" :count="6" />
 
     <div v-else-if="!sorted.length" class="grid place-items-center px-6 py-20 text-center">
-      <p class="text-sm text-muted-token">No year information found.</p>
+      <p class="text-base text-muted-token">No year information found.</p>
     </div>
 
     <div v-else class="space-y-6 px-4 pb-8 sm:px-6">
@@ -146,7 +146,7 @@ onMounted(() => void loadYears());
             v-for="y in list"
             :key="y"
             :to="{ name: 'year', params: { year: y } }"
-            class="rounded-full surface-2 px-3.5 py-1.5 text-sm text-muted-token transition-colors hover:bg-accent-500/15 hover:text-accent-400"
+            class="rounded-full surface-2 px-3.5 py-1.5 text-base text-muted-token transition-colors hover:bg-accent-500/15 hover:text-accent-400"
           >
             {{ y }}
           </RouterLink>

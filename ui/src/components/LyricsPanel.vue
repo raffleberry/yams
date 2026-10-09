@@ -77,8 +77,8 @@ onBeforeUnmount(() => cancelAnimationFrame(frame));
       class="grid h-32 place-items-center text-center"
     >
       <div>
-        <p class="text-sm font-medium text-muted-token">Instrumental</p>
-        <p class="mt-1 text-xs text-faint">No lyrics for this track</p>
+        <p class="text-base font-medium text-muted-token">Instrumental</p>
+        <p class="mt-1 text-sm text-faint">No lyrics for this track</p>
       </div>
     </div>
 
@@ -87,7 +87,7 @@ onBeforeUnmount(() => cancelAnimationFrame(frame));
         v-for="(line, i) in lyrics.lines.value"
         :key="`${line.time}-${i}`"
         :data-lyric-index="i"
-        class="rounded-lg px-2.5 py-1 text-sm transition-all duration-300"
+        class="rounded-lg px-2.5 py-1 text-base transition-all duration-300"
         :class="
           i === lyrics.activeIndex.value
             ? 'scale-[1.02] bg-accent-500/15 font-semibold text-main'
@@ -102,13 +102,13 @@ onBeforeUnmount(() => cancelAnimationFrame(frame));
 
     <p
       v-else-if="lyrics.plain.value"
-      class="whitespace-pre-line text-sm leading-relaxed text-muted-token"
+      class="whitespace-pre-line text-base leading-relaxed text-muted-token"
     >
       {{ lyrics.plain.value }}
     </p>
 
     <div v-else class="grid h-32 place-items-center text-center">
-      <p class="text-sm text-muted-token">{{ lyrics.error.value ?? "No lyrics found" }}</p>
+      <p class="text-base text-muted-token">{{ lyrics.error.value ?? "No lyrics found" }}</p>
     </div>
   </div>
 </template>

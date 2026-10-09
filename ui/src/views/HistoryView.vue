@@ -83,8 +83,8 @@ onMounted(() => void load(0));
         <div class="mx-auto mb-4 grid size-14 place-items-center rounded-2xl surface-2 text-faint">
           <Icon name="clock" :size="24" />
         </div>
-        <p class="text-sm font-medium text-main">No listening history</p>
-        <p class="mt-1 text-xs text-muted-token">Tracks you play will show up here.</p>
+        <p class="text-base font-medium text-main">No listening history</p>
+        <p class="mt-1 text-sm text-muted-token">Tracks you play will show up here.</p>
       </div>
     </div>
 
@@ -108,20 +108,20 @@ onMounted(() => void load(0));
             <ArtworkThumb :path="entry.Path" :size="44" class="shrink-0" />
             <div class="min-w-0 flex-1">
               <p
-                class="truncate text-[15px] font-medium"
+                class="truncate text-base font-medium"
                 :class="player.isCurrent(entry) ? 'text-accent-400' : 'text-main'"
               >
                 {{ entry.Title }}
               </p>
-              <p class="truncate text-[13px] text-muted-token">
+              <p class="truncate text-sm text-muted-token">
                 {{ entry.Artists }}
                 <span v-if="entry.Album" class="text-faint"> · {{ entry.Album }}</span>
               </p>
             </div>
-            <span class="hidden shrink-0 text-xs tabular-nums text-faint sm:block">
+            <span class="hidden shrink-0 text-sm tabular-nums text-faint sm:block">
               {{ new Date(entry.Time).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) }}
             </span>
-            <span class="shrink-0 text-xs tabular-nums text-muted-token">
+            <span class="shrink-0 text-sm tabular-nums text-muted-token">
               {{ formatDuration(entry.Length) }}
             </span>
             <button

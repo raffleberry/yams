@@ -97,10 +97,10 @@ const stateLabel = computed(() => {
             class="shrink-0 shadow-lg"
           />
           <span class="min-w-0 flex-1">
-            <span class="block truncate text-sm font-semibold text-main">
+            <span class="block truncate text-[15px] font-semibold text-main">
               {{ player.track.Title || "Nothing playing" }}
             </span>
-            <span class="block truncate text-xs text-muted-token">
+            <span class="block truncate text-sm text-muted-token">
               <span v-if="stateLabel" class="text-accent-400">{{ stateLabel }}</span>
               <span v-else>{{ player.track.Artists || "Pick something from your library" }}</span>
             </span>
@@ -188,7 +188,7 @@ const stateLabel = computed(() => {
         </div>
 
         <div class="flex items-center gap-2.5">
-          <span class="w-10 shrink-0 text-right text-[11px] tabular-nums text-faint">
+          <span class="w-10 shrink-0 text-right text-xs tabular-nums text-faint">
             {{ formatDuration(player.currentTime) }}
           </span>
           <ProgressBar
@@ -200,7 +200,7 @@ const stateLabel = computed(() => {
             class="text-accent-400"
             @seek="player.seekToFraction($event)"
           />
-          <span class="w-10 shrink-0 text-[11px] tabular-nums text-faint">
+          <span class="w-10 shrink-0 text-xs tabular-nums text-faint">
             {{ formatDuration(player.duration || player.track.Length) }}
           </span>
         </div>
@@ -222,6 +222,7 @@ const stateLabel = computed(() => {
             :max="100"
             size="sm"
             :disabled="false"
+            unit=""
             @seek="player.setVolume($event)"
           />
         </div>
@@ -251,7 +252,7 @@ const stateLabel = computed(() => {
     <Transition name="fade">
       <div
         v-if="isBusy || player.status === 'error'"
-        class="relative flex items-center justify-center gap-2 px-4 py-1.5 text-xs"
+        class="relative flex items-center justify-center gap-2 px-4 py-1.5 text-sm"
         :class="player.status === 'error' ? 'text-rose-400' : 'text-muted-token'"
       >
         <span v-if="isBusy" class="spinner" aria-hidden="true" />
@@ -274,7 +275,7 @@ const stateLabel = computed(() => {
         class="flex min-w-0 flex-1 items-center gap-2 text-left"
         @click="emit('expand')"
       >
-        <span class="truncate text-xs tabular-nums text-faint">
+        <span class="truncate text-sm tabular-nums text-faint">
           {{ formatDuration(player.currentTime) }}
         </span>
         <ProgressBar
@@ -286,7 +287,7 @@ const stateLabel = computed(() => {
           class="text-accent-400"
           @seek="player.seekToFraction($event)"
         />
-        <span class="shrink-0 text-xs tabular-nums text-faint">
+        <span class="shrink-0 text-sm tabular-nums text-faint">
           {{ formatDuration(player.duration || player.track.Length) }}
         </span>
       </button>

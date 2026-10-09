@@ -82,13 +82,13 @@ function remove(index: number) {
 
       <!-- Metadata -->
       <div class="text-center">
-        <h3 class="line-clamp-2 text-lg font-bold tracking-tight text-main">
+        <h3 class="line-clamp-2 text-xl font-bold tracking-tight text-main">
           {{ player.track.Title || "Unknown" }}
         </h3>
-        <p class="mt-0.5 truncate text-sm text-muted-token">
+        <p class="mt-0.5 truncate text-base text-muted-token">
           {{ player.track.Artists || "Unknown artist" }}
         </p>
-        <p v-if="player.track.Album" class="truncate text-xs text-faint">
+        <p v-if="player.track.Album" class="truncate text-sm text-faint">
           {{ player.track.Album }}
           <span v-if="player.track.Year"> · {{ player.track.Year }}</span>
         </p>
@@ -125,14 +125,14 @@ function remove(index: number) {
             <ArtworkThumb :path="song.Path" :size="36" class="shrink-0" />
             <div class="min-w-0 flex-1">
               <p
-                class="truncate text-[13px] font-medium"
+                class="truncate text-[15px] font-medium"
                 :class="player.isActive(song, i) ? 'text-accent-400' : 'text-main'"
               >
                 {{ song.Title }}
               </p>
-              <p class="truncate text-xs text-muted-token">{{ song.Artists }}</p>
+              <p class="truncate text-sm text-muted-token">{{ song.Artists }}</p>
             </div>
-            <span class="shrink-0 text-xs tabular-nums text-faint">
+            <span class="shrink-0 text-sm tabular-nums text-faint">
               {{ formatDuration(song.Length) }}
             </span>
             <div class="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
@@ -166,8 +166,8 @@ function remove(index: number) {
         >
           <Icon name="music" :size="28" />
         </div>
-        <p class="text-sm font-medium text-muted-token">Nothing playing</p>
-        <p class="mt-1 text-xs text-faint">Pick a track to get started</p>
+        <p class="text-base font-medium text-muted-token">Nothing playing</p>
+        <p class="mt-1 text-sm text-faint">Pick a track to get started</p>
       </div>
     </div>
   </aside>

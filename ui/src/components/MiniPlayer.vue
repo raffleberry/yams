@@ -32,9 +32,9 @@ const statusText = computed(() => {
     >
       <ArtworkThumb :path="player.track.Path" :size="40" class="shrink-0" />
       <div class="min-w-0 flex-1">
-        <p class="truncate text-[13px] font-semibold text-main">{{ player.track.Title }}</p>
+        <p class="truncate text-[15px] font-semibold text-main">{{ player.track.Title }}</p>
         <p
-          class="truncate text-xs"
+          class="truncate text-sm"
           :class="player.status === 'error' ? 'text-rose-400' : 'text-muted-token'"
         >
           {{ statusText }}

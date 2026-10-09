@@ -199,7 +199,7 @@ function onMenu(event: MouseEvent | TouchEvent, song: Song) {
         <div class="mx-auto mb-4 grid size-14 place-items-center rounded-2xl surface-2 text-faint">
           <Icon name="playlist" :size="24" />
         </div>
-        <p class="text-sm font-medium text-main">No songs yet</p>
+        <p class="text-base font-medium text-main">No songs yet</p>
         <p class="mt-1 text-xs text-muted-token">
           Add tracks with the ⋯ menu on any song.
         </p>
@@ -246,8 +246,8 @@ function onMenu(event: MouseEvent | TouchEvent, song: Song) {
           <Icon name="heart" :size="20" />
         </div>
         <div class="min-w-0 flex-1">
-          <p class="truncate text-sm font-semibold text-main">Favourites</p>
-          <p class="text-xs text-muted-token">{{ library.favourites.length }} songs</p>
+          <p class="truncate text-base font-semibold text-main">Favourites</p>
+          <p class="text-sm text-muted-token">{{ library.favourites.length }} songs</p>
         </div>
         <Icon name="chevronRight" :size="18" class="shrink-0 text-faint" />
       </RouterLink>
@@ -266,13 +266,13 @@ function onMenu(event: MouseEvent | TouchEvent, song: Song) {
           <Icon :name="playlist.Type === 'QUERY' ? 'sparkle' : 'playlist'" :size="20" />
         </div>
         <div class="min-w-0 flex-1">
-          <p class="truncate text-sm font-semibold text-main">{{ playlist.Name }}</p>
-          <p class="truncate text-xs text-muted-token">
+          <p class="truncate text-base font-semibold text-main">{{ playlist.Name }}</p>
+          <p class="truncate text-sm text-muted-token">
             {{ playlist.Tracks.length }} songs
             <span v-if="playlist.Description"> · {{ playlist.Description }}</span>
           </p>
         </div>
-        <div class="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+        <div class="flex shrink-0 items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
           <button
             type="button"
             class="icon-btn !size-8"
@@ -296,8 +296,8 @@ function onMenu(event: MouseEvent | TouchEvent, song: Song) {
         <div class="mx-auto mb-4 grid size-14 place-items-center rounded-2xl surface-2 text-faint">
           <Icon name="playlist" :size="24" />
         </div>
-        <p class="text-sm font-medium text-main">No playlists yet</p>
-        <p class="mt-1 text-xs text-muted-token">Create one to group your favourite tracks.</p>
+        <p class="text-base font-medium text-main">No playlists yet</p>
+        <p class="mt-1 text-sm text-muted-token">Create one to group your favourite tracks.</p>
       </div>
     </div>
 
@@ -308,22 +308,22 @@ function onMenu(event: MouseEvent | TouchEvent, song: Song) {
           v-model="newName"
           type="text"
           placeholder="Name"
-          class="w-full rounded-lg border hairline surface-2 px-3 py-2 text-sm outline-none focus:border-accent-500"
+          class="w-full rounded-lg border hairline surface-2 px-3 py-2 text-base outline-none focus:border-accent-500"
           autofocus
         />
         <input
           v-model="newDescription"
           type="text"
           placeholder="Description (optional)"
-          class="w-full rounded-lg border hairline surface-2 px-3 py-2 text-sm outline-none focus:border-accent-500"
+          class="w-full rounded-lg border hairline surface-2 px-3 py-2 text-base outline-none focus:border-accent-500"
         />
         <div class="flex gap-2">
-          <label class="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors"
+          <label class="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-base transition-colors"
             :class="newType === 'LIST' ? 'border-accent-500 bg-accent-500/12 text-main' : 'hairline surface-2 text-muted-token'">
             <input v-model="newType" type="radio" value="LIST" class="sr-only" />
             <Icon name="playlist" :size="16" /> List
           </label>
-          <label class="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors"
+          <label class="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-base transition-colors"
             :class="newType === 'QUERY' ? 'border-accent-500 bg-accent-500/12 text-main' : 'hairline surface-2 text-muted-token'">
             <input v-model="newType" type="radio" value="QUERY" class="sr-only" />
             <Icon name="sparkle" :size="16" /> Smart
@@ -352,14 +352,14 @@ function onMenu(event: MouseEvent | TouchEvent, song: Song) {
           v-model="editName"
           type="text"
           placeholder="Name"
-          class="w-full rounded-lg border hairline surface-2 px-3 py-2 text-sm outline-none focus:border-accent-500"
+          class="w-full rounded-lg border hairline surface-2 px-3 py-2 text-base outline-none focus:border-accent-500"
           autofocus
         />
         <input
           v-model="editDescription"
           type="text"
           placeholder="Description"
-          class="w-full rounded-lg border hairline surface-2 px-3 py-2 text-sm outline-none focus:border-accent-500"
+          class="w-full rounded-lg border hairline surface-2 px-3 py-2 text-base outline-none focus:border-accent-500"
         />
         <div class="flex gap-2 pt-1">
           <button type="submit" class="btn-primary-token flex-1">Save</button>
@@ -370,7 +370,7 @@ function onMenu(event: MouseEvent | TouchEvent, song: Song) {
 
     <!-- Delete confirm -->
     <ModalShell v-if="deleting" title="Delete playlist" @close="deleting = null">
-      <p class="text-sm text-muted-token">
+      <p class="text-base text-muted-token">
         Delete <span class="font-semibold text-main">{{ deleting.Name }}</span>? This removes the
         playlist and its track associations. Your audio files are not touched.
       </p>

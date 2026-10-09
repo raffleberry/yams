@@ -22,7 +22,7 @@ const toneClass = {
         <div
           v-for="toast in ui.toasts"
           :key="toast.id"
-          class="pointer-events-auto flex max-w-md items-center gap-3 rounded-xl border hairline surface-1 px-4 py-2.5 text-sm shadow-2xl"
+          class="pointer-events-auto flex max-w-md items-center gap-3 rounded-xl border hairline surface-1 px-4 py-2.5 text-base shadow-2xl"
         >
           <Icon
             :name="toast.tone === 'error' ? 'warning' : toast.tone === 'success' ? 'check' : 'info'"
@@ -33,7 +33,7 @@ const toneClass = {
           <button
             v-if="toast.action"
             type="button"
-            class="shrink-0 text-xs font-semibold text-accent-400 hover:underline"
+            class="shrink-0 text-sm font-semibold text-accent-400 hover:underline"
             @click="
               toast.action?.run();
               ui.dismissToast(toast.id);

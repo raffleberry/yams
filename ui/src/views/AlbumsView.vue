@@ -118,7 +118,7 @@ const totalSongs = computed(() => albums.value.reduce((n, a) => n + a.Songs, 0))
     <SkeletonList v-if="loadingTracks" :count="8" />
 
     <div v-else-if="!tracks.length" class="grid place-items-center px-6 py-20 text-center">
-      <p class="text-sm text-muted-token">This album has no tracks.</p>
+      <p class="text-base text-muted-token">This album has no tracks.</p>
     </div>
 
     <div v-else class="px-2 sm:px-3">
@@ -153,7 +153,7 @@ const totalSongs = computed(() => albums.value.reduce((n, a) => n + a.Songs, 0))
       v-else-if="!albums.length"
       class="grid place-items-center px-6 py-20 text-center"
     >
-      <p class="text-sm text-muted-token">No albums found.</p>
+      <p class="text-base text-muted-token">No albums found.</p>
     </div>
 
     <div v-else class="grid grid-cols-2 gap-4 px-4 pb-8 sm:grid-cols-3 sm:px-6 md:grid-cols-4 xl:grid-cols-5">
@@ -170,12 +170,12 @@ const totalSongs = computed(() => albums.value.reduce((n, a) => n + a.Songs, 0))
           rounded="rounded-lg"
           class="w-full shadow-md"
         />
-        <p class="mt-2 truncate text-sm font-semibold text-main">{{ album.Album }}</p>
-        <p class="truncate text-xs text-muted-token">
+        <p class="mt-2 truncate text-base font-semibold text-main">{{ album.Album }}</p>
+        <p class="truncate text-sm text-muted-token">
           {{ album.AlbumArtist || "Unknown" }}
           <span v-if="album.Year"> · {{ album.Year }}</span>
         </p>
-        <p class="mt-0.5 text-[11px] text-faint">{{ album.Songs }} songs</p>
+        <p class="mt-0.5 text-xs text-faint">{{ album.Songs }} songs</p>
       </RouterLink>
     </div>
 

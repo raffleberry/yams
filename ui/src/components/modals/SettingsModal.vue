@@ -22,6 +22,11 @@ async function poll() {
   }
 }
 
+/** Null-safe checkbox handler (no inline `as` cast in the template). */
+function onLyricsToggle(e: Event) {
+  if (e.target instanceof HTMLInputElement) ui.setLyricsOpen(e.target.checked);
+}
+
 async function runScan() {
   busy.value = true;
   message.value = null;
@@ -67,10 +72,10 @@ onBeforeUnmount(() => {
             <span v-if="scanning" class="spinner text-accent-400" />
             <Icon v-else name="disc" :size="18" class="text-faint" />
             <div>
-              <p class="text-sm font-medium text-main">
+              <p class="text-base font-medium text-main">
                 {{ scanning ? "Scanning…" : "Rescan library" }}
               </p>
-              <p class="text-xs text-muted-token">
+              <p class="text-sm text-muted-token">
                 {{ scanning ? "New files are being indexed" : "Pick up newly added music" }}
               </p>
             </div>
@@ -84,7 +89,7 @@ onBeforeUnmount(() => {
             {{ scanning ? "Scanning" : "Scan" }}
           </button>
         </div>
-        <p v-if="message" class="text-xs text-muted-token">{{ message }}</p>
+        <p v-if="message" class="text-sm text-muted-token">{{ message }}</p>
       </section>
 
       <!-- Appearance -->
@@ -95,7 +100,7 @@ onBeforeUnmount(() => {
             v-for="option in (['dark', 'light'] as const)"
             :key="option"
             type="button"
-            class="flex items-center justify-between gap-2 rounded-xl border px-4 py-3 text-sm capitalize transition-colors"
+            class="flex items-center justify-between gap-2 rounded-xl border px-4 py-3 text-base capitalize transition-colors"
             :class="
               ui.theme === option
                 ? 'border-accent-500 bg-accent-500/12 text-main'
@@ -113,12 +118,12 @@ onBeforeUnmount(() => {
       <section class="space-y-2">
         <h3 class="text-xs font-semibold uppercase tracking-widest text-faint">Playback</h3>
         <label class="flex cursor-pointer items-center justify-between rounded-xl surface-2 px-4 py-3">
-          <span class="text-sm text-main">Show lyrics panel</span>
+          <span class="text-base text-main">Show lyrics panel</span>
           <input
             :checked="ui.lyricsOpen"
             type="checkbox"
             class="size-4 accent-[var(--color-accent-500)]"
-            @change="ui.setLyricsOpen(($event.target as HTMLInputElement).checked)"
+            @change="onLyricsToggle"
           />
         </label>
       </section>

@@ -54,6 +54,12 @@ export const useUiStore = defineStore("ui", () => {
   });
 
   const nowPlayingOpen = ref(false);
+  /** Mobile hamburger drawer visibility. */
+  const mobileNavOpen = ref(false);
+
+  function setMobileNavOpen(next: boolean) {
+    mobileNavOpen.value = next;
+  }
   /**
    * Lyrics panel visibility. Lives here (rather than in the panel) so it
    * survives the panel unmounting when the viewport crosses a breakpoint.
@@ -125,6 +131,7 @@ export const useUiStore = defineStore("ui", () => {
     isWide,
     queueOpen,
     nowPlayingOpen,
+    mobileNavOpen,
     lyricsOpen,
     modal,
     modalPayload,
@@ -133,6 +140,7 @@ export const useUiStore = defineStore("ui", () => {
     setTheme,
     toggleTheme,
     setLyricsOpen,
+    setMobileNavOpen,
     setQueueOpen,
     toggleQueue,
     openModal,

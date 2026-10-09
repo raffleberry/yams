@@ -60,14 +60,14 @@ async function create() {
         v-model="name"
         type="text"
         placeholder="Playlist name"
-        class="w-full rounded-lg border hairline surface-2 px-3 py-2 text-sm outline-none focus:border-accent-500"
+        class="w-full rounded-lg border hairline surface-2 px-3 py-2 text-base outline-none focus:border-accent-500"
         autofocus
       />
       <input
         v-model="description"
         type="text"
         placeholder="Description (optional)"
-        class="w-full rounded-lg border hairline surface-2 px-3 py-2 text-sm outline-none focus:border-accent-500"
+        class="w-full rounded-lg border hairline surface-2 px-3 py-2 text-base outline-none focus:border-accent-500"
       />
       <div class="flex gap-2 pt-1">
         <button type="submit" class="btn-primary-token" :disabled="saving || !name.trim()">
@@ -97,17 +97,17 @@ async function create() {
             <Icon v-if="library.contains(playlist, song)" name="check" :size="13" :stroke-width="3" />
           </span>
           <span class="min-w-0 flex-1">
-            <span class="block truncate text-sm text-main">{{ playlist.Name }}</span>
-            <span v-if="playlist.Description" class="block truncate text-xs text-muted-token">
+            <span class="block truncate text-base text-main">{{ playlist.Name }}</span>
+            <span v-if="playlist.Description" class="block truncate text-sm text-muted-token">
               {{ playlist.Description }}
             </span>
           </span>
-          <span class="shrink-0 text-xs tabular-nums text-faint">{{ playlist.Tracks.length }}</span>
+          <span class="shrink-0 text-sm tabular-nums text-faint">{{ playlist.Tracks.length }}</span>
         </button>
       </li>
     </ul>
 
-    <p v-else-if="!creating" class="py-6 text-center text-sm text-muted-token">
+    <p v-else-if="!creating" class="py-6 text-center text-base text-muted-token">
       You haven't created any playlists yet.
     </p>
 
