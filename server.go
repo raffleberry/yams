@@ -3,19 +3,15 @@ package main
 import (
 	"bytes"
 	"database/sql"
-	"embed"
 	"encoding/json"
-	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 )
-
-//go:embed ui
-var uiFS embed.FS
 
 const pageLimit = 10
 
@@ -44,6 +40,9 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/artists/{artists}", s.artistsGet)
 	mux.HandleFunc("GET /api/albums", s.albumsAll)
 	mux.HandleFunc("GET /api/albums/{album}", s.albumsGet)
+	mux.HandleFunc("GET /api/folders", s.folders)
+	mux.HandleFunc("GET /api/years", s.yearsAll)
+	mux.HandleFunc("GET /api/years/{year}", s.yearSongs)
 	mux.HandleFunc("GET /api/playlists", s.playlistsAll)
 	mux.HandleFunc("POST /api/playlists", s.playlistsNew)
 	mux.HandleFunc("PUT /api/playlists", s.playlistsEdit)
@@ -58,7 +57,16 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/lyrics", s.lyrics)
 	mux.HandleFunc("GET /api/triggerScan", s.triggerScan)
 	mux.HandleFunc("GET /api/isScanning", s.isScanning)
-	mux.HandleFunc("GET /", s.frontend)
+
+	static, err := newStaticHandler(s.Prefix)
+	if err != nil {
+		log.Printf("yams: embedded ui unavailable: %v", err)
+		mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+			writeErr(w, http.StatusInternalServerError, "UI assets missing from binary")
+		})
+		return withRecovery(mux)
+	}
+	mux.Handle("GET /", static)
 	return withRecovery(mux)
 }
 
@@ -123,16 +131,40 @@ func (s *Server) artwork(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	w.Write(art)
+	// Artwork is stored raw in the DB; sniff the type so browsers render it.
+	w.Header().Set("Content-Type", http.DetectContentType(art))
+	w.Header().Set("Cache-Control", mediaCacheControl)
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	http.ServeContent(w, r, "artwork", time.Time{}, bytes.NewReader(art))
 }
 
+// files streams audio. http.ServeFile honours Range requests, which is what
+// lets the browser start playback and seek before the whole file arrives.
 func (s *Server) files(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Query().Get("path")
-	if st, err := os.Stat(path); err == nil && !st.IsDir() {
-		http.ServeFile(w, r, path)
+	if path == "" {
+		writeErr(w, http.StatusBadRequest, "missing path")
 		return
 	}
-	w.WriteHeader(http.StatusNotFound)
+	root, err := filepath.Abs(s.musicDir())
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	abs, err := filepath.Abs(path)
+	if err != nil || !strings.HasPrefix(abs, root) {
+		// Never serve anything outside the configured music directory.
+		writeErr(w, http.StatusForbidden, "path outside music directory")
+		return
+	}
+	st, err := os.Stat(abs)
+	if err != nil || st.IsDir() {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Cache-Control", mediaCacheControl)
+	w.Header().Set("Accept-Ranges", "bytes")
+	http.ServeFile(w, r, abs)
 }
 
 func (s *Server) search(w http.ResponseWriter, r *http.Request) {
@@ -410,39 +442,33 @@ func (s *Server) isScanning(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, s.Scanner.Scanning())
 }
 
-func (s *Server) frontend(w http.ResponseWriter, r *http.Request) {
-	path := strings.Trim(strings.TrimPrefix(r.URL.Path, "/"), "/")
-	if strings.Contains(path, "..") {
-		path = ""
-	}
-	root, err := fs.Sub(uiFS, "ui")
+func (s *Server) folders(w http.ResponseWriter, r *http.Request) {
+	folders, err := s.Store.Folders(s.musicDir(), r.URL.Query().Get("path"))
 	if err != nil {
 		writeErr(w, 500, err.Error())
 		return
 	}
-	name := path
-	if name == "" {
-		name = "index.html"
-	}
-	data, err := fs.ReadFile(root, name)
+	writeJSON(w, 200, map[string]any{"Data": folders})
+}
+
+func (s *Server) yearsAll(w http.ResponseWriter, r *http.Request) {
+	years, err := s.Store.Years(s.musicDir())
 	if err != nil {
-		name = "index.html"
-		data, err = fs.ReadFile(root, name)
-		if err != nil {
-			writeErr(w, 500, err.Error())
-			return
-		}
+		writeErr(w, 500, err.Error())
+		return
 	}
-	if s.Prefix != "" {
-		switch {
-		case name == "index.html":
-			data = []byte(strings.ReplaceAll(string(data), `href="/`, `href="`+s.Prefix+`/`))
-			data = []byte(strings.ReplaceAll(string(data), `src="/`, `src="`+s.Prefix+`/`))
-		case path == "app/base.js" || name == "base.js":
-			data = []byte(strings.ReplaceAll(string(data), `export const base = ""`, `export const base = "`+s.Prefix+`"`))
-		case name == "site.webmanifest":
-			data = []byte(strings.ReplaceAll(string(data), `"/android`, `"`+s.Prefix+`/android`))
-		}
+	out := make([]string, 0, len(years))
+	for _, y := range years {
+		out = append(out, y)
 	}
-	http.ServeContent(w, r, name, time.Time{}, bytes.NewReader(data))
+	writeJSON(w, 200, map[string]any{"Data": out})
+}
+
+func (s *Server) yearSongs(w http.ResponseWriter, r *http.Request) {
+	songs, err := s.Store.YearSongs(s.musicDir(), r.PathValue("year"))
+	if err != nil {
+		writeErr(w, 500, err.Error())
+		return
+	}
+	writeJSON(w, 200, map[string]any{"Data": songs})
 }

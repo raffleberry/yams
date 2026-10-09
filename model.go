@@ -54,6 +54,14 @@ type Album struct {
 	Songs       int    `json:"Songs"`
 }
 
+// Folder is one entry in the folder browser.
+type Folder struct {
+	Path   string `json:"Path"`
+	Name   string `json:"Name"`
+	Parent string `json:"Parent"`
+	Songs  int    `json:"Songs"`
+}
+
 type Page struct {
 	Data any `json:"Data"`
 	Next int `json:"Next"`
