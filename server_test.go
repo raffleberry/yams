@@ -3,18 +3,25 @@ package main
 import (
 	"encoding/json"
 	"net/http/httptest"
+	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
 
 func testServer(t *testing.T, prefix string) (*Server, *stubLyrics) {
 	t.Helper()
+	return testServerIn(t, prefix, "/music")
+}
+
+func testServerIn(t *testing.T, prefix, musicDir string) (*Server, *stubLyrics) {
+	t.Helper()
 	s := testStore(t)
 	seedSongs(t, s)
 	fetch := &stubLyrics{lyrics: "la", synced: "[00:01] la"}
-	sc := &Scanner{Store: s, MusicDir: "/music"}
-	srv := NewServer(s, sc, fetch, prefix, func() string { return "/music" })
+	sc := &Scanner{Store: s, MusicDir: musicDir}
+	srv := NewServer(s, sc, fetch, prefix, func() string { return musicDir })
 	return srv, fetch
 }
 
@@ -184,23 +191,38 @@ func itoa64(n int64) string {
 }
 
 func TestAPIFilesAndLyrics(t *testing.T) {
-	srv, fetch := testServer(t, "")
-	f, err := os.CreateTemp("", "*.mp3")
-	if err != nil {
+	// Files must live inside the configured music directory.
+	dir := t.TempDir()
+	srv, fetch := testServerIn(t, "", dir)
+
+	f := filepath.Join(dir, "song.mp3")
+	if err := os.WriteFile(f, []byte("fake audio"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(f.Name())
-	f.WriteString("fake audio")
-	f.Close()
 
-	if rec := get(t, srv, "/api/files?path="+f.Name()); rec.Code != 200 {
-		t.Fatalf("files = %d", rec.Code)
+	rec := get(t, srv, "/api/files?path="+url.QueryEscape(f))
+	if rec.Code != 200 {
+		t.Fatalf("files = %d %s", rec.Code, rec.Body.String())
 	}
-	if rec := get(t, srv, "/api/files?path=/nope.mp3"); rec.Code != 404 {
+	if rec.Header().Get("Accept-Ranges") != "bytes" {
+		t.Fatalf("range support missing: %v", rec.Header())
+	}
+	if rec := get(t, srv, "/api/files?path="+url.QueryEscape(filepath.Join(dir, "nope.mp3"))); rec.Code != 404 {
 		t.Fatalf("files missing = %d", rec.Code)
 	}
+	// Escaping the music directory must be refused.
+	outside := filepath.Join(t.TempDir(), "secret.mp3")
+	if err := os.WriteFile(outside, []byte("nope"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if rec := get(t, srv, "/api/files?path="+url.QueryEscape(outside)); rec.Code != 403 {
+		t.Fatalf("outside library = %d %s", rec.Code, rec.Body.String())
+	}
+	if rec := get(t, srv, "/api/files"); rec.Code != 400 {
+		t.Fatalf("missing path = %d", rec.Code)
+	}
 
-	rec := get(t, srv, "/api/lyrics?path=/music/a.mp3")
+	rec = get(t, srv, "/api/lyrics?path=/music/a.mp3")
 	var l Lyrics
 	if err := json.Unmarshal(rec.Body.Bytes(), &l); err != nil || rec.Code != 200 || l.Lyrics != "la" {
 		t.Fatalf("lyrics = %d %s %v", rec.Code, rec.Body.String(), err)
@@ -232,27 +254,83 @@ func TestAPIScan(t *testing.T) {
 func TestFrontend(t *testing.T) {
 	srv, _ := testServer(t, "")
 	rec := get(t, srv, "/")
-	if rec.Code != 200 || !strings.Contains(rec.Body.String(), "<title>Music</title>") {
-		t.Fatalf("index = %d %.100s", rec.Code, rec.Body.String())
+	if rec.Code != 200 || !strings.Contains(rec.Body.String(), `<base href="/"`) {
+		t.Fatalf("index = %d %.200s", rec.Code, rec.Body.String())
 	}
-	rec = get(t, srv, "/some/route/that/is/spa")
-	if rec.Code != 200 || !strings.Contains(rec.Body.String(), "<title>Music</title>") {
-		t.Fatalf("spa fallback = %d", rec.Code)
+	if cc := rec.Header().Get("Cache-Control"); !strings.Contains(cc, "no-cache") {
+		t.Fatalf("index cache-control = %q", cc)
 	}
-	rec = get(t, srv, "/index.css")
+	// Unknown client-side routes must fall back to the SPA shell.
+	rec = get(t, srv, "/albums/some/deep/route")
+	if rec.Code != 200 || !strings.Contains(rec.Body.String(), `<base href="/"`) {
+		t.Fatalf("spa fallback = %d %.120s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestFrontendAssetsAreImmutable(t *testing.T) {
+	srv, _ := testServer(t, "")
+	rec := get(t, srv, "/site.webmanifest")
 	if rec.Code != 200 {
-		t.Fatalf("css = %d", rec.Code)
+		t.Fatalf("manifest = %d", rec.Code)
+	}
+	if cc := rec.Header().Get("Cache-Control"); !strings.Contains(cc, "max-age=31536000") {
+		t.Fatalf("asset cache-control = %q", cc)
 	}
 }
 
 func TestFrontendPrefix(t *testing.T) {
 	srv, _ := testServer(t, "/yams")
-	rec := get(t, srv, "/app/base.js")
-	if rec.Code != 200 || !strings.Contains(rec.Body.String(), `export const base = "/yams"`) {
-		t.Fatalf("base.js = %d %.120s", rec.Code, rec.Body.String())
+	rec := get(t, srv, "/")
+	if rec.Code != 200 {
+		t.Fatalf("index = %d", rec.Code)
 	}
-	rec = get(t, srv, "/")
-	if !strings.Contains(rec.Body.String(), `href="/yams/`) {
-		t.Fatalf("index prefix rewrite missing: %.200s", rec.Body.String())
+	// Relative asset URLs resolve against the injected base href.
+	if !strings.Contains(rec.Body.String(), `<base href="/yams/"`) {
+		t.Fatalf("base rewrite missing: %.300s", rec.Body.String())
+	}
+}
+
+func TestAPIFoldersAndYears(t *testing.T) {
+	srv, _ := testServer(t, "")
+
+	rec := get(t, srv, "/api/years")
+	var years struct {
+		Data []string `json:"Data"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &years); err != nil {
+		t.Fatal(err)
+	}
+	// Years come back newest first.
+	if len(years.Data) != 2 || years.Data[0] != "2021" {
+		t.Fatalf("years = %v", years.Data)
+	}
+	if got := pageData(t, get(t, srv, "/api/years/2020")); len(got) != 1 {
+		t.Fatalf("year songs = %d", len(got))
+	}
+
+	// The seeded library is virtual, so use a real directory to exercise the
+	// folder tree walk.
+	nested := t.TempDir()
+	mustMkdir(t, filepath.Join(nested, "Rock"))
+	mustMkdir(t, filepath.Join(nested, "Jazz", "Live"))
+	s2, _ := testServerIn(t, "", nested)
+
+	rec = get(t, s2, "/api/folders")
+	var folders struct {
+		Data []Folder `json:"Data"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &folders); err != nil {
+		t.Fatal(err)
+	}
+	// Directories are derived from scanned files, so an empty tree yields none.
+	if len(folders.Data) != 0 {
+		t.Fatalf("empty tree folders = %+v", folders.Data)
+	}
+}
+
+func mustMkdir(t *testing.T, dir string) {
+	t.Helper()
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
 	}
 }
