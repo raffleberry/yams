@@ -2,12 +2,6 @@
 
 Yet Another Music Server
 
-## Screenshots
-![](docs/1.png)
-![](docs/2.png)
-![](docs/3.png)
-![](docs/4.png)
-
 ## Development
 
 The UI lives in `ui/` and is a Vite + Vue 3 + Tailwind app. `ui/dist` is the
@@ -59,3 +53,13 @@ yams -prefix=/yams
 | `S` | Toggle shuffle |
 | `R` | Cycle repeat mode |
 | `/` | Focus search |
+
+## Screenshots
+![songs](docs/1_songs.png)
+![albums](docs/2_albums.png)
+![artists](docs/3_artists.png)
+![playlists](docs/4_playlists.png)
+![folders](docs/5_folders.png)
+![folders](docs/6_years.png)
+![folders](docs/7_history.png)
+

@@ -27,6 +27,18 @@ const volumeIcon = computed(() => {
   return player.volume < 0.5 ? "volumeLow" : "volume";
 });
 
+/**
+ * Template expressions can't see `window`, so the coordinates for the
+ * (now anchored, not cursor-positioned) options sheet come from here.
+ */
+function openMenu(e: MouseEvent) {
+  ui.openContextMenu(e.clientX, e.clientY, {
+    song: player.track,
+    index: player.index,
+    from: "nowplaying",
+  });
+}
+
 function onKey(e: KeyboardEvent) {
   if (e.key === "Escape" && ui.nowPlayingOpen) ui.nowPlayingOpen = false;
 }
@@ -91,13 +103,7 @@ watch(
             type="button"
             class="icon-btn"
             aria-label="More options"
-            @click="
-              ui.openContextMenu(window.innerWidth - 140, 80, {
-                song: player.track,
-                index: player.index,
-                from: 'nowplaying',
-              })
-            "
+            @click="openMenu"
           >
             <Icon name="more" :size="20" />
           </button>
