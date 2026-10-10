@@ -1,36 +1,57 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import { fetchFolders } from "@/api";
+import { fetchFolders, fetchFolderSongs } from "@/api";
+import { usePlayerStore } from "@/stores/player";
 import { useUiStore } from "@/stores/ui";
-import type { Folder } from "@/types";
+import type { Folder, Song } from "@/types";
 import Icon from "../components/Icon.vue";
 import PageHeader from "../components/PageHeader.vue";
+import SkeletonList from "../components/SkeletonList.vue";
+import SongRow from "../components/SongRow.vue";
 
 const router = useRouter();
+const player = usePlayerStore();
 const ui = useUiStore();
 
 const folders = ref<Folder[]>([]);
+const tracks = ref<Song[]>([]);
 const path = ref("");
 const loading = ref(false);
+const loadingTracks = ref(false);
 const trail = ref<{ name: string; path: string }[]>([]);
 
+function normalize(target: string) {
+  return target
+    .split("/")
+    .filter(Boolean)
+    .join("/");
+}
+
 async function load(target: string) {
+  const clean = normalize(target);
   loading.value = true;
-  path.value = target;
+  loadingTracks.value = true;
+  path.value = clean;
   try {
-    const res = await fetchFolders(target);
-    folders.value = (res.Data ?? []).sort((a, b) => a.Name.localeCompare(b.Name));
-    if (!folders.value.length && target) {
-      ui.toast("That folder can't be browsed", "info");
-      void router.push({ name: "folders" }).catch(() => {});
-    }
+    const [folderRes, songRes] = await Promise.all([
+      fetchFolders(clean),
+      fetchFolderSongs(clean),
+    ]);
+    folders.value = (folderRes.Data ?? []).sort((a, b) => a.Name.localeCompare(b.Name));
+    tracks.value = songRes.Data ?? [];
   } catch {
-    ui.toast("Could not load folders", "error");
+    ui.toast("Could not load folder", "error");
     folders.value = [];
+    tracks.value = [];
   } finally {
     loading.value = false;
+    loadingTracks.value = false;
   }
+}
+
+function parentPath(value: string) {
+  return value.split("/").filter(Boolean).slice(0, -1).join("/");
 }
 
 /** Split the current path into breadcrumb segments. */
@@ -44,7 +65,7 @@ watch(
     const parts = value.split("/").filter(Boolean);
     let acc = "";
     trail.value = parts.map((part) => {
-      acc += `/${part}`;
+      acc = acc ? `${acc}/${part}` : part;
       return { name: part, path: acc };
     });
   },
@@ -56,18 +77,40 @@ const currentName = computed(() => {
   return parts[parts.length - 1] ?? "Folders";
 });
 
+function playAll() {
+  if (tracks.value.length) player.setQueue(tracks.value, 0, `folder:${path.value}`);
+}
+
+function play(song: Song) {
+  player.play(song, tracks.value, `folder:${path.value}`);
+}
+
+function onMenu(event: MouseEvent | TouchEvent, song: Song) {
+  const point = "touches" in event ? event.touches[0] : event;
+  ui.openContextMenu(point.clientX, point.clientY, { song, from: "list" });
+}
+
 onMounted(() => void load(""));
 </script>
 
 <template>
   <div class="min-h-full">
-    <PageHeader title="Folders" :subtitle="path || 'Browse your music directory'">
+    <PageHeader :title="currentName" :subtitle="path || 'Browse your music directory'">
       <template #actions>
+        <button
+          v-if="tracks.length"
+          type="button"
+          class="btn-primary-token"
+          @click="playAll"
+        >
+          <Icon name="play" :size="16" />
+          Play
+        </button>
         <button
           v-if="path"
           type="button"
           class="btn-ghost-token"
-          @click="load(path.split('/').slice(0, -1).join('/'))"
+          @click="load(parentPath(path))"
         >
           <Icon name="chevronUp" :size="16" />
           Up
@@ -98,37 +141,64 @@ onMounted(() => void load(""));
       <div v-for="i in 8" :key="i" class="skeleton h-20 rounded-xl" />
     </div>
 
-    <!-- Empty -->
-    <div v-else-if="!folders.length" class="grid place-items-center px-6 py-20 text-center">
-      <div>
-        <div class="mx-auto mb-4 grid size-14 place-items-center rounded-2xl surface-2 text-faint">
-          <Icon name="folder" :size="24" />
-        </div>
-        <p class="text-base font-medium text-main">No sub-folders here</p>
-        <p class="mt-1 text-sm text-muted-token">
-          Songs are still playable from the Songs tab.
-        </p>
-      </div>
-    </div>
-
-    <!-- Folder grid -->
-    <div v-else class="grid grid-cols-1 gap-2 px-4 pb-8 sm:grid-cols-2 md:grid-cols-3 sm:px-6">
-      <button
-        v-for="folder in folders"
-        :key="folder.Path"
-        type="button"
-        class="card-hover flex items-center gap-3 rounded-xl px-3 py-3 text-left hover:surface-2"
-        @click="load(folder.Path)"
+    <template v-else>
+      <!-- Folder grid -->
+      <div
+        v-if="folders.length"
+        class="grid grid-cols-1 gap-2 px-4 pb-4 sm:grid-cols-2 md:grid-cols-3 sm:px-6"
       >
-        <div class="grid size-11 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-amber-400 to-orange-600 text-white">
-          <Icon name="folder" :size="20" />
+        <button
+          v-for="folder in folders"
+          :key="folder.Path"
+          type="button"
+          class="card-hover flex items-center gap-3 rounded-xl px-3 py-3 text-left hover:surface-2"
+          @click="load(folder.Path)"
+        >
+          <div class="grid size-11 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-amber-400 to-orange-600 text-white">
+            <Icon name="folder" :size="20" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-base font-semibold text-main">{{ folder.Name }}</p>
+            <p class="text-sm text-muted-token">{{ folder.Songs }} songs</p>
+          </div>
+          <Icon name="chevronRight" :size="18" class="shrink-0 text-faint" />
+        </button>
+      </div>
+
+      <!-- Songs directly in this folder -->
+      <SkeletonList v-if="loadingTracks" :count="8" />
+
+      <div v-else-if="tracks.length" class="px-2 pb-8 sm:px-3">
+        <h2 class="px-2 pb-2 text-xs font-semibold uppercase tracking-widest text-faint">
+          Songs here
+        </h2>
+        <SongRow
+          v-for="(song, i) in tracks"
+          :key="song.Path + i"
+          :song="song"
+          :index="i"
+          :playing="player.playing"
+          :is-current="player.isCurrent(song)"
+          :active="player.isActive(song, player.queue.indexOf(song))"
+          :favourite="false"
+          @play="play(song)"
+          @menu="onMenu($event, song)"
+          @navigate="(kind, value) => router.push({ name: kind === 'year' ? 'year' : kind, params: kind === 'year' ? { year: value } : { names: value } })"
+        />
+      </div>
+
+      <!-- Empty -->
+      <div v-else-if="!folders.length" class="grid place-items-center px-6 py-20 text-center">
+        <div>
+          <div class="mx-auto mb-4 grid size-14 place-items-center rounded-2xl surface-2 text-faint">
+            <Icon name="folder" :size="24" />
+          </div>
+          <p class="text-base font-medium text-main">This folder is empty</p>
+          <p class="mt-1 text-sm text-muted-token">
+            No songs or sub-folders here.
+          </p>
         </div>
-        <div class="min-w-0 flex-1">
-          <p class="truncate text-base font-semibold text-main">{{ folder.Name }}</p>
-          <p class="text-sm text-muted-token">{{ folder.Songs }} songs</p>
-        </div>
-        <Icon name="chevronRight" :size="18" class="shrink-0 text-faint" />
-      </button>
-    </div>
+      </div>
+    </template>
   </div>
 </template>

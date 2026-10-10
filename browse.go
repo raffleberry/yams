@@ -9,19 +9,48 @@ import (
 
 var errOutsideLibrary = errors.New("path outside music directory")
 
+// resolveFolderTarget maps a UI-relative dir ("" means root) to an absolute
+// on-disk path, guarding against traversal outside the music directory.
+func resolveFolderTarget(musicDir, dir string) (string, error) {
+	root := filepath.Clean(musicDir)
+	target := root
+	if strings.Trim(dir, "/") != "" {
+		target = filepath.Join(root, filepath.FromSlash(strings.Trim(dir, "/")))
+	}
+	if target != root && !strings.HasPrefix(target, root+string(filepath.Separator)) {
+		return "", errOutsideLibrary
+	}
+	return target, nil
+}
+
+// FolderSongs returns songs sitting directly inside `dir` (relative to the
+// music directory; "" means the root). Sub-folder contents are excluded.
+func (s *Store) FolderSongs(musicDir, dir string) ([]Song, error) {
+	target, err := resolveFolderTarget(musicDir, dir)
+	if err != nil {
+		return nil, err
+	}
+	sep := string(filepath.Separator)
+	songs, err := s.querySongs(s.Local,
+		`SELECT `+songCols+` FROM files
+		WHERE Path GLOB ? AND Path NOT GLOB ?
+		GROUP BY Title, Artists, Album ORDER BY Title COLLATE NOCASE;`,
+		target+sep+"*", target+sep+"*"+sep+"*")
+	if err != nil {
+		return nil, err
+	}
+	return s.withAux(songs)
+}
+
 // Folders lists the immediate sub-directories of `dir` (which is relative to
 // the music directory; "" means the root), along with how many songs each
 // holds directly. This powers the folder browser in the UI.
 func (s *Store) Folders(musicDir, dir string) ([]Folder, error) {
-	root := filepath.Clean(musicDir)
-	target := root
-	if dir != "" {
-		target = filepath.Join(root, filepath.FromSlash(dir))
+	target, err := resolveFolderTarget(musicDir, dir)
+	if err != nil {
+		return nil, err
 	}
-	// Guard against traversal outside the music directory.
-	if target != root && !strings.HasPrefix(target, root+string(filepath.Separator)) {
-		return nil, errOutsideLibrary
-	}
+	cleanDir := strings.Trim(dir, "/")
 
 	rows, err := s.Local.Query(
 		`SELECT Path FROM files WHERE Path GLOB ?;`, target+string(filepath.Separator)+"*")
@@ -54,8 +83,8 @@ func (s *Store) Folders(musicDir, dir string) ([]Folder, error) {
 	out := make([]Folder, 0, len(counts))
 	for name, n := range counts {
 		child := name
-		if dir != "" {
-			child = strings.TrimSuffix(dir, "/") + "/" + name
+		if cleanDir != "" {
+			child = cleanDir + "/" + name
 		}
 		parent := filepath.ToSlash(filepath.Dir(filepath.Join(target, name)))
 		if parent == "." {

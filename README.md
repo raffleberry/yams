@@ -55,6 +55,7 @@ yams -prefix=/yams
 | `/` | Focus search |
 
 ## Screenshots
+![now playing](docs/0_now_playing.png)
 ![songs](docs/1_songs.png)
 ![albums](docs/2_albums.png)
 ![artists](docs/3_artists.png)

@@ -41,6 +41,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/albums", s.albumsAll)
 	mux.HandleFunc("GET /api/albums/{album}", s.albumsGet)
 	mux.HandleFunc("GET /api/folders", s.folders)
+	mux.HandleFunc("GET /api/folders/songs", s.folderSongs)
 	mux.HandleFunc("GET /api/years", s.yearsAll)
 	mux.HandleFunc("GET /api/years/{year}", s.yearSongs)
 	mux.HandleFunc("GET /api/playlists", s.playlistsAll)
@@ -449,6 +450,15 @@ func (s *Server) folders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, map[string]any{"Data": folders})
+}
+
+func (s *Server) folderSongs(w http.ResponseWriter, r *http.Request) {
+	songs, err := s.Store.FolderSongs(s.musicDir(), r.URL.Query().Get("path"))
+	if err != nil {
+		writeErr(w, 500, err.Error())
+		return
+	}
+	writeJSON(w, 200, map[string]any{"Data": songs})
 }
 
 func (s *Server) yearsAll(w http.ResponseWriter, r *http.Request) {

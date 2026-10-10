@@ -82,6 +82,9 @@ export const fetchAlbumSongs = (album: string) =>
 export const fetchFolders = (path = "") =>
   request<{ Data: Folder[] }>(`/api/folders?${qs({ path })}`);
 
+export const fetchFolderSongs = (path = "") =>
+  request<{ Data: Song[] }>(`/api/folders/songs?${qs({ path })}`);
+
 /* ------------------------------------------------------------------- years */
 
 export const fetchYears = () => request<{ Data: string[] }>("/api/years");
